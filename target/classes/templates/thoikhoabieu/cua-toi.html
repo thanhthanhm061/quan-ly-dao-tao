@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::content}, 'Thời khóa biểu của tôi')}">
+<body><th:block th:fragment="content">
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="d-flex gap-3 align-items-center">
+      <label class="fw-semibold">Học kỳ:</label>
+      <select name="hocKy" class="form-select" style="width:180px" onchange="this.form.submit()">
+        <option value="">-- Chọn học kỳ --</option>
+        <option th:each="hk:${danhSachHocKy}" th:value="${hk}" th:text="${hk}"
+                th:selected="${hk==hocKyChon}"></option>
+      </select>
+      <span th:if="${tenNguoiDung != null}" class="ms-2 text-muted small">
+        <i class="fas fa-user me-1"></i><span th:text="${tenNguoiDung}"></span>
+      </span>
+    </form>
+  </div>
+</div>
+
+<div th:if="${thoiKhoaBieus != null}">
+  <div th:if="${#lists.isEmpty(thoiKhoaBieus)}" class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>Không có lịch học trong học kỳ này
+  </div>
+  <div th:unless="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
+    <div class="card-header"><i class="fas fa-calendar-week me-2"></i>Lịch học - <span th:text="${hocKyChon}"></span></div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-bordered mb-0 text-center" style="min-width:750px">
+          <thead style="background:#1e3a5f;color:white">
+            <tr><th>Tiết</th><th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="tiet : ${#numbers.sequence(1, 12)}">
+              <td class="fw-semibold small bg-light" th:text="'T'+${tiet}"></td>
+              <td th:each="thu : ${#numbers.sequence(2, 7)}" style="height:48px;padding:2px">
+                <th:block th:each="tkb : ${thoiKhoaBieus}">
+                  <div th:if="${tkb.thuTrongTuan == thu and tkb.tietBatDau == tiet}"
+                       class="rounded p-1 small h-100 d-flex flex-column justify-content-center"
+                       style="background:#dbeafe;border-left:3px solid #2563eb">
+                    <strong style="font-size:.73rem" th:text="${tkb.lopHocPhan.monHoc.tenMon}"></strong>
+                    <span class="text-muted" style="font-size:.65rem"
+                          th:text="'P.'+${tkb.phongHoc}"></span>
+                  </div>
+                </th:block>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div th:unless="${hocKyChon != null}" class="text-center py-5 text-muted">
+  <i class="fas fa-calendar-check fa-4x mb-3 d-block" style="opacity:.3"></i>
+  <h5>Chọn học kỳ để xem thời khóa biểu của bạn</h5>
+</div>
+
+</th:block></body></html>
