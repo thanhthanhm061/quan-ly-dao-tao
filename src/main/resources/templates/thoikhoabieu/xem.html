@@ -10,7 +10,7 @@
         <label class="form-label fw-semibold">Giảng viên</label>
         <select name="giangVienId" class="form-select">
           <option value="">-- Chọn giảng viên --</option>
-          <option th:each="gv:${giangViens}" th:value="${gv.id}" th:text="${gv.hoTenVaHocVi()}"
+          <option th:each="gv:${giangViens}" th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
                   th:selected="${gv.id == giangVienIdChon}"></option>
         </select>
       </div>
@@ -43,7 +43,7 @@
   <div th:unless="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
     <div class="card-header d-flex justify-content-between">
       <span><i class="fas fa-calendar-alt me-2"></i>
-        Thời khóa biểu - <span th:text="${giangVien?.hoTenVaHocVi()}"></span> - <span th:text="${hocKyChon}"></span>
+        Thời khóa biểu - <span th:text="${giangVien != null ?giangVien.hoTenVaHocVi : '---'}"></span> - <span th:text="${hocKyChon}"></span>
       </span>
       <span class="badge bg-primary" th:text="${#lists.size(thoiKhoaBieus)}+' buổi'"></span>
     </div>
@@ -69,7 +69,9 @@
                                                #lists.indexOf(thoiKhoaBieus, tkb) % 6 == 3 ? '#ede9fe' :
                                                #lists.indexOf(thoiKhoaBieus, tkb) % 6 == 4 ? '#fee2e2' : '#e0f2fe'}+
                                           ;border-radius:6px;margin:2px'">
-                    <span th:text="${tkb.lopHocPhan.monHoc.tenMon}" class="d-block" style="font-size:.75rem"></span>
+                    <span th:text="${tkb.lopHocPhan != null && tkb.lopHocPhan.monHoc != null
+    ? tkb.lopHocPhan.monHoc.tenMon : '---'}"
+                          class="d-block" style="font-size:.75rem"></span></span>
                     <span class="text-muted" style="font-size:.68rem"
                           th:text="'P.'+${tkb.phongHoc}+' | T.'+${tkb.tietBatDau}+'-'+(${tkb.tietBatDau+tkb.soTiet-1})"></span>
                   </div>
@@ -90,7 +92,9 @@
         <thead><tr><th>Môn học</th><th>Thứ</th><th>Tiết</th><th>Phòng</th><th>Từ ngày</th><th>Đến ngày</th><th></th></tr></thead>
         <tbody>
           <tr th:each="tkb : ${thoiKhoaBieus}">
-            <td class="fw-semibold small" th:text="${tkb.lopHocPhan.monHoc.tenMon}"></td>
+              <td class="fw-semibold small"
+                  th:text="${tkb.lopHocPhan != null && tkb.lopHocPhan.monHoc != null
+    ? tkb.lopHocPhan.monHoc.tenMon : '---'}"></td>
             <td><span class="badge bg-primary" th:text="${tkb.tenThu}"></span></td>
             <td th:text="'Tiết '+${tkb.tietBatDau}+' → '+${tkb.tietBatDau+tkb.soTiet-1}"></td>
             <td><span class="badge bg-light text-dark border" th:text="${tkb.phongHoc}"></span></td>

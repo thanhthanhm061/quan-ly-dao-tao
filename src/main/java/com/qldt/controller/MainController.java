@@ -12,6 +12,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
+import java.util.List;
 
 // =====================================================================
 // AUTH CONTROLLER
@@ -90,8 +91,8 @@ class SinhVienController {
 
         model.addAttribute("sinhVien",  sv);
         model.addAttribute("lops", lopService.findAll());
-        model.addAttribute("gioiTinhs", GioiTinh.values());
-        model.addAttribute("trangThais", TrangThaiSV.values());
+        model.addAttribute("gioiTinhs", List.of(GioiTinh.values()));
+        model.addAttribute("trangThais", List.of(TrangThaiSV.values()));
         return "sinhvien/form";
     }
 
@@ -104,8 +105,8 @@ class SinhVienController {
         }
         if (result.hasErrors()) {
             model.addAttribute("lops", lopService.findAll());
-            model.addAttribute("gioiTinhs", GioiTinh.values());
-            model.addAttribute("trangThais", TrangThaiSV.values());
+            model.addAttribute("gioiTinhs", List.of(GioiTinh.values()));
+            model.addAttribute("trangThais", List.of(TrangThaiSV.values()));
             return "sinhvien/form";
         }
         try {
@@ -127,8 +128,8 @@ class SinhVienController {
         }
         model.addAttribute("sinhVien", sv);
         model.addAttribute("lops", lopService.findAll());
-        model.addAttribute("gioiTinhs", GioiTinh.values());
-        model.addAttribute("trangThais", TrangThaiSV.values());
+        model.addAttribute("gioiTinhs", List.of(GioiTinh.values()));
+        model.addAttribute("trangThais", List.of(TrangThaiSV.values()));
         return "sinhvien/form";
     }
 
@@ -137,9 +138,12 @@ class SinhVienController {
                       BindingResult result, Model model, RedirectAttributes ra) {
         if (result.hasErrors()) {
             model.addAttribute("lops", lopService.findAll());
-            model.addAttribute("gioiTinhs", GioiTinh.values());
-            model.addAttribute("trangThais", TrangThaiSV.values());
+            model.addAttribute("gioiTinhs", List.of(GioiTinh.values()));
+            model.addAttribute("trangThais", List.of(TrangThaiSV.values()));
             return "sinhvien/form";
+        }
+        if (sv.getLop() == null) {
+            sv.setLop(new Lop());
         }
         try {
             sv.setId(id);

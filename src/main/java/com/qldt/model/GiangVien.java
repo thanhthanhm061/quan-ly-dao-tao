@@ -43,6 +43,7 @@ public class GiangVien {
     private NguoiDung nguoiDung;
 
     @OneToMany(mappedBy = "giangVien")
+    @ToString.Exclude
     private List<LopHocPhan> lopHocPhans;
 
     public String getHoTenVaHocVi() {

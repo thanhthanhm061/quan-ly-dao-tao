@@ -28,9 +28,12 @@
         </div>
         <div class="col-md-6">
           <label class="form-label fw-semibold">Giới tính</label>
-          <select class="form-select" th:field="*{gioiTinh}">
-            <option th:each="gt:${gioiTinhs}" th:value="${gt}" th:text="${gt}"></option>
-          </select>
+            <select class="form-select" th:field="*{gioiTinh}">
+                <option value="">-- Chọn giới tính --</option>
+<!--                <option th:each="gt : ${T(com.qldt.model.enums.GioiTinh).values()}"-->
+<!--                        th:value="${gt}"-->
+<!--                        th:text="${gt}">-->
+            </select>
         </div>
         <div class="col-md-6">
           <label class="form-label fw-semibold">Email</label>
@@ -43,16 +46,23 @@
         </div>
         <div class="col-md-6">
           <label class="form-label fw-semibold">Lớp</label>
-          <select class="form-select" th:field="*{lop.id}">
-            <option value="">-- Chọn lớp --</option>
-            <option th:each="l:${lops}" th:value="${l.id}" th:text="${l}"></option>
-          </select>
+            <select class="form-select" th:field="*{lop.id}">
+                <option value="">-- Chọn lớp --</option>
+                <option th:each="l : ${lops}"
+                        th:value="${l.id}"
+                        th:text="${l.tenLop}">
+                </option>
+            </select>
         </div>
         <div class="col-md-6">
           <label class="form-label fw-semibold">Trạng thái</label>
-          <select class="form-select" th:field="*{trangThai}">
-            <option th:each="tt:${trangThais}" th:value="${tt}" th:text="${tt}"></option>
-          </select>
+            <select class="form-select" th:field="*{trangThai}">
+                <option value="">-- Chọn trạng thái --</option>
+                <option th:each="tt : ${T(com.qldt.model.enums.TrangThaiSV).values()}"
+                        th:value="${tt}"
+                        th:text="${tt}">
+                </option>
+            </select>
         </div>
         <div class="col-12">
           <label class="form-label fw-semibold">Địa chỉ</label>

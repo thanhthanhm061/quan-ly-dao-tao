@@ -163,6 +163,11 @@ class LopHocPhanController {
 
     @GetMapping("/them")
     public String themForm(Model model) {
+        LopHocPhan lhp = new LopHocPhan();
+
+        lhp.setMonHoc(new MonHoc());
+        lhp.setGiangVien(new GiangVien());
+
         model.addAttribute("lopHocPhan", new LopHocPhan());
         model.addAttribute("monHocs", monService.findAll());
         model.addAttribute("giangViens", gvService.findAll());
@@ -174,6 +179,9 @@ class LopHocPhanController {
     public String them(@Valid @ModelAttribute LopHocPhan lhp, BindingResult result,
                        Model model, RedirectAttributes ra) {
         if (result.hasErrors()) {
+            if (lhp.getMonHoc() == null) lhp.setMonHoc(new MonHoc());
+            if (lhp.getGiangVien() == null) lhp.setGiangVien(new GiangVien());
+
             model.addAttribute("monHocs", monService.findAll());
             model.addAttribute("giangViens", gvService.findAll());
             model.addAttribute("trangThais", TrangThaiLHP.values());
@@ -186,6 +194,7 @@ class LopHocPhanController {
 
     @GetMapping("/sua/{id}")
     public String suaForm(@PathVariable Long id, Model model) {
+
         model.addAttribute("lopHocPhan", lhpService.findById(id).orElseThrow());
         model.addAttribute("monHocs", monService.findAll());
         model.addAttribute("giangViens", gvService.findAll());
@@ -197,6 +206,9 @@ class LopHocPhanController {
     public String sua(@PathVariable Long id, @Valid @ModelAttribute LopHocPhan lhp,
                       BindingResult result, Model model, RedirectAttributes ra) {
         if (result.hasErrors()) {
+            if (lhp.getMonHoc() == null) lhp.setMonHoc(new MonHoc());
+            if (lhp.getGiangVien() == null) lhp.setGiangVien(new GiangVien());
+
             model.addAttribute("monHocs", monService.findAll());
             model.addAttribute("giangViens", gvService.findAll());
             model.addAttribute("trangThais", TrangThaiLHP.values());

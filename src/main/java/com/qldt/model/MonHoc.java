@@ -9,6 +9,7 @@ import java.util.List;
 @Entity
 @Table(name = "mon_hoc")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+
 public class MonHoc {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,5 +40,6 @@ public class MonHoc {
     private Khoa khoa;
 
     @OneToMany(mappedBy = "monHoc")
+    @ToString.Exclude
     private List<LopHocPhan> lopHocPhans;
 }

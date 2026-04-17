@@ -13,4 +13,5 @@ public interface ThoiKhoaBieuRepository extends JpaRepository<ThoiKhoaBieu, Long
 
     @Query("SELECT t FROM ThoiKhoaBieu t JOIN t.lopHocPhan l JOIN l.dangKys dk WHERE dk.sinhVien.id = :svId AND l.hocKy = :hocKy ORDER BY t.thuTrongTuan, t.tietBatDau")
     List<ThoiKhoaBieu> findBySinhVienAndHocKy(@Param("svId") Long svId, @Param("hocKy") String hocKy);
+
 }
