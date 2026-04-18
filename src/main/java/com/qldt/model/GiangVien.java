@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "giang_vien")
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
+@NoArgsConstructor @AllArgsConstructor @Builder
 public class GiangVien {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +40,88 @@ public class GiangVien {
 
     @OneToOne
     @JoinColumn(name = "nguoi_dung_id", unique = true)
+    @ToString.Exclude
     private NguoiDung nguoiDung;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getMaGv() {
+        return maGv;
+    }
+
+    public void setMaGv(String maGv) {
+        this.maGv = maGv;
+    }
+
+    public String getHoTen() {
+        return hoTen;
+    }
+
+    public void setHoTen(String hoTen) {
+        this.hoTen = hoTen;
+    }
+
+    public String getHocVi() {
+        return hocVi;
+    }
+
+    public void setHocVi(String hocVi) {
+        this.hocVi = hocVi;
+    }
+
+    public String getChuyenNganh() {
+        return chuyenNganh;
+    }
+
+    public void setChuyenNganh(String chuyenNganh) {
+        this.chuyenNganh = chuyenNganh;
+    }
+
+    public String getSoDienThoai() {
+        return soDienThoai;
+    }
+
+    public void setSoDienThoai(String soDienThoai) {
+        this.soDienThoai = soDienThoai;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Khoa getKhoa() {
+        return khoa;
+    }
+
+    public void setKhoa(Khoa khoa) {
+        this.khoa = khoa;
+    }
+
+    public NguoiDung getNguoiDung() {
+        return nguoiDung;
+    }
+
+    public void setNguoiDung(NguoiDung nguoiDung) {
+        this.nguoiDung = nguoiDung;
+    }
+
+    public List<LopHocPhan> getLopHocPhans() {
+        return lopHocPhans;
+    }
+
+    public void setLopHocPhans(List<LopHocPhan> lopHocPhans) {
+        this.lopHocPhans = lopHocPhans;
+    }
 
     @OneToMany(mappedBy = "giangVien")
     @ToString.Exclude

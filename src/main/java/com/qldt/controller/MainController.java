@@ -12,6 +12,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
+import java.util.*;
+
+import java.util.Arrays;
 import java.util.List;
 
 // =====================================================================
@@ -71,80 +74,101 @@ class AdminController {
 @PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 class SinhVienController {
+
     private final SinhVienService svService;
     private final LopService lopService;
-    private final KhoaService khoaService;
 
+    // ===================== LOAD COMMON DATA =====================
+    private void addFormData(Model model) {
+
+        model.addAttribute("lops",
+                Optional.ofNullable(lopService.findAll())
+                        .orElse(Collections.emptyList()));
+
+        model.addAttribute("gioiTinhs", GioiTinh.values());
+
+        model.addAttribute("trangThais", TrangThaiSV.values());
+    }
+    // ===================== LIST =====================
     @GetMapping
     public String list(@RequestParam(required = false) String search, Model model) {
-        model.addAttribute("sinhViens", search != null ? svService.search(search) : svService.findAll());
+        model.addAttribute("sinhViens",
+                search != null ? svService.search(search) : svService.findAll());
         model.addAttribute("search", search);
         model.addAttribute("tongSo", svService.count());
         return "sinhvien/list";
     }
 
+    // ===================== FORM ADD =====================
     @GetMapping("/them")
     public String themForm(Model model) {
-
         SinhVien sv = new SinhVien();
         sv.setLop(new Lop());
 
-        model.addAttribute("sinhVien",  sv);
-        model.addAttribute("lops", lopService.findAll());
-        model.addAttribute("gioiTinhs", List.of(GioiTinh.values()));
-        model.addAttribute("trangThais", List.of(TrangThaiSV.values()));
+        model.addAttribute("sinhVien", sv);
+        addFormData(model);
         return "sinhvien/form";
     }
 
+    // ===================== SAVE ADD =====================
     @PostMapping("/them")
-    public String them(@Valid @ModelAttribute SinhVien sv, BindingResult result,
-                       Model model, RedirectAttributes ra) {
+    public String them(@Valid @ModelAttribute SinhVien sv,
+                       BindingResult result,
+                       Model model,
+                       RedirectAttributes ra) {
 
         if (sv.getLop() == null) {
             sv.setLop(new Lop());
         }
+
         if (result.hasErrors()) {
-            model.addAttribute("lops", lopService.findAll());
-            model.addAttribute("gioiTinhs", List.of(GioiTinh.values()));
-            model.addAttribute("trangThais", List.of(TrangThaiSV.values()));
+            addFormData(model);
             return "sinhvien/form";
         }
+
         try {
             svService.save(sv);
-            ra.addFlashAttribute("success", "Thêm sinh viên '" + sv.getHoTen() + "' thành công!");
+            ra.addFlashAttribute("success", "Thêm sinh viên thành công!");
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
+
         return "redirect:/admin/sinh-vien";
     }
 
+    // ===================== FORM EDIT =====================
     @GetMapping("/sua/{id}")
     public String suaForm(@PathVariable Long id, Model model) {
+
         SinhVien sv = svService.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sinh viên"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sinh viên"));
 
         if (sv.getLop() == null) {
             sv.setLop(new Lop());
         }
+
         model.addAttribute("sinhVien", sv);
-        model.addAttribute("lops", lopService.findAll());
-        model.addAttribute("gioiTinhs", List.of(GioiTinh.values()));
-        model.addAttribute("trangThais", List.of(TrangThaiSV.values()));
+        addFormData(model);
         return "sinhvien/form";
     }
 
+    // ===================== UPDATE =====================
     @PostMapping("/sua/{id}")
-    public String sua(@PathVariable Long id, @Valid @ModelAttribute SinhVien sv,
-                      BindingResult result, Model model, RedirectAttributes ra) {
-        if (result.hasErrors()) {
-            model.addAttribute("lops", lopService.findAll());
-            model.addAttribute("gioiTinhs", List.of(GioiTinh.values()));
-            model.addAttribute("trangThais", List.of(TrangThaiSV.values()));
-            return "sinhvien/form";
-        }
+    public String sua(@PathVariable Long id,
+                      @Valid @ModelAttribute SinhVien sv,
+                      BindingResult result,
+                      Model model,
+                      RedirectAttributes ra) {
+
         if (sv.getLop() == null) {
             sv.setLop(new Lop());
         }
+
+        if (result.hasErrors()) {
+            addFormData(model);
+            return "sinhvien/form";
+        }
+
         try {
             sv.setId(id);
             svService.save(sv);
@@ -152,14 +176,16 @@ class SinhVienController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
+
         return "redirect:/admin/sinh-vien";
     }
 
+    // ===================== DELETE =====================
     @PostMapping("/xoa/{id}")
     public String xoa(@PathVariable Long id, RedirectAttributes ra) {
         try {
             svService.delete(id);
-            ra.addFlashAttribute("success", "Đã xóa sinh viên!");
+            ra.addFlashAttribute("success", "Xóa thành công!");
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }

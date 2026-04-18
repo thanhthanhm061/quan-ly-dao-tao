@@ -30,9 +30,11 @@
           <label class="form-label fw-semibold">Giới tính</label>
             <select class="form-select" th:field="*{gioiTinh}">
                 <option value="">-- Chọn giới tính --</option>
-<!--                <option th:each="gt : ${T(com.qldt.model.enums.GioiTinh).values()}"-->
-<!--                        th:value="${gt}"-->
-<!--                        th:text="${gt}">-->
+
+                <option th:each="gt : ${gioiTinhs != null ? gioiTinhs : T(com.qldt.model.enums.GioiTinh).values()}"
+                        th:value="${gt}"
+                        th:text="${gt}">
+                </option>
             </select>
         </div>
         <div class="col-md-6">

@@ -40,9 +40,11 @@ public class NguoiDung {
     private LocalDateTime ngayTao;
 
     @OneToOne(mappedBy = "nguoiDung", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private SinhVien sinhVien;
 
     @OneToOne(mappedBy = "nguoiDung", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private GiangVien giangVien;
 
     @PrePersist

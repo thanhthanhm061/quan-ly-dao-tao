@@ -24,7 +24,7 @@
         </div>
         <div class="col-12">
           <label class="form-label fw-semibold">Môn học <span class="text-danger">*</span></label>
-          <select class="form-select" th:field="*{monHoc.id}">
+            <select class="form-select" th:field="*{monHoc.id}" th:if="${lopHocPhan.monHoc != null}">
             <option value="">-- Chọn môn học --</option>
             <option th:each="m:${monHocs}" th:value="${m.id}"
                     th:text="${m.maMon+' - '+m.tenMon+' ('+m.soTinChi+' TC)'}"></option>
@@ -33,7 +33,7 @@
         </div>
         <div class="col-12">
           <label class="form-label fw-semibold">Giảng viên <span class="text-danger">*</span></label>
-          <select class="form-select" th:field="*{giangVien.id}">
+            <select class="form-select" th:field="*{giangVien.id}" th:if="${lopHocPhan.giangVien != null}">
             <option value="">-- Chọn giảng viên --</option>
             <option th:each="gv:${giangViens}" th:value="${gv.id}"
                     th:text="${gv.maGv+' - '+gv.hoTen+(gv.hocVi!=null?' ('+gv.hocVi+')'  :'')}"></option>

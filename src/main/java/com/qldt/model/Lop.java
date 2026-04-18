@@ -2,6 +2,8 @@ package com.qldt.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -24,8 +26,8 @@ public class Lop {
     @JoinColumn(name = "khoa_id")
     private Khoa khoa;
 
-    @OneToMany(mappedBy = "lop")
-    private List<SinhVien> sinhViens;
+    @OneToMany(mappedBy = "lop", fetch = FetchType.LAZY)
+    private List<SinhVien> sinhViens = new ArrayList<>();
 
     @Override
     public String toString() { return maLop + " - " + tenLop; }

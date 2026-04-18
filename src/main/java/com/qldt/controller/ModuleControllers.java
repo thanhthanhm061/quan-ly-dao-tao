@@ -168,7 +168,8 @@ class LopHocPhanController {
         lhp.setMonHoc(new MonHoc());
         lhp.setGiangVien(new GiangVien());
 
-        model.addAttribute("lopHocPhan", new LopHocPhan());
+//        model.addAttribute("lopHocPhan", new LopHocPhan());
+        model.addAttribute("lopHocPhan", lhp);
         model.addAttribute("monHocs", monService.findAll());
         model.addAttribute("giangViens", gvService.findAll());
         model.addAttribute("trangThais", TrangThaiLHP.values());
@@ -192,13 +193,35 @@ class LopHocPhanController {
         return "redirect:/admin/lop-hoc-phan";
     }
 
+//    @GetMapping("/sua/{id}")
+//    public String suaForm(@PathVariable Long id, Model model) {
+//
+//
+//        model.addAttribute("lopHocPhan", lhpService.findById(id).orElseThrow());
+//        model.addAttribute("monHocs", monService.findAll());
+//        model.addAttribute("giangViens", gvService.findAll());
+//        model.addAttribute("trangThais", TrangThaiLHP.values());
+//        return "lophocphan/form";
+//    }
     @GetMapping("/sua/{id}")
     public String suaForm(@PathVariable Long id, Model model) {
 
-        model.addAttribute("lopHocPhan", lhpService.findById(id).orElseThrow());
+        LopHocPhan lhp = lhpService.findById(id).orElseThrow();
+
+        System.out.println("MonHoc = " + lhp.getMonHoc());
+        System.out.println("GiangVien = " + lhp.getGiangVien());
+        if (lhp.getMonHoc() == null) {
+            lhp.setMonHoc(new MonHoc());
+        }
+        if (lhp.getGiangVien() == null) {
+            lhp.setGiangVien(new GiangVien());
+        }
+
+        model.addAttribute("lopHocPhan", lhp);
         model.addAttribute("monHocs", monService.findAll());
         model.addAttribute("giangViens", gvService.findAll());
         model.addAttribute("trangThais", TrangThaiLHP.values());
+
         return "lophocphan/form";
     }
 
