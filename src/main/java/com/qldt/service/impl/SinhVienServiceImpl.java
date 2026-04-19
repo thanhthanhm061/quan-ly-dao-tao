@@ -55,24 +55,32 @@ public class SinhVienServiceImpl implements SinhVienService {
 
     @Override
     public SinhVien save(SinhVien sv) {
-        // Nếu là sinh viên mới (chưa có ID) → tạo tài khoản tự động
         if (sv.getId() == null) {
+            // Kiểm tra mã SV trùng
             if (sinhVienRepo.existsByMaSv(sv.getMaSv())) {
                 throw new IllegalArgumentException("Mã sinh viên '" + sv.getMaSv() + "' đã tồn tại");
             }
-            // Tạo tài khoản: username = maSv, mật khẩu = Sv@maSv
-            String username = sv.getMaSv().toLowerCase();
-            String password = "Sv@" + sv.getMaSv();
-            NguoiDung nd = NguoiDung.builder()
-                .username(username)
-                .matKhau(passwordEncoder.encode(password))
-                .hoTen(sv.getHoTen())
-                .email(sv.getEmail())
-                .vaiTro(VaiTro.SINH_VIEN)
-                .kichHoat(true)
-                .build();
-            nd = nguoiDungRepo.save(nd);
-            sv.setNguoiDung(nd);
+
+            // Chỉ tạo tài khoản nếu chưa có
+            if (sv.getNguoiDung() == null) {
+                String username = sv.getMaSv().toLowerCase();
+
+                // Nếu username đã tồn tại thì dùng lại, không tạo mới
+                NguoiDung nd = nguoiDungRepo.findByUsername(username)
+                        .orElseGet(() -> {
+                            NguoiDung newNd = NguoiDung.builder()
+                                    .username(username)
+                                    .matKhau(passwordEncoder.encode("Sv@" + sv.getMaSv()))
+                                    .hoTen(sv.getHoTen())
+                                    .email(sv.getEmail())
+                                    .vaiTro(VaiTro.SINH_VIEN)
+                                    .kichHoat(true)
+                                    .build();
+                            return nguoiDungRepo.save(newNd);
+                        });
+
+                sv.setNguoiDung(nd);
+            }
         }
         return sinhVienRepo.save(sv);
     }
@@ -80,10 +88,10 @@ public class SinhVienServiceImpl implements SinhVienService {
     @Override
     public void delete(Long id) {
         SinhVien sv = sinhVienRepo.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sinh viên"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sinh viên"));
         if (sv.getDangKys() != null && !sv.getDangKys().isEmpty()) {
-            throw new IllegalStateException("Không thể xóa! Sinh viên đang có " +
-                sv.getDangKys().size() + " đăng ký học phần");
+            throw new IllegalStateException("Không thể xóa! Sinh viên đang có "
+                    + sv.getDangKys().size() + " đăng ký học phần");
         }
         sinhVienRepo.deleteById(id);
         if (sv.getNguoiDung() != null) {

@@ -12,7 +12,7 @@ public class LopServiceImpl implements LopService {
     private final LopRepository repo;
 
     @Override @Transactional(readOnly = true)
-    public List<Lop> findAll() { return repo.findAll(); }
+    public List<Lop> findAll() { return repo.findAllWithSinhViens(); }
 
     @Override @Transactional(readOnly = true)
     public Optional<Lop> findById(Long id) { return repo.findById(id); }

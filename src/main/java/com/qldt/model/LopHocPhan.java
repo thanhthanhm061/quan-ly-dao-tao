@@ -4,6 +4,7 @@ import com.qldt.model.enums.TrangThaiLHP;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -44,10 +45,10 @@ public class LopHocPhan {
     private TrangThaiLHP trangThai = TrangThaiLHP.MO;
 
     @OneToMany(mappedBy = "lopHocPhan", cascade = CascadeType.ALL)
-    private List<DangKy> dangKys;
+    private List<DangKy> dangKys = new ArrayList<>();
 
     @OneToMany(mappedBy = "lopHocPhan", cascade = CascadeType.ALL)
-    private List<ThoiKhoaBieu> thoiKhoaBieus;
+    private List<ThoiKhoaBieu> thoiKhoaBieus = new ArrayList<>();
 
     public boolean isConCho() { return siSoHienTai < siSoMax; }
     public int getSoChoConLai() { return siSoMax - siSoHienTai; }

@@ -35,23 +35,41 @@ public class GiangVienServiceImpl implements GiangVienService {
         if (gv.getId() == null) {
             if (repo.existsByMaGv(gv.getMaGv()))
                 throw new IllegalArgumentException("Mã giảng viên '" + gv.getMaGv() + "' đã tồn tại");
-            NguoiDung nd = NguoiDung.builder()
-                .username(gv.getMaGv().toLowerCase())
-                .matKhau(passwordEncoder.encode("Gv@" + gv.getMaGv()))
-                .hoTen(gv.getHoTen()).email(gv.getEmail())
-                .vaiTro(VaiTro.GIANG_VIEN).kichHoat(true).build();
-            gv.setNguoiDung(nguoiDungRepo.save(nd));
+
+            // Chỉ tạo tài khoản nếu chưa có
+            if (gv.getNguoiDung() == null) {
+                String username = gv.getMaGv().toLowerCase();
+
+                // Dùng lại nếu username đã tồn tại, tránh duplicate
+                NguoiDung nd = nguoiDungRepo.findByUsername(username)
+                        .orElseGet(() -> {
+                            NguoiDung newNd = NguoiDung.builder()
+                                    .username(username)
+                                    .matKhau(passwordEncoder.encode("Gv@" + gv.getMaGv()))
+                                    .hoTen(gv.getHoTen())
+                                    .email(gv.getEmail())
+                                    .vaiTro(VaiTro.GIANG_VIEN)
+                                    .kichHoat(true)
+                                    .build();
+                            return nguoiDungRepo.save(newNd);
+                        });
+
+                gv.setNguoiDung(nd);
+            }
         }
         return repo.save(gv);
     }
 
     @Override
     public void delete(Long id) {
-        GiangVien gv = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giảng viên"));
+        GiangVien gv = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giảng viên"));
         if (gv.getLopHocPhans() != null && !gv.getLopHocPhans().isEmpty())
-            throw new IllegalStateException("Không thể xóa! Giảng viên đang phụ trách " + gv.getLopHocPhans().size() + " lớp học phần");
+            throw new IllegalStateException("Không thể xóa! Giảng viên đang phụ trách "
+                    + gv.getLopHocPhans().size() + " lớp học phần");
         repo.deleteById(id);
-        if (gv.getNguoiDung() != null) nguoiDungRepo.deleteById(gv.getNguoiDung().getId());
+        if (gv.getNguoiDung() != null)
+            nguoiDungRepo.deleteById(gv.getNguoiDung().getId());
     }
 
     @Override @Transactional(readOnly = true)

@@ -19,7 +19,7 @@
           <td class="fw-semibold" th:text="${lop.tenLop}"></td>
           <td th:text="${lop.nienKhoa}"></td>
           <td class="small" th:text="${lop.khoa  != null ? lop.khoa.tenKhoa : '-'}"></td>
-<!--          <td><span class="badge bg-light text-dark border" th:text="${#lists.size(lop.sinhViens)+' SV' }"></span></td>-->
+          <td><span class="badge bg-light text-dark border" th:text="${lop.sinhViens != null ? #lists.size(lop.sinhViens) : 0}+' SV'"></span></td>
           <td>
             <a th:href="@{/admin/lop/sua/{id}(id=${lop.id})}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></a>
             <form th:action="@{/admin/lop/xoa/{id}(id=${lop.id})}" method="post" class="d-inline"

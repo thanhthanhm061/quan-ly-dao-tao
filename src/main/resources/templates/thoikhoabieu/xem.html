@@ -2,121 +2,173 @@
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::content}, 'Thời khóa biểu')}">
 <body><th:block th:fragment="content">
 
-<!-- Filter -->
-<div class="card mb-4">
-  <div class="card-body">
-    <form method="get" class="row g-3 align-items-end">
-      <div class="col-md-4">
-        <label class="form-label fw-semibold">Giảng viên</label>
-        <select name="giangVienId" class="form-select">
-          <option value="">-- Chọn giảng viên --</option>
-          <option th:each="gv:${giangViens}" th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
-                  th:selected="${gv.id == giangVienIdChon}"></option>
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label fw-semibold">Học kỳ</label>
-        <select name="hocKy" class="form-select">
-          <option value="">-- Chọn học kỳ --</option>
-          <option th:each="hk:${danhSachHocKy}" th:value="${hk}" th:text="${hk}"
-                  th:selected="${hk==hocKyChon}"></option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">
-          <i class="fas fa-search me-1"></i>Xem TKB</button>
-      </div>
-      <div class="col-md-3 text-end">
-        <a th:href="@{/tkb/them}" class="btn btn-outline-success">
-          <i class="fas fa-plus me-1"></i>Thêm lịch học</a>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- TKB Grid -->
-<div th:if="${thoiKhoaBieus != null}">
-  <div th:if="${#lists.isEmpty(thoiKhoaBieus)}" class="alert alert-info">
-    <i class="fas fa-info-circle me-2"></i>Không có thời khóa biểu trong học kỳ này
-  </div>
-
-  <div th:unless="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
-    <div class="card-header d-flex justify-content-between">
-      <span><i class="fas fa-calendar-alt me-2"></i>
-        Thời khóa biểu - <span th:text="${giangVien != null ?giangVien.hoTenVaHocVi : '---'}"></span> - <span th:text="${hocKyChon}"></span>
-      </span>
-      <span class="badge bg-primary" th:text="${#lists.size(thoiKhoaBieus)}+' buổi'"></span>
+    <!-- Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Giảng viên</label>
+                    <select name="giangVienId" class="form-select">
+                        <option value="">-- Chọn giảng viên --</option>
+                        <option th:each="gv:${giangViens}" th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
+                                th:selected="${gv.id == giangVienIdChon}"></option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Học kỳ</label>
+                    <select name="hocKy" class="form-select">
+                        <option value="">-- Chọn học kỳ --</option>
+                        <option th:each="hk:${danhSachHocKy}" th:value="${hk}" th:text="${hk}"
+                                th:selected="${hk==hocKyChon}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-1"></i>Xem TKB
+                    </button>
+                </div>
+                <div class="col-md-3 text-end">
+                    <a th:href="@{/tkb/them}" class="btn btn-outline-success">
+                        <i class="fas fa-plus me-1"></i>Thêm lịch học
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-bordered mb-0 text-center align-middle" style="min-width:800px">
-          <thead style="background:#1e3a5f;color:white">
-            <tr>
-              <th style="width:80px">Tiết</th>
-              <th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="tiet : ${#numbers.sequence(1, 12)}">
-              <td class="fw-semibold small" style="background:#f8fafc" th:text="'Tiết '+${tiet}"></td>
-              <td th:each="thu : ${#numbers.sequence(2, 7)}" style="height:52px;padding:0">
-                <th:block th:each="tkb : ${thoiKhoaBieus}">
-                  <div th:if="${tkb.thuTrongTuan == thu and tkb.tietBatDau == tiet}"
-                       class="h-100 d-flex flex-column justify-content-center p-1 small fw-semibold"
-                       th:style="'background:'+${#lists.indexOf(thoiKhoaBieus, tkb) % 6 == 0 ? '#dbeafe' :
-                                               #lists.indexOf(thoiKhoaBieus, tkb) % 6 == 1 ? '#d1fae5' :
-                                               #lists.indexOf(thoiKhoaBieus, tkb) % 6 == 2 ? '#fef3c7' :
-                                               #lists.indexOf(thoiKhoaBieus, tkb) % 6 == 3 ? '#ede9fe' :
-                                               #lists.indexOf(thoiKhoaBieus, tkb) % 6 == 4 ? '#fee2e2' : '#e0f2fe'}+
-                                          ;border-radius:6px;margin:2px'">
-                    <span th:text="${tkb.lopHocPhan != null && tkb.lopHocPhan.monHoc != null
-    ? tkb.lopHocPhan.monHoc.tenMon : '---'}"
-                          class="d-block" style="font-size:.75rem"></span></span>
-                    <span class="text-muted" style="font-size:.68rem"
-                          th:text="'P.'+${tkb.phongHoc}+' | T.'+${tkb.tietBatDau}+'-'+(${tkb.tietBatDau+tkb.soTiet-1})"></span>
-                  </div>
+
+    <!-- TKB Grid -->
+    <div th:if="${thoiKhoaBieus != null}">
+        <div th:if="${#lists.isEmpty(thoiKhoaBieus)}" class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>Không có thời khóa biểu trong học kỳ này
+        </div>
+
+        <div th:unless="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Thời khóa biểu -
+                    <span th:text="${giangVien != null ? giangVien.hoTenVaHocVi : '---'}"></span>
+                    - <span th:text="${hocKyChon}"></span>
+                </span>
+                <span class="badge bg-primary" th:text="${#lists.size(thoiKhoaBieus)}+' buổi'"></span>
+            </div>
+
+            <!-- Color legend -->
+            <div class="px-3 pt-2 pb-1 d-flex gap-2 flex-wrap" style="border-bottom:1px solid #e5e7eb">
+                <th:block th:each="tkb,i : ${thoiKhoaBieus}">
+                    <span class="badge rounded-pill px-2 py-1 small"
+                          th:style="'background:' + ${i.index % 6 == 0 ? '#dbeafe;color:#1e40af' :
+                                     i.index % 6 == 1 ? '#d1fae5;color:#065f46' :
+                                     i.index % 6 == 2 ? '#fef3c7;color:#92400e' :
+                                     i.index % 6 == 3 ? '#ede9fe;color:#5b21b6' :
+                                     i.index % 6 == 4 ? '#fee2e2;color:#991b1b' : '#e0f2fe;color:#0c4a6e'}"
+                          th:text="${tkb.lopHocPhan != null and tkb.lopHocPhan.monHoc != null
+                                    ? tkb.lopHocPhan.monHoc.tenMon : '---'}">
+                    </span>
                 </th:block>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+            </div>
 
-  <!-- List view -->
-  <div class="card mt-4">
-    <div class="card-header"><i class="fas fa-list me-2"></i>Chi tiết thời khóa biểu</div>
-    <div class="card-body p-0">
-      <table class="table table-hover mb-0 align-middle">
-        <thead><tr><th>Môn học</th><th>Thứ</th><th>Tiết</th><th>Phòng</th><th>Từ ngày</th><th>Đến ngày</th><th></th></tr></thead>
-        <tbody>
-          <tr th:each="tkb : ${thoiKhoaBieus}">
-              <td class="fw-semibold small"
-                  th:text="${tkb.lopHocPhan != null && tkb.lopHocPhan.monHoc != null
-    ? tkb.lopHocPhan.monHoc.tenMon : '---'}"></td>
-            <td><span class="badge bg-primary" th:text="${tkb.tenThu}"></span></td>
-            <td th:text="'Tiết '+${tkb.tietBatDau}+' → '+${tkb.tietBatDau+tkb.soTiet-1}"></td>
-            <td><span class="badge bg-light text-dark border" th:text="${tkb.phongHoc}"></span></td>
-            <td class="small" th:text="${#temporals.format(tkb.tuanBatDau,'dd/MM/yyyy')}"></td>
-            <td class="small" th:text="${#temporals.format(tkb.tuanKetThuc,'dd/MM/yyyy')}"></td>
-            <td>
-              <form th:action="@{/tkb/xoa/{id}(id=${tkb.id})}" method="post" class="d-inline"
-                    onsubmit="return confirm('Xóa lịch này?')">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
-              </form>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0 text-center" style="min-width:800px;table-layout:fixed">
+                        <colgroup>
+                            <col style="width:70px"/>
+                            <col/><col/><col/><col/><col/><col/>
+                        </colgroup>
+                        <thead style="background:#1e3a5f;color:white">
+                        <tr>
+                            <th>Tiết</th>
+                            <th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th>
+                            <th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="tiet : ${#numbers.sequence(1, 12)}" style="height:54px">
+                            <td class="fw-semibold small align-middle" style="background:#f8fafc"
+                                th:text="'Tiết '+${tiet}"></td>
+                            <td th:each="thu : ${#numbers.sequence(2, 7)}"
+                                style="padding:3px;vertical-align:middle">
+                                <th:block th:each="tkb,i : ${thoiKhoaBieus}">
+                                    <div th:if="${tkb.thuTrongTuan eq thu and tkb.tietBatDau eq tiet}"
+                                         class="h-100 d-flex flex-column justify-content-center p-1"
+                                         th:style="'background:' + ${i.index % 6 == 0 ? '#dbeafe' :
+                                                    i.index % 6 == 1 ? '#d1fae5' :
+                                                    i.index % 6 == 2 ? '#fef3c7' :
+                                                    i.index % 6 == 3 ? '#ede9fe' :
+                                                    i.index % 6 == 4 ? '#fee2e2' : '#e0f2fe'} +
+                                                   ';border-left:3px solid ' +
+                                                   ${i.index % 6 == 0 ? '#2563eb' :
+                                                    i.index % 6 == 1 ? '#059669' :
+                                                    i.index % 6 == 2 ? '#d97706' :
+                                                    i.index % 6 == 3 ? '#7c3aed' :
+                                                    i.index % 6 == 4 ? '#dc2626' : '#0284c7'} +
+                                                   ';border-radius:4px'">
+                                        <span class="d-block fw-semibold" style="font-size:.75rem;line-height:1.2"
+                                              th:text="${tkb.lopHocPhan != null and tkb.lopHocPhan.monHoc != null
+                                                        ? tkb.lopHocPhan.monHoc.tenMon : '---'}"></span>
+                                        <span class="text-muted" style="font-size:.68rem"
+                                              th:text="'P.' + ${tkb.phongHoc != null ? tkb.phongHoc : '?'} +
+                                                       ' | T.' + ${tkb.tietBatDau} + '-' +
+                                                       ${tkb.tietBatDau + tkb.soTiet - 1}"></span>
+                                    </div>
+                                </th:block>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-<div th:unless="${hocKyChon != null}" class="text-center py-5 text-muted">
-  <i class="fas fa-calendar-alt fa-4x mb-3 d-block" style="opacity:.3"></i>
-  <h5>Chọn giảng viên và học kỳ để xem thời khóa biểu</h5>
-</div>
+        <!-- List view -->
+        <div class="card mt-4">
+            <div class="card-header"><i class="fas fa-list me-2"></i>Chi tiết thời khóa biểu</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead>
+                    <tr>
+                        <th>Môn học</th><th>Thứ</th><th>Tiết</th>
+                        <th>Phòng</th><th>Từ ngày</th><th>Đến ngày</th><th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="tkb,i : ${thoiKhoaBieus}">
+                        <td>
+                            <span class="badge rounded-pill me-1"
+                                  th:style="'background:' + ${i.index % 6 == 0 ? '#dbeafe;color:#1e40af' :
+                                             i.index % 6 == 1 ? '#d1fae5;color:#065f46' :
+                                             i.index % 6 == 2 ? '#fef3c7;color:#92400e' :
+                                             i.index % 6 == 3 ? '#ede9fe;color:#5b21b6' :
+                                             i.index % 6 == 4 ? '#fee2e2;color:#991b1b' : '#e0f2fe;color:#0c4a6e'}"
+                                  th:text="${i.index + 1}">
+                            </span>
+                            <span class="fw-semibold small"
+                                  th:text="${tkb.lopHocPhan != null and tkb.lopHocPhan.monHoc != null
+                                            ? tkb.lopHocPhan.monHoc.tenMon : '---'}"></span>
+                        </td>
+                        <td><span class="badge bg-primary" th:text="${tkb.tenThu}"></span></td>
+                        <td th:text="'Tiết ' + ${tkb.tietBatDau} + ' → ' + ${tkb.tietBatDau + tkb.soTiet - 1}"></td>
+                        <td><span class="badge bg-light text-dark border"
+                                  th:text="${tkb.phongHoc != null ? tkb.phongHoc : '-'}"></span></td>
+                        <td class="small" th:text="${tkb.tuanBatDau != null ? #temporals.format(tkb.tuanBatDau, 'dd/MM/yyyy') : '-'}"></td>
+                        <td class="small" th:text="${tkb.tuanKetThuc != null ? #temporals.format(tkb.tuanKetThuc, 'dd/MM/yyyy') : '-'}"></td>
+                        <td>
+                            <form th:action="@{/tkb/xoa/{id}(id=${tkb.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Xóa lịch này?')">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${hocKyChon == null}" class="text-center py-5 text-muted">
+        <i class="fas fa-calendar-alt fa-4x mb-3 d-block" style="opacity:.3"></i>
+        <h5>Chọn giảng viên và học kỳ để xem thời khóa biểu</h5>
+    </div>
 
 </th:block></body></html>

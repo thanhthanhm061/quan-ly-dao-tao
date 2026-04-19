@@ -14,6 +14,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
+
+import java.util.Collections;
 import java.util.List;
 
 // =====================================================================
@@ -283,6 +285,7 @@ class ThoiKhoaBieuController {
     private final GiangVienRepository giangVienRepo;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'GIANG_VIEN')")
     public String xemTKB(@RequestParam(required = false) Long giangVienId,
                           @RequestParam(required = false) String hocKy,
                           Authentication auth, Model model) {
@@ -299,8 +302,9 @@ class ThoiKhoaBieuController {
     }
 
     @GetMapping("/cua-toi")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GIANG_VIEN', 'SINH_VIEN')")
     public String tkbCuaToi(@RequestParam(required = false) String hocKy,
-                             Authentication auth, Model model) {
+                            Authentication auth, Model model) {
         String username = auth.getName();
         NguoiDung nd = nguoiDungRepo.findByUsername(username).orElseThrow();
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
@@ -409,6 +413,8 @@ class SinhVienPortalController {
         model.addAttribute("sinhVien", sv);
         if (sv != null) {
             model.addAttribute("dangKys", lhpService.getDangKyCuaSinhVien(sv.getId()));
+        } else  {
+            model.addAttribute("dangKys", Collections.emptyList());
         }
         return "sinhvien/dashboard";
     }

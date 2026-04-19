@@ -43,11 +43,9 @@
             </td>
             <td>
               <span class="badge"
-                    th:classappend="${
-                                  lhp.trangThai == T(com.qldt.model.enums.TrangThaiLHP).MO ? 'bg-success' :
-                                  lhp.trangThai == T(com.qldt.model.enums.TrangThaiLHP).DONG ? 'bg-warning' :
-                                  'bg-danger'
-                                }"
+                    th:classappend="${lhp.trangThai != null && lhp.trangThai.name() == 'MO' ? 'bg-success' :
+                 lhp.trangThai != null && lhp.trangThai.name() == 'DONG' ? 'bg-warning' :
+                 'bg-danger'}"
                     th:text="${lhp.trangThai}"></span>
             </td>
             <td class="d-flex gap-1 flex-wrap">
