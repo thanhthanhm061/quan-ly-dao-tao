@@ -36,7 +36,7 @@ Mở trình duyệt: **http://localhost:8080**
 ## Tính năng
 1. **Đăng nhập + Phân quyền** - Spring Security BCrypt, 3 role tự động redirect
 2. **Quản lý Sinh viên** - CRUD + tìm kiếm + tự tạo tài khoản
-3. **Quản lý Giảng viên** - CRUD + xem lớp đang dạy + cập nhật điểm
+3. **Quản lý Giảng viên** - CRUD + xem lớp đang dạy + cập nhật điểm + tự tạo tài khoản
 4. **Quản lý Môn học** - CRUD + ràng buộc xóa
 5. **Quản lý Lớp** - CRUD
 6. **Lớp học phần** - Mở lớp, đăng ký SV, kiểm tra trùng lịch, cập nhật điểm
