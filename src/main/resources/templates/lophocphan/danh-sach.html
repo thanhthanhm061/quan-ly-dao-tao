@@ -1,124 +1,403 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::content}, 'Danh sách đăng ký lớp học phần')}">
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Danh sách đăng ký lớp học phần')}">
 <body><th:block th:fragment="content">
 
-<div class="card mb-4 border-start border-danger border-4">
-  <div class="card-body p-3">
-    <div class="row">
-      <div class="col-md-3"><span class="text-muted small">Mã LHP</span><br><strong th:text="${lopHocPhan.maLhp}"></strong></div>
-      <div class="col-md-3"><span class="text-muted small">Môn học</span><br><strong th:text="${lopHocPhan.monHoc.tenMon}"></strong></div>
-      <div class="col-md-2"><span class="text-muted small">Học kỳ</span><br><span class="badge bg-info text-dark" th:text="${lopHocPhan.hocKy}"></span></div>
-      <div class="col-md-2"><span class="text-muted small">Giảng viên</span><br><span th:text="${lopHocPhan.giangVien.hoTen}"></span></div>
-      <div class="col-md-2"><span class="text-muted small">Sĩ số</span><br>
-        <strong th:text="${lopHocPhan.siSoHienTai}"></strong><span class="text-muted" th:text="'/'+${lopHocPhan.siSoMax}"></span></div>
+    <!-- Thông tin lớp học phần -->
+    <div class="card mb-4 border-start border-danger border-4">
+        <div class="card-body p-3">
+            <div class="row align-items-center">
+                <div class="col-md-2"><span class="text-muted small">Mã LHP</span><br>
+                    <strong th:text="${lopHocPhan.maLhp}"></strong></div>
+                <div class="col-md-3"><span class="text-muted small">Môn học</span><br>
+                    <strong th:text="${lopHocPhan.monHoc.tenMon}"></strong></div>
+                <div class="col-md-2"><span class="text-muted small">Học kỳ</span><br>
+                    <span class="badge bg-info text-dark" th:text="${lopHocPhan.hocKy}"></span></div>
+                <div class="col-md-2"><span class="text-muted small">Giảng viên</span><br>
+                    <span th:text="${lopHocPhan.giangVien.hoTen}"></span></div>
+                <div class="col-md-2"><span class="text-muted small">Sĩ số</span><br>
+                    <strong th:text="${lopHocPhan.siSoHienTai}"></strong>
+                    <span class="text-muted" th:text="'/'+${lopHocPhan.siSoMax}"></span>
+                    <div class="progress mt-1" style="height:4px">
+                        <div class="progress-bar"
+                             th:classappend="${lopHocPhan.conCho ? 'bg-success' : 'bg-danger'}"
+                             th:style="'width:'+${lopHocPhan.siSoMax>0?lopHocPhan.siSoHienTai*100/lopHocPhan.siSoMax:0}+'%'">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1 text-end">
+        <span class="badge fs-6"
+              th:classappend="${lopHocPhan.trangThai.name()=='MO'?'bg-success':'bg-secondary'}"
+              th:text="${lopHocPhan.trangThai}"></span>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <span><i class="fas fa-users me-2"></i>Danh sách sinh viên đăng ký</span>
-    <span class="badge bg-danger" th:text="${#lists.size(dangKys)}+' SV'"></span>
-  </div>
-  <div class="card-body p-0">
-    <table class="table table-hover mb-0 align-middle">
-      <thead>
-        <tr>
-          <th>#</th><th>Mã SV</th><th>Họ tên</th>
-          <th class="text-center">Điểm QT</th>
-          <th class="text-center">Điểm thi</th>
-          <th class="text-center">Tổng kết</th>
-          <th class="text-center">Xếp loại</th>
-          <th class="text-center">Cập nhật</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr th:if="${#lists.isEmpty(dangKys)}">
-          <td colspan="8" class="text-center py-4 text-muted">Chưa có sinh viên đăng ký</td>
-        </tr>
-        <tr th:each="dk,i : ${dangKys}">
-          <td th:text="${i.count}"></td>
-          <td><code th:text="${dk.sinhVien.maSv}"></code></td>
-          <td class="fw-semibold" th:text="${dk.sinhVien.hoTen}"></td>
-          <td class="text-center" th:text="${dk.diemQuaTrinh != null ? #numbers.formatDecimal(dk.diemQuaTrinh,1,1) : '-'}"></td>
-          <td class="text-center" th:text="${dk.diemThi != null ? #numbers.formatDecimal(dk.diemThi,1,1) : '-'}"></td>
-          <td class="text-center fw-bold">
+    <!-- Bảng danh sách -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-users me-1"></i>
+                <span>Danh sách sinh viên đăng ký</span>
+                <span class="badge bg-danger" th:text="${#lists.size(dangKys)}+' SV'"></span>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <!-- Export Excel -->
+                <a th:href="@{/admin/lop-hoc-phan/{id}/export-excel(id=${lopHocPhan.id})}"
+                   class="btn btn-sm btn-success">
+                    <i class="fas fa-file-excel me-1"></i>Xuất Excel
+                </a>
+                <!-- Import lớp hành chính -->
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                        data-bs-target="#modalImportLop"
+                        th:data-lhp-id="${lopHocPhan.id}">
+                    <i class="fas fa-layer-group me-1"></i>Import lớp HC
+                </button>
+                <!-- Thêm SV -->
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#modalThemSV"
+                        th:data-lhp-id="${lopHocPhan.id}">
+                    <i class="fas fa-user-plus me-1"></i>Thêm sinh viên
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead>
+                <tr>
+                    <th>#</th><th>Mã SV</th><th>Họ tên</th>
+                    <th class="text-center">Điểm QT</th>
+                    <th class="text-center">Điểm thi</th>
+                    <th class="text-center">Tổng kết</th>
+                    <th class="text-center">Xếp loại</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(dangKys)}">
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="fas fa-user-slash fa-2x d-block mb-2 opacity-25"></i>
+                        Chưa có sinh viên đăng ký
+                    </td>
+                </tr>
+                <tr th:each="dk,i : ${dangKys}">
+                    <td class="text-muted" th:text="${i.count}"></td>
+                    <td><code th:text="${dk.sinhVien.maSv}"></code></td>
+                    <td class="fw-semibold" th:text="${dk.sinhVien.hoTen}"></td>
+                    <td class="text-center" th:text="${dk.diemQuaTrinh != null ? #numbers.formatDecimal(dk.diemQuaTrinh,1,1) : '-'}"></td>
+                    <td class="text-center" th:text="${dk.diemThi != null ? #numbers.formatDecimal(dk.diemThi,1,1) : '-'}"></td>
+                    <td class="text-center fw-bold">
             <span th:if="${dk.diemTongKet != null}"
                   th:classappend="${dk.dat ? 'text-success' : 'text-danger'}"
                   th:text="${#numbers.formatDecimal(dk.diemTongKet,1,2)}"></span>
-            <span th:unless="${dk.diemTongKet != null}" class="text-muted">-</span>
-          </td>
-          <td class="text-center">
+                        <span th:unless="${dk.diemTongKet != null}" class="text-muted">-</span>
+                    </td>
+                    <td class="text-center">
             <span class="badge"
                   th:classappend="${dk.dat ? 'bg-success' : dk.diemTongKet != null ? 'bg-danger' : 'bg-secondary'}"
                   th:text="${dk.xepLoai}"></span>
-          </td>
-          <td class="text-center">
-            <button class="btn btn-sm btn-outline-primary" type="button"
-                    data-bs-toggle="modal" data-bs-target="#modalDiem"
-                    th:attr="data-dkid=${dk.id}, data-lhpid=${lopHocPhan.id},
-                             data-qt=${dk.diemQuaTrinh ?: ''}, data-thi=${dk.diemThi ?: ''},
-                             data-ten=${dk.sinhVien.hoTen}">
-              <i class="fas fa-pencil-alt"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<div class="mt-3">
-  <a th:href="@{/admin/lop-hoc-phan}" class="btn btn-secondary">
-    <i class="fas fa-arrow-left me-1"></i>Quay lại</a>
-</div>
-
-<!-- Modal điểm -->
-<div class="modal fade" id="modalDiem" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow">
-      <div class="modal-header" style="background:linear-gradient(135deg,#1e3a5f,#2563eb)">
-        <h5 class="modal-title text-white"><i class="fas fa-star me-2"></i>Cập nhật điểm số</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <form th:action="@{/admin/lop-hoc-phan/cap-nhat-diem}" method="post">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-        <input type="hidden" id="dkId"  name="dkId"/>
-        <input type="hidden" id="lhpId" name="lhpId"/>
-        <div class="modal-body p-4">
-          <p class="fw-semibold mb-3">Sinh viên: <span id="tenSV" class="text-primary"></span></p>
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Điểm quá trình <span class="text-muted small">(0 - 10, hệ số 30%)</span></label>
-            <input type="number" class="form-control" id="diemQT" name="diemQT"
-                   min="0" max="10" step="0.1" placeholder="VD: 8.5"/>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Điểm thi <span class="text-muted small">(0 - 10, hệ số 70%)</span></label>
-            <input type="number" class="form-control" id="diemThi" name="diemThi"
-                   min="0" max="10" step="0.1" placeholder="VD: 7.0"/>
-          </div>
-          <div class="alert alert-light border small p-2 mb-0">
-            <i class="fas fa-calculator me-1 text-primary"></i>
-            Tổng kết = QT × 0.3 + Thi × 0.7 &nbsp;|&nbsp; Đạt khi ≥ 4.0
-          </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex gap-1 justify-content-center">
+                            <!-- Cập nhật điểm -->
+                            <button class="btn btn-sm btn-outline-primary" type="button"
+                                    data-bs-toggle="modal" data-bs-target="#modalDiem"
+                                    th:attr="data-dkid=${dk.id}, data-lhpid=${lopHocPhan.id},
+                               data-qt=${dk.diemQuaTrinh ?: ''}, data-thi=${dk.diemThi ?: ''},
+                               data-ten=${dk.sinhVien.hoTen}"
+                                    title="Cập nhật điểm">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <!-- Hủy đăng ký -->
+                            <form th:action="@{/admin/lop-hoc-phan/huy-dang-ky}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Hủy đăng ký của ' + this.dataset.ten + '?')"
+                                  th:data-ten="${dk.sinhVien.hoTen}">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <input type="hidden" name="svId" th:value="${dk.sinhVien.id}"/>
+                                <input type="hidden" name="lhpId" th:value="${lopHocPhan.id}"/>
+                                <button class="btn btn-sm btn-outline-danger" title="Hủy đăng ký" type="submit">
+                                    <i class="fas fa-user-minus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
-          <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu điểm</button>
-        </div>
-      </form>
     </div>
-  </div>
-</div>
 
-<script>
-document.getElementById('modalDiem').addEventListener('show.bs.modal', function(e) {
-  const b = e.relatedTarget;
-  document.getElementById('dkId').value    = b.dataset.dkid;
-  document.getElementById('lhpId').value   = b.dataset.lhpid;
-  document.getElementById('diemQT').value  = b.dataset.qt;
-  document.getElementById('diemThi').value = b.dataset.thi;
-  document.getElementById('tenSV').textContent = b.dataset.ten;
-});
-</script>
+    <div class="mt-3">
+        <a th:href="@{/admin/lop-hoc-phan}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Quay lại
+        </a>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         MODAL 1: Thêm sinh viên (tìm kiếm + tick chọn)
+    ════════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalThemSV" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Thêm sinh viên vào lớp học phần</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <!-- Search -->
+                    <div class="p-3 border-bottom bg-light d-flex gap-2">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="svSearchInput" class="form-control"
+                                   placeholder="Tìm theo tên hoặc mã sinh viên..." oninput="searchSV()"/>
+                        </div>
+                        <span class="badge bg-primary align-self-center text-nowrap" id="svSelectedCount">0 đã chọn</span>
+                    </div>
+                    <!-- Loading -->
+                    <div id="svLoading" class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm text-primary me-2"></div>Đang tải...
+                    </div>
+                    <!-- Bảng SV -->
+                    <div style="max-height:380px;overflow-y:auto">
+                        <table class="table table-hover align-middle mb-0" id="svTable" style="display:none;font-size:13px">
+                            <thead class="table-light sticky-top">
+                            <tr>
+                                <th style="width:40px">
+                                    <input type="checkbox" id="checkAll" onchange="toggleAll(this)"/>
+                                </th>
+                                <th>Mã SV</th>
+                                <th>Họ tên</th>
+                                <th>Lớp HC</th>
+                            </tr>
+                            </thead>
+                            <tbody id="svTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="svEmpty" class="text-center text-muted py-4" style="display:none">
+                        <i class="fas fa-inbox fa-2x d-block mb-2 opacity-25"></i>
+                        Không tìm thấy sinh viên nào chưa đăng ký
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <small class="text-muted" id="svTotalInfo"></small>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-primary" onclick="dangKySelected()" id="btnDangKy" disabled>
+                            <i class="fas fa-user-plus me-1"></i>Đăng ký đã chọn
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         MODAL 2: Import theo lớp hành chính
+    ════════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalImportLop" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-layer-group me-2"></i>Import theo lớp hành chính</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">Chọn lớp hành chính để tự động thêm tất cả sinh viên trong lớp đó vào lớp học phần này. Sinh viên đã đăng ký hoặc trùng lịch sẽ bị bỏ qua.</p>
+                    <label class="form-label fw-semibold">Chọn lớp hành chính</label>
+                    <select class="form-select" id="selectLopHC">
+                        <option value="">-- Chọn lớp --</option>
+                        <option th:each="lop : ${danhSachLop}"
+                                th:value="${lop.id}"
+                                th:text="${lop.maLop + ' - ' + lop.tenLop + ' (' + #lists.size(lop.sinhViens) + ' SV)'}">
+                        </option>
+                    </select>
+                    <div id="importResult" class="mt-3" style="display:none">
+                        <div class="alert mb-0" id="importAlert"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="importLop()" id="btnImport" disabled>
+                        <i class="fas fa-file-import me-1"></i>Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal điểm (giữ nguyên) -->
+    <div class="modal fade" id="modalDiem" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header" style="background:linear-gradient(135deg,#1e3a5f,#2563eb)">
+                    <h5 class="modal-title text-white"><i class="fas fa-star me-2"></i>Cập nhật điểm số</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/lop-hoc-phan/cap-nhat-diem}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" id="dkId"  name="dkId"/>
+                    <input type="hidden" id="lhpId" name="lhpId"/>
+                    <div class="modal-body p-4">
+                        <p class="fw-semibold mb-3">Sinh viên: <span id="tenSV" class="text-primary"></span></p>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Điểm quá trình <span class="text-muted small">(0–10, hệ số 30%)</span></label>
+                            <input type="number" class="form-control" id="diemQT" name="diemQT"
+                                   min="0" max="10" step="0.1" placeholder="VD: 8.5"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Điểm thi <span class="text-muted small">(0–10, hệ số 70%)</span></label>
+                            <input type="number" class="form-control" id="diemThi" name="diemThi"
+                                   min="0" max="10" step="0.1" placeholder="VD: 7.0"/>
+                        </div>
+                        <div class="alert alert-light border small p-2 mb-0">
+                            <i class="fas fa-calculator me-1 text-primary"></i>
+                            Tổng kết = QT × 0.3 + Thi × 0.7 &nbsp;|&nbsp; Đạt khi ≥ 4.0
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu điểm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const LHP_ID    = [[${lopHocPhan.id}]];
+        const CSRF_HDR  = [[${_csrf.headerName}]];
+        const CSRF_TOK  = [[${_csrf.token}]];
+
+        let _allSvs = [];
+
+        // ─── Modal Thêm SV ───────────────────────────────
+        document.getElementById('modalThemSV').addEventListener('show.bs.modal', function () {
+            _allSvs = [];
+            document.getElementById('svLoading').style.display = 'block';
+            document.getElementById('svTable').style.display   = 'none';
+            document.getElementById('svEmpty').style.display   = 'none';
+            document.getElementById('svSearchInput').value     = '';
+            document.getElementById('svSelectedCount').textContent = '0 đã chọn';
+            document.getElementById('btnDangKy').disabled = true;
+            document.getElementById('checkAll').checked   = false;
+
+            fetch(`/admin/lop-hoc-phan/${LHP_ID}/sinh-vien-chua-dk`)
+                .then(r => r.json())
+                .then(svs => {
+                    _allSvs = svs;
+                    document.getElementById('svLoading').style.display = 'none';
+                    renderSVTable(svs);
+                });
+        });
+
+        function renderSVTable(list) {
+            document.getElementById('svTotalInfo').textContent =
+                `Tổng ${list.length} sinh viên chưa đăng ký`;
+            if (!list.length) {
+                document.getElementById('svEmpty').style.display = 'block';
+                document.getElementById('svTable').style.display = 'none';
+                return;
+            }
+            document.getElementById('svTableBody').innerHTML = list.map(sv => `
+        <tr>
+            <td><input type="checkbox" class="sv-check" value="${sv.id}" onchange="updateSelected()"/></td>
+            <td><code style="font-size:11px">${sv.maSv}</code></td>
+            <td class="fw-semibold">${sv.hoTen}</td>
+            <td class="text-muted small">${sv.lop}</td>
+        </tr>
+    `).join('');
+            document.getElementById('svTable').style.display = 'table';
+        }
+
+        function searchSV() {
+            const q = document.getElementById('svSearchInput').value.toLowerCase();
+            renderSVTable(_allSvs.filter(sv =>
+                sv.hoTen.toLowerCase().includes(q) || sv.maSv.toLowerCase().includes(q)
+            ));
+        }
+
+        function toggleAll(cb) {
+            document.querySelectorAll('.sv-check').forEach(c => c.checked = cb.checked);
+            updateSelected();
+        }
+
+        function updateSelected() {
+            const count = document.querySelectorAll('.sv-check:checked').length;
+            document.getElementById('svSelectedCount').textContent = count + ' đã chọn';
+            document.getElementById('btnDangKy').disabled = count === 0;
+            const all = document.querySelectorAll('.sv-check').length;
+            document.getElementById('checkAll').checked = count > 0 && count === all;
+        }
+
+        function dangKySelected() {
+            const ids = [...document.querySelectorAll('.sv-check:checked')].map(c => +c.value);
+            if (!ids.length) return;
+
+            document.getElementById('btnDangKy').disabled = true;
+            document.getElementById('btnDangKy').innerHTML =
+                '<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý...';
+
+            fetch(`/admin/lop-hoc-phan/${LHP_ID}/dang-ky-nhieu`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [CSRF_HDR]: CSRF_TOK
+                },
+                body: JSON.stringify(ids)
+            })
+                .then(r => r.json())
+                .then(res => {
+                    let msg = `✅ Đăng ký thành công ${res.success} sinh viên.`;
+                    if (res.errors.length) msg += `\n⚠️ ${res.errors.length} lỗi:\n` + res.errors.join('\n');
+                    alert(msg);
+                    location.reload();
+                });
+        }
+
+        // ─── Modal Import lớp HC ────────────────────────
+        document.getElementById('selectLopHC').addEventListener('change', function () {
+            document.getElementById('btnImport').disabled = !this.value;
+            document.getElementById('importResult').style.display = 'none';
+        });
+
+        function importLop() {
+            const lopId = document.getElementById('selectLopHC').value;
+            if (!lopId) return;
+
+            document.getElementById('btnImport').disabled = true;
+            document.getElementById('btnImport').innerHTML =
+                '<span class="spinner-border spinner-border-sm me-1"></span>Đang import...';
+
+            fetch(`/admin/lop-hoc-phan/${LHP_ID}/import-lop/${lopId}`, {
+                method: 'POST',
+                headers: { [CSRF_HDR]: CSRF_TOK }
+            })
+                .then(r => r.json())
+                .then(res => {
+                    const alertEl = document.getElementById('importAlert');
+                    alertEl.className = 'alert mb-0 ' + (res.errors.length ? 'alert-warning' : 'alert-success');
+                    alertEl.innerHTML = `<strong>Kết quả import:</strong><br>
+            ✅ Thêm thành công: <strong>${res.success}</strong> / ${res.total} sinh viên<br>
+            ${res.errors.length ? '⚠️ Bỏ qua ' + res.errors.length + ' SV (đã đăng ký / trùng lịch)' : ''}`;
+                    document.getElementById('importResult').style.display = 'block';
+                    document.getElementById('btnImport').disabled = false;
+                    document.getElementById('btnImport').innerHTML =
+                        '<i class="fas fa-file-import me-1"></i>Import';
+                    if (res.success > 0) setTimeout(() => location.reload(), 2000);
+                });
+        }
+
+        // ─── Modal điểm ─────────────────────────────────
+        document.getElementById('modalDiem').addEventListener('show.bs.modal', function(e) {
+            const b = e.relatedTarget;
+            document.getElementById('dkId').value    = b.dataset.dkid;
+            document.getElementById('lhpId').value   = b.dataset.lhpid;
+            document.getElementById('diemQT').value  = b.dataset.qt;
+            document.getElementById('diemThi').value = b.dataset.thi;
+            document.getElementById('tenSV').textContent = b.dataset.ten;
+        });
+    </script>
+
 </th:block></body></html>

@@ -11,6 +11,11 @@ import java.util.*;
 public class LopServiceImpl implements LopService {
     private final LopRepository repo;
 
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Lop> findByIdWithSinhViens(Long id) {
+        return repo.findByIdWithSinhViens(id);
+    }
     @Override @Transactional(readOnly = true)
     public List<Lop> findAll() { return repo.findAllWithSinhViens(); }
 
@@ -24,6 +29,7 @@ public class LopServiceImpl implements LopService {
         return repo.save(lop);
     }
 
+
     @Override
     public void delete(Long id) {
         Lop lop = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp"));
@@ -31,6 +37,7 @@ public class LopServiceImpl implements LopService {
             throw new IllegalStateException("Không thể xóa lớp đang có " + lop.getSinhViens().size() + " sinh viên");
         repo.deleteById(id);
     }
+
 
     @Override @Transactional(readOnly = true)
     public long count() { return repo.count(); }

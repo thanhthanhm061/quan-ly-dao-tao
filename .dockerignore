@@ -1,0 +1,6 @@
+
+.idea
+.git
+.mvn
+Dockerfile
+docker-compose.yml

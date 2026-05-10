@@ -9,4 +9,5 @@ public interface LopService {
     Lop save(Lop lop);
     void delete(Long id);
     long count();
+    Optional<Lop> findByIdWithSinhViens(Long id);
 }

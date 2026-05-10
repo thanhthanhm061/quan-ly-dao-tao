@@ -84,6 +84,10 @@ public class SinhVienServiceImpl implements SinhVienService {
         }
         return sinhVienRepo.save(sv);
     }
+    @Override
+    public List<SinhVien> findByLopId(Long lopId) {
+       return sinhVienRepo.findByLopId(lopId);
+    }
 
     @Override
     public void delete(Long id) {

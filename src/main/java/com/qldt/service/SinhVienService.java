@@ -6,6 +6,7 @@ import java.util.Optional;
 
 public interface SinhVienService {
     List<SinhVien> findAll();
+    List<SinhVien> findByLopId(Long lopId);
     List<SinhVien> search(String keyword);
     Optional<SinhVien> findById(Long id);
     Optional<SinhVien> findByMaSv(String maSv);

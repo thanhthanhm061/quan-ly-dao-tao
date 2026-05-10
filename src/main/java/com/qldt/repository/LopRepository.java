@@ -2,6 +2,7 @@ package com.qldt.repository;
 import com.qldt.model.Lop;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,4 +13,6 @@ public interface LopRepository extends JpaRepository<Lop, Long> {
     List<Lop> findByKhoaId(Long khoaId);
     @Query("SELECT l FROM Lop l LEFT JOIN FETCH l.sinhViens")
     List<Lop> findAllWithSinhViens();
+    @Query("SELECT l FROM Lop l LEFT JOIN FETCH l.sinhViens WHERE l.id = :id")
+    Optional<Lop> findByIdWithSinhViens(@Param("id") Long id);
 }

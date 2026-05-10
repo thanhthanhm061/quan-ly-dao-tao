@@ -1,36 +1,198 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::content}, 'Quản lý Lớp học')}">
 <body><th:block th:fragment="content">
-<div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <span><i class="fas fa-door-open me-2"></i>Danh sách Lớp học</span>
-    <a th:href="@{/admin/lop/them}" class="btn btn-secondary btn-sm"><i class="fas fa-plus me-1"></i>Thêm mới</a>
-  </div>
-  <div class="card-body p-0">
-    <table class="table table-hover mb-0 align-middle">
-      <thead><tr><th>#</th><th>Mã lớp</th><th>Tên lớp</th><th>Niên khóa</th><th>Khoa</th><th>Sĩ số</th><th>Thao tác</th></tr></thead>
-      <tbody>
-        <tr th:if="${#lists.isEmpty(lops)}">
-          <td colspan="7" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Không có dữ liệu</td>
-        </tr>
-        <tr th:each="lop,i : ${lops}">
-          <td th:text="${i.count}"></td>
-          <td><code th:text="${lop.maLop}"></code></td>
-          <td class="fw-semibold" th:text="${lop.tenLop}"></td>
-          <td th:text="${lop.nienKhoa}"></td>
-          <td class="small" th:text="${lop.khoa  != null ? lop.khoa.tenKhoa : '-'}"></td>
-          <td><span class="badge bg-light text-dark border" th:text="${lop.sinhViens != null ? #lists.size(lop.sinhViens) : 0}+' SV'"></span></td>
-          <td>
-            <a th:href="@{/admin/lop/sua/{id}(id=${lop.id})}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></a>
-            <form th:action="@{/admin/lop/xoa/{id}(id=${lop.id})}" method="post" class="d-inline"
-                  onsubmit="return confirm('Xác nhận xóa lớp này?')">
-              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-              <button class="btn btn-sm btn-outline-danger ms-1"><i class="fas fa-trash"></i></button>
-            </form>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-door-open me-2"></i>Danh sách Lớp học</span>
+            <a th:href="@{/admin/lop/them}" class="btn btn-secondary btn-sm"><i class="fas fa-plus me-1"></i>Thêm mới</a>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead><tr><th>#</th><th>Mã lớp</th><th>Tên lớp</th><th>Niên khóa</th><th>Khoa</th><th>Sĩ số</th><th>Thao tác</th></tr></thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(lops)}">
+                    <td colspan="7" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Không có dữ liệu</td>
+                </tr>
+                <tr th:each="lop,i : ${lops}">
+                    <td th:text="${i.count}"></td>
+                    <td><code th:text="${lop.maLop}"></code></td>
+                    <td class="fw-semibold" th:text="${lop.tenLop}"></td>
+                    <td th:text="${lop.nienKhoa}"></td>
+                    <td class="small" th:text="${lop.khoa != null ? lop.khoa.tenKhoa : '-'}"></td>
+                    <td>
+                        <button type="button"
+                                class="badge bg-light text-dark border si-so-btn"
+                                style="cursor:pointer;border:none"
+                                th:data-lop-id="${lop.id}"
+                                th:data-ma-lop="${lop.maLop}"
+                                th:data-ten-lop="${lop.tenLop}"
+                                th:text="${lop.sinhViens != null ? #lists.size(lop.sinhViens) : 0} + ' SV'">
+                        </button>
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/lop/sua/{id}(id=${lop.id})}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></a>
+                        <form th:action="@{/admin/lop/xoa/{id}(id=${lop.id})}" method="post" class="d-inline"
+                              onsubmit="return confirm('Xác nhận xóa lớp này?')">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button class="btn btn-sm btn-outline-danger ms-1"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal sinh viên -->
+    <div class="modal fade" id="modalSinhVien" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow-sm" style="border-radius:12px;overflow:hidden">
+
+                <!-- Header -->
+                <div class="modal-header border-bottom py-3 px-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 bg-primary bg-opacity-10 d-flex align-items-center justify-content-center"
+                             style="width:38px;height:38px">
+                            <i class="fas fa-users text-primary" style="font-size:15px"></i>
+                        </div>
+                        <div>
+                            <h6 class="modal-title mb-0 fw-semibold" id="modalLopTen"></h6>
+                            <small class="text-muted" id="modalLopMa"></small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                    <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3"
+                          id="modalBadgeCount" style="font-size:12px;font-weight:500"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="px-4 py-2 border-bottom bg-light">
+                    <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-muted" style="font-size:12px"></i>
+                    </span>
+                        <input type="text" id="modalSearch" class="form-control border-start-0 ps-0"
+                               placeholder="Tìm theo tên hoặc mã sinh viên..."
+                               oninput="filterModalSV()" style="font-size:13px">
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body p-0">
+                    <div id="modalLoading" class="text-center py-5">
+                        <div class="spinner-border spinner-border-sm text-secondary me-2"></div>
+                        <span class="text-muted small">Đang tải...</span>
+                    </div>
+                    <div id="modalEmpty" class="text-center text-muted py-5" style="display:none">
+                        <i class="fas fa-inbox fa-2x d-block mb-2 opacity-25"></i>
+                        <small>Lớp chưa có sinh viên nào</small>
+                    </div>
+
+                    <!-- Bảng có giới hạn chiều cao + scroll -->
+                    <div style="max-height:360px;overflow-y:auto" id="modalTableWrap">
+                        <table class="table table-hover mb-0 align-middle" id="modalTable" style="display:none;font-size:13px">
+                            <thead class="table-light sticky-top" style="top:0;z-index:1">
+                            <tr>
+                                <th style="width:42px">#</th>
+                                <th style="width:110px">Mã SV</th>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th style="width:115px">SĐT</th>
+                            </tr>
+                            </thead>
+                            <tbody id="modalBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer py-2 px-4 border-top bg-light justify-content-between">
+                    <small class="text-muted" id="modalFooterCount"></small>
+                    <small class="text-muted">
+                        <i class="fas fa-arrow-down me-1" style="font-size:10px"></i>Cuộn để xem thêm
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let _allSvs = [];
+
+        function initials(name) {
+            const parts = name.trim().split(' ');
+            return parts.length >= 2
+                ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+                : name[0].toUpperCase();
+        }
+
+        function renderModalRows(list) {
+            document.getElementById('modalBody').innerHTML = list.map((sv, i) => `
+            <tr>
+                <td class="text-muted">${i + 1}</td>
+                <td><code class="bg-light border rounded px-2 py-1" style="font-size:11px">${sv.maSv}</code></td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width:28px;height:28px;font-size:10px;font-weight:600">
+                            ${initials(sv.hoTen)}
+                        </div>
+                        <span class="fw-semibold">${sv.hoTen}</span>
+                    </div>
+                </td>
+                <td class="text-muted">${sv.email ?? '-'}</td>
+                <td class="text-muted">${sv.sdt ?? '-'}</td>
+            </tr>
+        `).join('');
+            document.getElementById('modalFooterCount').textContent =
+                `Hiển thị ${list.length} / ${_allSvs.length} sinh viên`;
+        }
+
+        function filterModalSV() {
+            const q = document.getElementById('modalSearch').value.toLowerCase();
+            renderModalRows(_allSvs.filter(sv =>
+                sv.hoTen.toLowerCase().includes(q) || sv.maSv.toLowerCase().includes(q)
+            ));
+        }
+
+        document.querySelectorAll('.si-so-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const lopId  = this.dataset.lopId;
+                const maLop  = this.dataset.maLop;
+                const tenLop = this.dataset.tenLop;
+
+                document.getElementById('modalLopTen').textContent      = tenLop;
+                document.getElementById('modalLopMa').textContent       = 'Mã lớp: ' + maLop;
+                document.getElementById('modalBadgeCount').textContent  = '';
+                document.getElementById('modalSearch').value            = '';
+                document.getElementById('modalLoading').style.display   = 'block';
+                document.getElementById('modalTable').style.display     = 'none';
+                document.getElementById('modalEmpty').style.display     = 'none';
+                document.getElementById('modalFooterCount').textContent = '';
+
+                new bootstrap.Modal(document.getElementById('modalSinhVien')).show();
+
+                fetch(`/admin/lop/${lopId}/sinh-vien`)
+                    .then(r => r.json())
+                    .then(svs => {
+                        _allSvs = svs;
+                        document.getElementById('modalLoading').style.display  = 'none';
+                        document.getElementById('modalBadgeCount').textContent = svs.length + ' SV';
+                        if (!svs.length) {
+                            document.getElementById('modalEmpty').style.display = 'block';
+                            return;
+                        }
+                        renderModalRows(svs);
+                        document.getElementById('modalTable').style.display = 'table';
+                    })
+                    .catch(() => {
+                        document.getElementById('modalLoading').innerHTML =
+                            '<i class="fas fa-exclamation-circle text-danger me-2"></i><span class="text-danger small">Lỗi tải dữ liệu</span>';
+                    });
+            });
+        });
+    </script>
+
 </th:block></body></html>

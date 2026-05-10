@@ -9,13 +9,13 @@
   </div>
   <div class="card-body">
     <form method="get" class="d-flex gap-2 mb-3">
-      <input type="text" name="search" class="form-control" placeholder="🔍 Tìm theo tên, mã SV..." th:value="${search}"/>
+      <input type="text" name="search" class="form-control" placeholder=" Tìm theo tên, mã SV..." th:value="${search}"/>
       <button class="btn btn-outline-primary px-4">Tìm</button>
       <a th:href="@{/admin/sinh-vien}" class="btn btn-outline-secondary">Reset</a>
     </form>
     <div class="table-responsive">
       <table class="table table-hover align-middle">
-        <thead><tr><th>#</th><th>Mã SV</th><th>Họ tên</th><th>Giới tính</th><th>Lớp</th><th>Email</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+        <thead><tr><th>#</th><th>Mã SV</th><th>Họ tên</th><th>Giới tính</th><th> Mã Lớp</th><th>Email</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
         <tbody>
           <tr th:if="${#lists.isEmpty(sinhViens)}">
             <td colspan="8" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Không có dữ liệu</td>
