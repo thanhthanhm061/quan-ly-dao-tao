@@ -8,11 +8,78 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "dang_ky",
     uniqueConstraints = @UniqueConstraint(columnNames = {"sinh_vien_id", "lhp_id"}))
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
+ @NoArgsConstructor @AllArgsConstructor @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"sinhVien", "lopHocPhan"})
 public class DangKy {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public SinhVien getSinhVien() {
+        return sinhVien;
+    }
+
+    public void setSinhVien(SinhVien sinhVien) {
+        this.sinhVien = sinhVien;
+    }
+
+    public LopHocPhan getLopHocPhan() {
+        return lopHocPhan;
+    }
+
+    public void setLopHocPhan(LopHocPhan lopHocPhan) {
+        this.lopHocPhan = lopHocPhan;
+    }
+
+    public LocalDateTime getNgayDangKy() {
+        return ngayDangKy;
+    }
+
+    public void setNgayDangKy(LocalDateTime ngayDangKy) {
+        this.ngayDangKy = ngayDangKy;
+    }
+
+    public TrangThaiDK getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(TrangThaiDK trangThai) {
+        this.trangThai = trangThai;
+    }
+
+    public Double getDiemQuaTrinh() {
+        return diemQuaTrinh;
+    }
+
+    public void setDiemQuaTrinh(Double diemQuaTrinh) {
+        this.diemQuaTrinh = diemQuaTrinh;
+    }
+
+    public Double getDiemThi() {
+        return diemThi;
+    }
+
+    public void setDiemThi(Double diemThi) {
+        this.diemThi = diemThi;
+    }
+
+    public Double getDiemTongKet() {
+        return diemTongKet;
+    }
+
+    public void setDiemTongKet(Double diemTongKet) {
+        this.diemTongKet = diemTongKet;
+    }
 
     @ManyToOne
     @JoinColumn(name = "sinh_vien_id", nullable = false)

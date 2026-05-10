@@ -18,10 +18,18 @@ public interface ThoiKhoaBieuRepository extends JpaRepository<ThoiKhoaBieu, Long
     List<ThoiKhoaBieu> findByGiangVienAndHocKy(@Param("gvId") Long gvId,
                                                @Param("hocKy") String hocKy);
 
+
     @Query("SELECT t FROM ThoiKhoaBieu t " +
             "JOIN FETCH t.lopHocPhan l " +
             "JOIN FETCH l.monHoc " +
-            "JOIN l.dangKys dk " +
+            "WHERE t.phongHoc = :phongHoc AND l.hocKy = :hocKy")
+    List<ThoiKhoaBieu> findByPhongHocAndHocKy(@Param("phongHoc") String phongHoc,
+                                              @Param("hocKy") String hocKy);
+
+    @Query("SELECT t FROM ThoiKhoaBieu t " +
+            "JOIN FETCH t.lopHocPhan l " +
+            "JOIN FETCH l.monHoc " +
+            "JOIN DangKy dk ON dk.lopHocPhan.id = l.id " + // ← JOIN trực tiếp entity
             "WHERE dk.sinhVien.id = :svId AND l.hocKy = :hocKy " +
             "ORDER BY t.thuTrongTuan, t.tietBatDau")
     List<ThoiKhoaBieu> findBySinhVienAndHocKy(@Param("svId") Long svId,

@@ -9,11 +9,94 @@ import java.util.List;
 
 @Entity
 @Table(name = "lop_hoc_phan")
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
+ @NoArgsConstructor @AllArgsConstructor @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)  // chỉ dùng id để so sánh
+@ToString(exclude = {"dangKys", "thoiKhoaBieus"})
 public class LopHocPhan {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getMaLhp() {
+        return maLhp;
+    }
+
+    public void setMaLhp(String maLhp) {
+        this.maLhp = maLhp;
+    }
+
+    public MonHoc getMonHoc() {
+        return monHoc;
+    }
+
+    public void setMonHoc(MonHoc monHoc) {
+        this.monHoc = monHoc;
+    }
+
+    public GiangVien getGiangVien() {
+        return giangVien;
+    }
+
+    public void setGiangVien(GiangVien giangVien) {
+        this.giangVien = giangVien;
+    }
+
+    public String getHocKy() {
+        return hocKy;
+    }
+
+    public void setHocKy(String hocKy) {
+        this.hocKy = hocKy;
+    }
+
+    public int getSiSoMax() {
+        return siSoMax;
+    }
+
+    public void setSiSoMax(int siSoMax) {
+        this.siSoMax = siSoMax;
+    }
+
+    public int getSiSoHienTai() {
+        return siSoHienTai;
+    }
+
+    public void setSiSoHienTai(int siSoHienTai) {
+        this.siSoHienTai = siSoHienTai;
+    }
+
+    public TrangThaiLHP getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(TrangThaiLHP trangThai) {
+        this.trangThai = trangThai;
+    }
+
+    public List<DangKy> getDangKys() {
+        return dangKys;
+    }
+
+    public void setDangKys(List<DangKy> dangKys) {
+        this.dangKys = dangKys;
+    }
+
+    public List<ThoiKhoaBieu> getThoiKhoaBieus() {
+        return thoiKhoaBieus;
+    }
+
+    public void setThoiKhoaBieus(List<ThoiKhoaBieu> thoiKhoaBieus) {
+        this.thoiKhoaBieus = thoiKhoaBieus;
+    }
 
     @Column(name = "ma_lhp", unique = true, nullable = false, length = 30)
     @NotBlank(message = "Mã lớp học phần không được trống")
@@ -44,10 +127,15 @@ public class LopHocPhan {
     @Column(name = "trang_thai")
     private TrangThaiLHP trangThai = TrangThaiLHP.MO;
 
-    @OneToMany(mappedBy = "lopHocPhan", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "lopHocPhan",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            fetch = FetchType.LAZY)
     private List<DangKy> dangKys = new ArrayList<>();
 
-    @OneToMany(mappedBy = "lopHocPhan", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "lopHocPhan",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
     private List<ThoiKhoaBieu> thoiKhoaBieus = new ArrayList<>();
 
     public boolean isConCho() { return siSoHienTai < siSoMax; }

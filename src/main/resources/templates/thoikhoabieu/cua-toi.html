@@ -63,22 +63,24 @@
                             <td class="fw-semibold small align-middle" style="background:#f8fafc"
                                 th:text="'Tiết '+${tiet}"></td>
                             <td th:each="thu : ${#numbers.sequence(2, 7)}"
-                                style="padding:3px;vertical-align:middle">
+                                style="padding:0;vertical-align:top;position:relative;overflow:visible">
                                 <th:block th:each="tkb,i : ${thoiKhoaBieus}">
                                     <div th:if="${tkb.thuTrongTuan eq thu and tkb.tietBatDau eq tiet}"
-                                         class="h-100 d-flex flex-column justify-content-center p-1"
-                                         th:style="'background:' + ${i.index % 6 == 0 ? '#dbeafe' :
-                                  i.index % 6 == 1 ? '#d1fae5' :
-                                  i.index % 6 == 2 ? '#fef3c7' :
-                                  i.index % 6 == 3 ? '#ede9fe' :
-                                  i.index % 6 == 4 ? '#fee2e2' : '#e0f2fe'} +
-                                 ';border-left:3px solid ' +
-                                 ${i.index % 6 == 0 ? '#2563eb' :
-                                  i.index % 6 == 1 ? '#059669' :
-                                  i.index % 6 == 2 ? '#d97706' :
-                                  i.index % 6 == 3 ? '#7c3aed' :
-                                  i.index % 6 == 4 ? '#dc2626' : '#0284c7'} +
-                                 ';border-radius:4px'">
+                                         class="d-flex flex-column justify-content-center p-1"
+                                         th:style="'position:absolute;z-index:2;left:2px;right:2px;top:2px;' +
+                                           'height:' + ${tkb.soTiet * 54 - 4} + 'px;' +
+                                           'background:' + ${i.index % 6 == 0 ? '#dbeafe' :
+                                                              i.index % 6 == 1 ? '#d1fae5' :
+                                                              i.index % 6 == 2 ? '#fef3c7' :
+                                                              i.index % 6 == 3 ? '#ede9fe' :
+                                                              i.index % 6 == 4 ? '#fee2e2' : '#e0f2fe'} +
+                                           ';border-left:3px solid ' +
+                                           ${i.index % 6 == 0 ? '#2563eb' :
+                                             i.index % 6 == 1 ? '#059669' :
+                                             i.index % 6 == 2 ? '#d97706' :
+                                             i.index % 6 == 3 ? '#7c3aed' :
+                                             i.index % 6 == 4 ? '#dc2626' : '#0284c7'} +
+                                           ';border-radius:4px;overflow:hidden'">
                     <span class="d-block fw-semibold" style="font-size:.75rem;line-height:1.2"
                           th:text="${tkb.lopHocPhan != null and tkb.lopHocPhan.monHoc != null
                                     ? tkb.lopHocPhan.monHoc.tenMon : '---'}"></span>

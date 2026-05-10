@@ -43,9 +43,14 @@ public class LopHocPhanServiceImpl implements LopHocPhanService {
     @Override
     public void delete(Long id) {
         LopHocPhan lhp = lhpRepo.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học phần"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học phần"));
         if (!lhp.getDangKys().isEmpty())
-            throw new IllegalStateException("Không thể xóa! Lớp đã có " + lhp.getDangKys().size() + " sinh viên đăng ký");
+            throw new IllegalStateException("Không thể xóa! Lớp đã có "
+                    + lhp.getDangKys().size() + " sinh viên đăng ký");
+
+        // Xóa TKB trước (hoặc để orphanRemoval tự xử lý)
+        lhp.getThoiKhoaBieus().clear();
+        lhpRepo.save(lhp);
         lhpRepo.deleteById(id);
     }
 

@@ -44,12 +44,35 @@ public class ThoiKhoaBieuServiceImpl implements ThoiKhoaBieuService {
                         " tại phòng " + existing.getPhongHoc());
             }
         }
+        // Sau đoạn kiểm tra trùng giảng viên, thêm vào:
+        if (tkb.getPhongHoc() != null && !tkb.getPhongHoc().isBlank()) {
+            List<ThoiKhoaBieu> lichPhong = tkbRepo.findByPhongHocAndHocKy(
+                    tkb.getPhongHoc(), hocKy);
+
+            for (ThoiKhoaBieu existing : lichPhong) {
+                if ((tkb.getId() == null || !existing.getId().equals(tkb.getId()))
+                        && existing.trungLich(tkb)) {
+                    throw new IllegalStateException(
+                            "Phòng " + tkb.getPhongHoc() + " đã có lịch vào " +
+                                    existing.getTenThu() + " tiết " + existing.getTietBatDau() +
+                                    "-" + (existing.getTietBatDau() + existing.getSoTiet() - 1) +
+                                    " (" + (existing.getLopHocPhan().getMonHoc().getTenMon()) + ")");
+                }
+            }
+        }
+
+
         return tkbRepo.save(tkb);
     }
 
     @Override
     public void delete(Long id) {
-        tkbRepo.deleteById(id);
+        ThoiKhoaBieu tkb = tkbRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch"));
+        LopHocPhan lhp = lhpRepo.findById(tkb.getLopHocPhan().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học phần"));
+        lhp.getThoiKhoaBieus().removeIf(t -> t.getId().equals(id));
+        lhpRepo.save(lhp); // orphanRemoval tự xóa TKB, KHÔNG đụng dangKys
     }
 
     @Override

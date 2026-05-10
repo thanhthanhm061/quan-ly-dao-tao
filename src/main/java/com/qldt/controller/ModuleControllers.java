@@ -195,16 +195,6 @@ class LopHocPhanController {
         return "redirect:/admin/lop-hoc-phan";
     }
 
-//    @GetMapping("/sua/{id}")
-//    public String suaForm(@PathVariable Long id, Model model) {
-//
-//
-//        model.addAttribute("lopHocPhan", lhpService.findById(id).orElseThrow());
-//        model.addAttribute("monHocs", monService.findAll());
-//        model.addAttribute("giangViens", gvService.findAll());
-//        model.addAttribute("trangThais", TrangThaiLHP.values());
-//        return "lophocphan/form";
-//    }
     @GetMapping("/sua/{id}")
     public String suaForm(@PathVariable Long id, Model model) {
 
