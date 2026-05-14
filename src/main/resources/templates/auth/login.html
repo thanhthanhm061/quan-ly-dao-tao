@@ -1,83 +1,417 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8"/>
-  <title>Đăng nhập - QLĐT</title>
-  <link th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}" rel="stylesheet"/>
-  <link th:href="@{/webjars/font-awesome/6.4.2/css/all.min.css}" rel="stylesheet"/>
-  <style>
-    body { background: linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; }
-    .login-card { background:#fff; border-radius:20px; padding:40px; width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,.3); }
-    .logo-area { text-align:center; margin-bottom:30px; }
-    .logo-icon { width:70px; height:70px; background:linear-gradient(135deg,#1e3a5f,#2563eb); border-radius:18px; display:inline-flex; align-items:center; justify-content:center; font-size:2rem; color:#fff; margin-bottom:15px; }
-    .form-control { border-radius:10px; padding:12px 16px; border:2px solid #e2e8f0; transition:.2s; }
-    .form-control:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
-    .btn-login { background:linear-gradient(135deg,#1e3a5f,#2563eb); border:none; border-radius:10px; padding:12px; font-weight:600; letter-spacing:.5px; }
-    .alert { border-radius:10px; border:none; }
-    .input-group-text { border-radius:10px 0 0 10px; background:#f8fafc; border:2px solid #e2e8f0; border-right:none; color:#718096; }
-    .input-group .form-control { border-radius:0 10px 10px 0; border-left:none; }
-    .demo-accounts { background:#f0f7ff; border-radius:10px; padding:12px 15px; font-size:.82rem; }
-  </style>
+    <meta charset="UTF-8"/>
+    <title>Đăng nhập - QLĐT</title>
+
+    <link th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link th:href="@{/webjars/font-awesome/6.4.2/css/all.min.css}" rel="stylesheet"/>
+
+    <style>
+
+        *{
+          margin:0;
+          padding:0;
+          box-sizing:border-box;
+        }
+
+        body{
+          background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);
+          min-height:100vh;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          padding:30px;
+          overflow:hidden;
+          position:relative;
+        }
+
+        /* background blur */
+        body::before{
+          content:'';
+          position:absolute;
+          width:500px;
+          height:500px;
+          background:rgba(255,255,255,.08);
+          border-radius:50%;
+          top:-120px;
+          left:-120px;
+          filter:blur(20px);
+        }
+
+        body::after{
+          content:'';
+          position:absolute;
+          width:400px;
+          height:400px;
+          background:rgba(255,255,255,.05);
+          border-radius:50%;
+          bottom:-100px;
+          right:-100px;
+          filter:blur(20px);
+        }
+
+        .login-wrapper{
+          width:100%;
+          max-width:1200px;
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:40px;
+          align-items:center;
+          position:relative;
+          z-index:2;
+        }
+
+        /* LEFT SIDE */
+        .school-info{
+          color:white;
+          padding:40px;
+          animation:fadeInLeft 1s ease;
+        }
+
+        .school-badge{
+          display:inline-flex;
+          align-items:center;
+          gap:10px;
+          background:rgba(255,255,255,.15);
+          padding:10px 18px;
+          border-radius:30px;
+          backdrop-filter:blur(10px);
+          margin-bottom:25px;
+          font-weight:600;
+        }
+
+        .school-title{
+          font-size:48px;
+          font-weight:800;
+          line-height:1.2;
+          margin-bottom:20px;
+        }
+
+        .school-desc{
+          font-size:17px;
+          color:#dbeafe;
+          line-height:1.8;
+          margin-bottom:35px;
+        }
+
+        .school-image{
+          width:100%;
+          border-radius:24px;
+          overflow:hidden;
+          box-shadow:0 20px 50px rgba(0,0,0,.3);
+          transition:.4s;
+        }
+
+        .school-image:hover{
+          transform:translateY(-8px) scale(1.01);
+        }
+
+        .school-image img{
+          width:100%;
+          height:100%;
+          object-fit:cover;
+          display:block;
+        }
+
+        /* RIGHT SIDE */
+        .login-card{
+          background:rgba(255,255,255,.96);
+          backdrop-filter:blur(10px);
+          border-radius:28px;
+          padding:45px;
+          width:100%;
+          max-width:460px;
+          margin:auto;
+          box-shadow:0 20px 60px rgba(0,0,0,.25);
+          animation:fadeInRight 1s ease;
+          transition:.3s;
+        }
+
+        .login-card:hover{
+          transform:translateY(-6px);
+          box-shadow:0 30px 70px rgba(0,0,0,.3);
+        }
+
+        .logo-area{
+          text-align:center;
+          margin-bottom:32px;
+        }
+
+        .logo-icon{
+          width:80px;
+          height:80px;
+          background:linear-gradient(135deg,#1e3a5f,#2563eb);
+          border-radius:22px;
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          font-size:2.2rem;
+          color:#fff;
+          margin-bottom:18px;
+          transition:.3s;
+        }
+
+        .logo-icon:hover{
+          transform:rotate(-6deg) scale(1.05);
+        }
+
+        .form-control{
+          border-radius:12px;
+          padding:13px 16px;
+          border:2px solid #e2e8f0;
+          transition:.25s;
+          font-size:15px;
+        }
+
+        .form-control:focus{
+          border-color:#2563eb;
+          box-shadow:0 0 0 4px rgba(37,99,235,.12);
+        }
+
+        .btn-login{
+          background:linear-gradient(135deg,#1e3a5f,#2563eb);
+          border:none;
+          border-radius:12px;
+          padding:13px;
+          font-weight:700;
+          letter-spacing:.5px;
+          transition:.3s;
+        }
+
+        .btn-login:hover{
+          transform:translateY(-3px);
+          box-shadow:0 12px 24px rgba(37,99,235,.35);
+        }
+
+        .alert{
+          border-radius:12px;
+          border:none;
+        }
+
+        .input-group-text{
+          border-radius:12px 0 0 12px;
+          background:#f8fafc;
+          border:2px solid #e2e8f0;
+          border-right:none;
+          color:#718096;
+        }
+
+        .input-group .form-control{
+          border-radius:0 12px 12px 0;
+          border-left:none;
+        }
+
+        .btn-outline-secondary{
+          border-radius:0 12px 12px 0;
+        }
+
+        .footer-text{
+          text-align:center;
+          margin-top:25px;
+          color:#64748b;
+          font-size:14px;
+        }
+
+        /* animation */
+        @keyframes fadeInLeft{
+          from{
+            opacity:0;
+            transform:translateX(-40px);
+          }
+          to{
+            opacity:1;
+            transform:translateX(0);
+          }
+        }
+
+        @keyframes fadeInRight{
+          from{
+            opacity:0;
+            transform:translateX(40px);
+          }
+          to{
+            opacity:1;
+            transform:translateX(0);
+          }
+        }
+
+        /* responsive */
+        @media(max-width:992px){
+
+          .login-wrapper{
+            grid-template-columns:1fr;
+          }
+
+          .school-info{
+            display:none;
+          }
+
+          .login-card{
+            max-width:500px;
+          }
+        }
+
+    </style>
 </head>
+
 <body>
-<div class="login-card">
-  <div class="logo-area">
-    <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
-    <h4 class="fw-bold mb-1">HỆ THỐNG QLĐT</h4>
-    <p class="text-muted small">Quản lý và Điều hành Đào tạo</p>
-  </div>
 
-  <!-- Error -->
-  <div th:if="${param.error}" class="alert alert-danger">
-    <i class="fas fa-exclamation-triangle me-2"></i>Tên đăng nhập hoặc mật khẩu không đúng!
-  </div>
-  <div th:if="${param.logout}" class="alert alert-success">
-    <i class="fas fa-check-circle me-2"></i>Đăng xuất thành công!
-  </div>
+<div class="login-wrapper">
 
-  <form th:action="@{/login}" method="post">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <!-- LEFT -->
+    <div class="school-info">
 
-    <div class="mb-3">
-      <label class="form-label fw-600 small">Tên đăng nhập</label>
-      <div class="input-group">
-        <span class="input-group-text"><i class="fas fa-user"></i></span>
-        <input type="text" name="username" class="form-control" placeholder="Nhập username..." required autofocus/>
-      </div>
+        <div class="school-badge">
+            <i class="fas fa-university"></i>
+            Đại học Đông Á
+        </div>
+
+        <div class="school-title">
+            Hệ thống quản lý đào tạo thông minh
+        </div>
+
+        <div class="school-desc">
+            Nền tảng hỗ trợ quản lý sinh viên, giảng viên, lớp học phần,
+            thời khóa biểu và thống kê dữ liệu hiện đại dành cho
+            Trường Đại học Đông Á.
+        </div>
+
+        <div class="school-image">
+            <img src="https://xdcs.cdnchinhphu.vn/446259493575335936/2023/8/22/da4-16927110803711191891216.jpg"
+                 alt="Đại học Đông Á">
+        </div>
+
     </div>
 
-    <div class="mb-4">
-      <label class="form-label fw-600 small">Mật khẩu</label>
-      <div class="input-group">
-        <span class="input-group-text"><i class="fas fa-lock"></i></span>
-        <input type="password" name="password" id="password" class="form-control" placeholder="Nhập mật khẩu..." required/>
-        <button class="btn btn-outline-secondary" type="button" onclick="togglePass()"><i class="fas fa-eye" id="eyeIcon"></i></button>
-      </div>
+    <!-- RIGHT -->
+    <div class="login-card">
+
+        <div class="logo-area">
+
+            <div class="logo-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+
+            <h3 class="fw-bold mb-2">
+                HỆ THỐNG QLĐT
+            </h3>
+
+            <p class="text-muted small">
+                Quản lý và Điều hành Đào tạo
+            </p>
+
+        </div>
+
+        <!-- Error -->
+        <div th:if="${param.error}" class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Tên đăng nhập hoặc mật khẩu không đúng!
+        </div>
+
+        <div th:if="${param.logout}" class="alert alert-success">
+            <i class="fas fa-check-circle me-2"></i>
+            Đăng xuất thành công!
+        </div>
+
+        <form th:action="@{/login}" method="post">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}"/>
+
+            <div class="mb-3">
+
+                <label class="form-label fw-semibold small">
+                    Tên đăng nhập
+                </label>
+
+                <div class="input-group">
+
+          <span class="input-group-text">
+            <i class="fas fa-user"></i>
+          </span>
+
+                    <input type="text"
+                           name="username"
+                           class="form-control"
+                           placeholder="Nhập username..."
+                           required
+                           autofocus/>
+
+                </div>
+
+            </div>
+
+            <div class="mb-4">
+
+                <label class="form-label fw-semibold small">
+                    Mật khẩu
+                </label>
+
+                <div class="input-group">
+
+          <span class="input-group-text">
+            <i class="fas fa-lock"></i>
+          </span>
+
+                    <input type="password"
+                           name="password"
+                           id="password"
+                           class="form-control"
+                           placeholder="Nhập mật khẩu..."
+                           required/>
+
+                    <button class="btn btn-outline-secondary"
+                            type="button"
+                            onclick="togglePass()">
+
+                        <i class="fas fa-eye" id="eyeIcon"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <button type="submit"
+                    class="btn btn-login btn-primary w-100 text-white">
+
+                <i class="fas fa-sign-in-alt me-2"></i>
+                Đăng nhập
+
+            </button>
+
+        </form>
+
+        <div class="footer-text">
+            © 2026 Đại học Đông Á - Hệ thống QLĐT
+        </div>
+
     </div>
 
-    <button type="submit" class="btn btn-login btn-primary w-100 text-white">
-      <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
-    </button>
-  </form>
-
-<!--  <div class="demo-accounts mt-4">-->
-<!--    <strong><i class="fas fa-info-circle me-1"></i>Tài khoản demo:</strong>-->
-<!--&lt;!&ndash;    <div class="mt-2">&ndash;&gt;-->
-<!--&lt;!&ndash;      <span class="badge bg-danger me-1">Admin</span> admin / Admin@123<br>&ndash;&gt;-->
-<!--&lt;!&ndash;      <span class="badge bg-success me-1">Giảng viên</span> gv001 / Admin@123<br>&ndash;&gt;-->
-<!--&lt;!&ndash;      <span class="badge bg-primary me-1">Sinh viên</span> sv001 / Admin@123&ndash;&gt;-->
-<!--&lt;!&ndash;    </div>&ndash;&gt;-->
-<!--  </div>-->
 </div>
 
 <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+
 <script>
-function togglePass() {
-  const p = document.getElementById('password');
-  const i = document.getElementById('eyeIcon');
-  if (p.type === 'password') { p.type = 'text'; i.className = 'fas fa-eye-slash'; }
-  else { p.type = 'password'; i.className = 'fas fa-eye'; }
-}
+
+    function togglePass() {
+
+      const p = document.getElementById('password');
+      const i = document.getElementById('eyeIcon');
+
+      if (p.type === 'password') {
+        p.type = 'text';
+        i.className = 'fas fa-eye-slash';
+      }
+      else {
+        p.type = 'password';
+        i.className = 'fas fa-eye';
+      }
+    }
+
 </script>
+
 </body>
 </html>

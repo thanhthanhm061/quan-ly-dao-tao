@@ -2,100 +2,439 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layout/base :: layout(~{::content}, 'Tổng quan')}">
+
 <body>
 <th:block th:fragment="content">
 
-<div class="row g-4 mb-4">
-  <div class="col-md-4 col-lg">
-    <div class="stat-card">
-      <div class="d-flex justify-content-between align-items-start">
-        <div>
-          <p class="text-muted small mb-1">Tổng sinh viên</p>
-          <h3 class="fw-bold mb-0" th:text="${tongSV}">0</h3>
-        </div>
-        <div class="stat-icon" style="background:#dbeafe;color:#1d4ed8"><i class="fas fa-user-graduate"></i></div>
-      </div>
-      <a th:href="@{/admin/sinh-vien}" class="btn btn-sm btn-outline-primary mt-3">Xem danh sách</a>
-    </div>
-  </div>
-  <div class="col-md-4 col-lg">
-    <div class="stat-card">
-      <div class="d-flex justify-content-between align-items-start">
-        <div>
-          <p class="text-muted small mb-1">Tổng giảng viên</p>
-          <h3 class="fw-bold mb-0" th:text="${tongGV}">0</h3>
-        </div>
-        <div class="stat-icon" style="background:#d1fae5;color:#059669"><i class="fas fa-chalkboard-teacher"></i></div>
-      </div>
-      <a th:href="@{/admin/giang-vien}" class="btn btn-sm btn-outline-success mt-3">Xem danh sách</a>
-    </div>
-  </div>
-  <div class="col-md-4 col-lg">
-    <div class="stat-card">
-      <div class="d-flex justify-content-between align-items-start">
-        <div>
-          <p class="text-muted small mb-1">Tổng môn học</p>
-          <h3 class="fw-bold mb-0" th:text="${tongMon}">0</h3>
-        </div>
-        <div class="stat-icon" style="background:#fef3c7;color:#d97706"><i class="fas fa-book"></i></div>
-      </div>
-      <a th:href="@{/admin/mon-hoc}" class="btn btn-sm btn-outline-warning mt-3">Xem danh sách</a>
-    </div>
-  </div>
-  <div class="col-md-4 col-lg">
-    <div class="stat-card">
-      <div class="d-flex justify-content-between align-items-start">
-        <div>
-          <p class="text-muted small mb-1">Tổng lớp</p>
-          <h3 class="fw-bold mb-0" th:text="${tongLop}">0</h3>
-        </div>
-        <div class="stat-icon" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-door-open"></i></div>
-      </div>
-      <a th:href="@{/admin/lop}" class="btn btn-sm btn-outline-secondary mt-3">Xem danh sách</a>
-    </div>
-  </div>
-  <div class="col-md-4 col-lg">
-    <div class="stat-card">
-      <div class="d-flex justify-content-between align-items-start">
-        <div>
-          <p class="text-muted small mb-1">Lớp học phần</p>
-          <h3 class="fw-bold mb-0" th:text="${tongLHP}">0</h3>
-        </div>
-        <div class="stat-icon" style="background:#fee2e2;color:#dc2626"><i class="fas fa-clipboard-list"></i></div>
-      </div>
-      <a th:href="@{/admin/lop-hoc-phan}" class="btn btn-sm btn-outline-danger mt-3">Xem danh sách</a>
-    </div>
-  </div>
-</div>
+    <style>
 
-<!-- Quick Actions -->
-<div class="card">
-  <div class="card-header"><i class="fas fa-bolt me-2"></i>Thao tác nhanh</div>
-  <div class="card-body">
-    <div class="row g-3">
-      <div class="col-md-3">
-        <a th:href="@{/admin/sinh-vien/them}" class="btn btn-primary w-100">
-          <i class="fas fa-plus me-2"></i>Thêm sinh viên
-        </a>
-      </div>
-      <div class="col-md-3">
-        <a th:href="@{/admin/giang-vien/them}" class="btn btn-success w-100">
-          <i class="fas fa-plus me-2"></i>Thêm giảng viên
-        </a>
-      </div>
-      <div class="col-md-3">
-        <a th:href="@{/admin/lop-hoc-phan/them}" class="btn btn-warning w-100">
-          <i class="fas fa-plus me-2"></i>Mở lớp học phần
-        </a>
-      </div>
-      <div class="col-md-3">
-        <a th:href="@{/tkb/them}" class="btn btn-info w-100 text-white">
-          <i class="fas fa-calendar-plus me-2"></i>Thêm thời khóa biểu
-        </a>
-      </div>
+        body{
+            background:#f8fafc;
+        }
+
+        .stat-card{
+            background:#fff;
+            border-radius:20px;
+            padding:24px;
+            box-shadow:0 4px 20px rgba(0,0,0,0.08);
+            transition:all .3s ease;
+            border:none;
+            height:100%;
+        }
+
+        .stat-card:hover{
+            transform:translateY(-6px);
+            box-shadow:0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        .stat-icon{
+            width:60px;
+            height:60px;
+            border-radius:18px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:24px;
+        }
+
+        .dashboard-title{
+            font-size:30px;
+            font-weight:700;
+            color:#1e293b;
+        }
+
+        .dashboard-subtitle{
+            color:#64748b;
+            margin-bottom:30px;
+        }
+
+        .chart-card{
+            background:#fff;
+            border-radius:20px;
+            padding:28px;
+            box-shadow:0 4px 20px rgba(0,0,0,0.08);
+            border:none;
+        }
+
+        .chart-title{
+            font-size:20px;
+            font-weight:700;
+            color:#1e293b;
+        }
+
+        /* FIX SIZE CHART */
+        .chart-wrapper{
+            position:relative;
+            width:100%;
+            max-width:300px;
+            height:300px;
+            margin:0 auto;
+        }
+
+        .quick-card{
+            border:none;
+            border-radius:20px;
+            overflow:hidden;
+            box-shadow:0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .quick-card .card-header{
+            background:linear-gradient(135deg,#0f172a,#1e293b);
+            color:white;
+            font-size:18px;
+            font-weight:600;
+            padding:18px 22px;
+            border:none;
+        }
+
+        .quick-btn{
+            padding:14px;
+            border-radius:14px;
+            font-weight:600;
+            transition:0.3s;
+        }
+
+        .quick-btn:hover{
+            transform:translateY(-2px);
+        }
+
+        /* LEGEND NGANG */
+        .chart-legend{
+            display:flex;
+            justify-content:center;
+            flex-wrap:wrap;
+            gap:18px;
+            margin-top:25px;
+        }
+
+        .legend-item{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            font-size:14px;
+            font-weight:600;
+            color:#334155;
+        }
+
+        .legend-color{
+            width:14px;
+            height:14px;
+            border-radius:50%;
+        }
+
+    </style>
+
+    <!-- HEADER -->
+    <div class="mb-4">
+
+        <div class="dashboard-title">
+            <i class="fas fa-chart-line text-primary me-2"></i>
+            Dashboard Tổng Quan
+        </div>
+
+        <div class="dashboard-subtitle">
+            Hệ thống quản lý đào tạo và thống kê dữ liệu
+        </div>
+
     </div>
-  </div>
-</div>
+
+    <!-- STATISTICS -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-4 col-lg">
+            <div class="stat-card">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+                        <p class="text-muted small mb-1">Tổng sinh viên</p>
+                        <h3 class="fw-bold mb-0" th:text="${tongSV}">0</h3>
+                    </div>
+
+                    <div class="stat-icon" style="background:#dbeafe;color:#1d4ed8">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+
+                </div>
+
+                <a th:href="@{/admin/sinh-vien}"
+                   class="btn btn-sm btn-outline-primary mt-3">
+                    Xem danh sách
+                </a>
+
+            </div>
+        </div>
+
+        <div class="col-md-4 col-lg">
+            <div class="stat-card">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+                        <p class="text-muted small mb-1">Tổng giảng viên</p>
+                        <h3 class="fw-bold mb-0" th:text="${tongGV}">0</h3>
+                    </div>
+
+                    <div class="stat-icon" style="background:#d1fae5;color:#059669">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+
+                </div>
+
+                <a th:href="@{/admin/giang-vien}"
+                   class="btn btn-sm btn-outline-success mt-3">
+                    Xem danh sách
+                </a>
+
+            </div>
+        </div>
+
+        <div class="col-md-4 col-lg">
+            <div class="stat-card">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+                        <p class="text-muted small mb-1">Tổng môn học</p>
+                        <h3 class="fw-bold mb-0" th:text="${tongMon}">0</h3>
+                    </div>
+
+                    <div class="stat-icon" style="background:#fef3c7;color:#d97706">
+                        <i class="fas fa-book"></i>
+                    </div>
+
+                </div>
+
+                <a th:href="@{/admin/mon-hoc}"
+                   class="btn btn-sm btn-outline-warning mt-3">
+                    Xem danh sách
+                </a>
+
+            </div>
+        </div>
+
+        <div class="col-md-4 col-lg">
+            <div class="stat-card">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+                        <p class="text-muted small mb-1">Tổng lớp</p>
+                        <h3 class="fw-bold mb-0" th:text="${tongLop}">0</h3>
+                    </div>
+
+                    <div class="stat-icon" style="background:#ede9fe;color:#7c3aed">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+
+                </div>
+
+                <a th:href="@{/admin/lop}"
+                   class="btn btn-sm btn-outline-secondary mt-3">
+                    Xem danh sách
+                </a>
+
+            </div>
+        </div>
+
+        <div class="col-md-4 col-lg">
+            <div class="stat-card">
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div>
+                        <p class="text-muted small mb-1">Lớp học phần</p>
+                        <h3 class="fw-bold mb-0" th:text="${tongLHP}">0</h3>
+                    </div>
+
+                    <div class="stat-icon" style="background:#fee2e2;color:#dc2626">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+
+                </div>
+
+                <a th:href="@{/admin/lop-hoc-phan}"
+                   class="btn btn-sm btn-outline-danger mt-3">
+                    Xem danh sách
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- QUICK ACTION -->
+    <div class="card quick-card mb-4">
+
+        <div class="card-header">
+            <i class="fas fa-bolt me-2"></i>
+            Thao tác nhanh
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-3">
+                    <a th:href="@{/admin/sinh-vien/them}"
+                       class="btn btn-primary quick-btn w-100">
+                        <i class="fas fa-plus me-2"></i>
+                        Thêm sinh viên
+                    </a>
+                </div>
+
+                <div class="col-md-3">
+                    <a th:href="@{/admin/giang-vien/them}"
+                       class="btn btn-success quick-btn w-100">
+                        <i class="fas fa-plus me-2"></i>
+                        Thêm giảng viên
+                    </a>
+                </div>
+
+                <div class="col-md-3">
+                    <a th:href="@{/admin/lop-hoc-phan/them}"
+                       class="btn btn-warning quick-btn w-100 text-white">
+                        <i class="fas fa-plus me-2"></i>
+                        Mở lớp học phần
+                    </a>
+                </div>
+
+                <div class="col-md-3">
+                    <a th:href="@{/tkb/them}"
+                       class="btn btn-info quick-btn w-100 text-white">
+                        <i class="fas fa-calendar-plus me-2"></i>
+                        Thêm thời khóa biểu
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-card">
+
+        <div class="text-center mb-4">
+
+            <div class="chart-title">
+                <i class="fas fa-chart-pie text-primary me-2"></i>
+                Thống kê sinh viên theo ngành
+            </div>
+
+        </div>
+
+        <div class="chart-wrapper">
+            <canvas id="khoaChart"></canvas>
+        </div>
+
+        <!-- LEGEND -->
+        <div id="customLegend" class="chart-legend"></div>
+
+    </div>
+
+    <!-- CHART JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+        fetch('/api/thong-ke/sinh-vien-theo-khoa')
+            .then(response => response.json())
+            .then(data => {
+
+                const labels = data.map(item => item[0]);
+
+                const values = data.map(item => item[1]);
+
+                const colors = [
+                    '#3b82f6',
+                    '#10b981',
+                    '#f59e0b',
+                    '#ef4444',
+                    '#8b5cf6',
+                    '#06b6d4',
+                    '#14b8a6'
+                ];
+
+                // TẠO CHART
+                new Chart(document.getElementById('khoaChart'), {
+
+                    type: 'doughnut',
+
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [{
+
+                            data: values,
+
+                            backgroundColor: colors,
+
+                            borderWidth: 4,
+                            borderColor: '#ffffff',
+                            hoverOffset: 18,
+                            cutout: '68%'
+
+                        }]
+                    },
+
+                    options: {
+
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            // ẨN legend mặc định
+                            legend: {
+                                display: false
+                            },
+
+                            tooltip: {
+
+                                backgroundColor: '#1e293b',
+                                padding: 12,
+                                cornerRadius: 10,
+
+                                titleFont: {
+                                    size: 14
+                                },
+
+                                bodyFont: {
+                                    size: 13
+                                }
+
+                            }
+
+                        },
+
+                        animation: {
+                            animateRotate: true,
+                            duration: 1400
+                        }
+
+                    }
+
+                });
+
+                // CUSTOM LEGEND NGANG
+                const legendContainer = document.getElementById('customLegend');
+
+                labels.forEach((label, index) => {
+
+                    legendContainer.innerHTML += `
+                        <div class="legend-item">
+                            <span class="legend-color"
+                                  style="background:${colors[index]}"></span>
+                            ${label}
+                        </div>
+                    `;
+                });
+
+            });
+
+    </script>
 
 </th:block>
 </body>
