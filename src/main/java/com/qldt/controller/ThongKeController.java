@@ -22,4 +22,5 @@ public class ThongKeController {
     public List<Object[]> thongKeSinhVienTheoKhoa() {
         return thongKeService.thongKeSinhVienTheoKhoa();
     }
+
 }
