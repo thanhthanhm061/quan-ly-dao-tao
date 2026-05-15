@@ -239,7 +239,21 @@ class SinhVienController {
 
         return "redirect:/admin/sinh-vien";
     }
+    @GetMapping("/chi-tiet/{id}")
+    public String chiTietSinhVien(
+            @PathVariable Long id,
+            Model model
+    ) {
 
+        SinhVien sv = svService.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Không tìm thấy sinh viên"));
+
+        model.addAttribute("sv", sv);
+
+
+        return "sinhvien/chi-tiet";
+    }
     @PostMapping("/xoa/{id}")
     public String xoa(@PathVariable Long id, RedirectAttributes ra) {
         try {
@@ -322,7 +336,11 @@ class GiangVienController {
         }
         return "redirect:/admin/giang-vien";
     }
-
+    @GetMapping("/chi-tiet/{id}")
+    public String detail(@PathVariable Long id, Model model) {
+        model.addAttribute("gv", gvService.getDetail(id));
+        return "giangvien/chi-tiet";
+    }
     @PostMapping("/xoa/{id}")
     public String xoa(@PathVariable Long id, RedirectAttributes ra) {
         try {

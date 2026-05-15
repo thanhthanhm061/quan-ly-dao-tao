@@ -59,7 +59,12 @@ public class GiangVienServiceImpl implements GiangVienService {
         }
         return repo.save(gv);
     }
-
+    @Override
+    @Transactional(readOnly = true)
+    public GiangVien getDetail(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giảng viên ID: " + id));
+    }
     @Override
     public void delete(Long id) {
         GiangVien gv = repo.findById(id)

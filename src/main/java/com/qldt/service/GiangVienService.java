@@ -10,4 +10,5 @@ public interface GiangVienService {
     GiangVien save(GiangVien gv);
     void delete(Long id);
     long count();
+    GiangVien getDetail(Long id);
 }

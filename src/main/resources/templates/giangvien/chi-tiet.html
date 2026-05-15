@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Chi tiết Giảng viên')}">
+
+<body>
+
+<th:block th:fragment="content">
+
+    <style>
+
+        body{
+            background:#f1f5f9;
+        }
+
+        .gv-detail-card{
+            max-width:1000px;
+            margin:30px auto;
+            border:none;
+            border-radius:24px;
+            overflow:hidden;
+            box-shadow:0 15px 40px rgba(0,0,0,0.08);
+            background:#fff;
+        }
+
+        .gv-detail-header{
+            background:linear-gradient(135deg,#1e3a8a,#2563eb);
+            color:white;
+            padding:22px 26px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+
+        .gv-title{
+            font-size:20px;
+            font-weight:700;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+
+        .gv-left{
+            text-align:center;
+            padding:40px 20px;
+            border-right:1px solid #e5e7eb;
+            background:linear-gradient(180deg,#f8fafc,#ffffff);
+        }
+
+        .avatar{
+            width:120px;
+            height:120px;
+            border-radius:50%;
+            background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin:0 auto 15px;
+            color:#2563eb;
+            font-size:52px;
+            box-shadow:0 10px 20px rgba(37,99,235,0.15);
+        }
+
+        .gv-name{
+            font-size:22px;
+            font-weight:700;
+            color:#0f172a;
+        }
+
+        .gv-sub{
+            font-size:14px;
+            color:#64748b;
+            margin-top:6px;
+        }
+
+        .info-box{
+            padding:25px;
+        }
+
+        .info-table{
+            border-radius:12px;
+            overflow:hidden;
+        }
+
+        .info-table th{
+            width:220px;
+            background:#f8fafc;
+            font-weight:600;
+            color:#475569;
+            padding:14px;
+        }
+
+        .info-table td{
+            color:#0f172a;
+            font-weight:500;
+            padding:14px;
+        }
+
+        .info-table tr{
+            transition:0.2s;
+        }
+
+        .info-table tr:hover{
+            background:#f1f5f9;
+        }
+
+        code{
+            background:#eff6ff;
+            color:#1d4ed8;
+            padding:5px 10px;
+            border-radius:8px;
+            font-weight:600;
+        }
+
+        .badge-custom{
+            padding:6px 12px;
+            border-radius:20px;
+            font-size:12px;
+            font-weight:600;
+        }
+
+        .action-footer{
+            display:flex;
+            gap:10px;
+            margin-top:20px;
+            justify-content:flex-end;
+        }
+
+        .btn{
+            border-radius:12px;
+            font-weight:600;
+            padding:10px 16px;
+        }
+
+        .btn-warning{
+            background:linear-gradient(135deg,#f59e0b,#fbbf24);
+            border:none;
+            color:#111827;
+        }
+
+        .btn-outline-secondary{
+            border-radius:12px;
+        }
+
+        .btn:hover{
+            transform:translateY(-1px);
+            transition:0.2s;
+        }
+
+        @media(max-width:768px){
+            .gv-left{
+                border-right:none;
+                border-bottom:1px solid #e5e7eb;
+            }
+        }
+
+    </style>
+
+    <div class="gv-detail-card">
+
+        <!-- HEADER -->
+        <div class="gv-detail-header">
+
+            <div class="gv-title">
+                <i class="fas fa-user-tie"></i>
+                <span>Chi tiết giảng viên</span>
+            </div>
+
+        </div>
+
+        <div class="row g-0">
+
+            <!-- LEFT -->
+            <div class="col-md-4 gv-left">
+
+                <div class="avatar">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+
+                <div class="gv-name" th:text="${gv.hoTen}">
+                    Nguyễn Văn A
+                </div>
+
+                <div class="gv-sub">
+                <span class="badge bg-info text-dark badge-custom"
+                      th:text="${gv.hocVi ?: 'Chưa cập nhật'}"></span>
+                </div>
+
+                <div class="gv-sub mt-2"
+                     th:text="${gv.chuyenNganh ?: 'Chưa có chuyên ngành'}">
+                </div>
+
+            </div>
+
+            <!-- RIGHT -->
+            <div class="col-md-8 info-box">
+
+                <table class="table table-bordered info-table align-middle">
+
+                    <tr>
+                        <th>Mã giảng viên</th>
+                        <td><code th:text="${gv.maGv}"></code></td>
+                    </tr>
+
+                    <tr>
+                        <th>Họ tên</th>
+                        <td th:text="${gv.hoTen}"></td>
+                    </tr>
+
+                    <tr>
+                        <th>Ngày sinh</th>
+                        <td th:text="${gv.ngaySinh != null ? #temporals.format(gv.ngaySinh, 'dd/MM/yyyy') : '-'}"></td>
+                    </tr>
+
+                    <tr>
+                        <th>Học vị</th>
+                        <td>
+                        <span class="badge bg-info text-dark badge-custom"
+                              th:text="${gv.hocVi ?: '-'}"></span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Chuyên ngành</th>
+                        <td th:text="${gv.chuyenNganh ?: '-'}"></td>
+                    </tr>
+
+                    <tr>
+                        <th>Số điện thoại</th>
+                        <td th:text="${gv.soDienThoai ?: '-'}"></td>
+                    </tr>
+
+                    <tr>
+                        <th>Email</th>
+                        <td th:text="${gv.email ?: '-'}"></td>
+                    </tr>
+
+                    <tr>
+                        <th>Khoa</th>
+                        <td th:text="${gv.khoa?.tenKhoa ?: '-'}"></td>
+                    </tr>
+
+                </table>
+
+                <!-- FOOTER -->
+                <div class="action-footer">
+
+                    <a th:href="@{/admin/giang-vien/sua/{id}(id=${gv.id})}"
+                       class="btn btn-warning">
+                        <i class="fas fa-edit me-1"></i> Chỉnh sửa
+                    </a>
+
+                    <a th:href="@{/admin/giang-vien}"
+                       class="btn btn-outline-secondary">
+                        Quay lại danh sách
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</th:block>
+
+</body>
+</html>

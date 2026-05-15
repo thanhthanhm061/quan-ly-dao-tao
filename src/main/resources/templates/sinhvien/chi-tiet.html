@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Chi tiết sinh viên')}">
+
+<body>
+
+<th:block th:fragment="content">
+
+    <style>
+
+        body{
+            background:#f1f5f9;
+        }
+
+        /* CARD */
+        .detail-card{
+            border:none;
+            border-radius:28px;
+            overflow:hidden;
+            background:#ffffff;
+            box-shadow:0 12px 35px rgba(0,0,0,.08);
+        }
+
+        /* HEADER */
+        .detail-header{
+            background:linear-gradient(135deg,#1e3a8a,#2563eb);
+            padding:35px 40px;
+            color:white;
+            position:relative;
+        }
+
+        .detail-header::after{
+            content:'';
+            position:absolute;
+            right:-40px;
+            top:-40px;
+            width:180px;
+            height:180px;
+            background:rgba(255,255,255,.08);
+            border-radius:50%;
+        }
+
+        .avatar{
+            width:100px;
+            height:100px;
+            border-radius:50%;
+            background:rgba(255,255,255,.15);
+            border:4px solid rgba(255,255,255,.2);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:42px;
+            color:white;
+            backdrop-filter:blur(6px);
+            flex-shrink:0;
+        }
+
+        .student-name{
+            font-size:30px;
+            font-weight:700;
+            margin-bottom:8px;
+        }
+
+        .student-code{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            background:rgba(255,255,255,.12);
+            padding:8px 14px;
+            border-radius:14px;
+            font-size:14px;
+            color:#e2e8f0;
+        }
+
+        /* BODY */
+        .detail-body{
+            padding:35px;
+        }
+
+        /* INFO CARD */
+        .info-item{
+            background:#f8fafc;
+            border:1px solid #e2e8f0;
+            border-radius:20px;
+            padding:22px;
+            height:100%;
+            transition:all .25s ease;
+            position:relative;
+            overflow:hidden;
+        }
+
+        .info-item::before{
+            content:'';
+            position:absolute;
+            left:0;
+            top:0;
+            width:5px;
+            height:100%;
+            background:#2563eb;
+            opacity:.8;
+        }
+
+        .info-item:hover{
+            transform:translateY(-5px);
+            box-shadow:0 12px 25px rgba(37,99,235,.10);
+            background:#ffffff;
+        }
+
+        .info-label{
+            font-size:13px;
+            font-weight:600;
+            text-transform:uppercase;
+            letter-spacing:.5px;
+            color:#64748b;
+            margin-bottom:10px;
+        }
+
+        .info-value{
+            font-size:17px;
+            font-weight:700;
+            color:#0f172a;
+            word-break:break-word;
+        }
+
+        /* STATUS */
+        .status-badge{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            padding:8px 14px;
+            border-radius:999px;
+            font-size:13px;
+            font-weight:700;
+        }
+
+        .status-active{
+            background:#dcfce7;
+            color:#15803d;
+        }
+
+        .status-inactive{
+            background:#e2e8f0;
+            color:#475569;
+        }
+
+        /* BUTTONS */
+        .action-wrapper{
+            margin-top:35px;
+            display:flex;
+            gap:14px;
+            flex-wrap:wrap;
+        }
+
+        .btn-custom{
+            border:none;
+            border-radius:14px;
+            padding:12px 22px;
+            font-weight:600;
+            transition:all .25s ease;
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+        }
+
+        .btn-custom:hover{
+            transform:translateY(-2px);
+        }
+
+        .btn-back{
+            background:#e2e8f0;
+            color:#0f172a;
+        }
+
+        .btn-back:hover{
+            background:#cbd5e1;
+        }
+
+        .btn-edit{
+            background:linear-gradient(135deg,#f59e0b,#f97316);
+            color:white;
+        }
+
+        .btn-edit:hover{
+            opacity:.95;
+        }
+
+        /* RESPONSIVE */
+        @media(max-width:768px){
+
+            .detail-header{
+                flex-direction:column;
+                text-align:center;
+                padding:30px 20px;
+            }
+
+            .detail-body{
+                padding:22px;
+            }
+
+            .student-name{
+                font-size:24px;
+            }
+
+            .action-wrapper{
+                flex-direction:column;
+            }
+
+            .btn-custom{
+                width:100%;
+                justify-content:center;
+            }
+
+        }
+
+    </style>
+
+    <div class="card detail-card">
+
+        <!-- HEADER -->
+        <div class="detail-header d-flex align-items-center gap-4">
+
+            <div class="avatar">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+
+            <div>
+
+                <div class="student-name"
+                     th:text="${sv.hoTen}">
+                </div>
+
+                <div class="student-code">
+
+                    <i class="fas fa-id-card"></i>
+
+                    Mã sinh viên:
+                    <span th:text="${sv.maSv}"></span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- BODY -->
+        <div class="detail-body">
+
+            <div class="row g-4">
+
+                <!-- GIỚI TÍNH -->
+                <div class="col-md-6">
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            Giới tính
+                        </div>
+
+                        <div class="info-value"
+                             th:text="${sv.gioiTinh ?: '-'}">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- NGÀY SINH -->
+                <div class="col-md-6">
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            Ngày sinh
+                        </div>
+
+                        <div class="info-value"
+                             th:text="${sv.ngaySinh ?: '-'}">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- EMAIL -->
+                <div class="col-md-6">
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            Email
+                        </div>
+
+                        <div class="info-value"
+                             th:text="${sv.email ?: '-'}">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- PHONE -->
+                <div class="col-md-6">
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            Số điện thoại
+                        </div>
+
+                        <div class="info-value"
+                             th:text="${sv.soDienThoai ?: '-'}">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- LỚP -->
+                <div class="col-md-6">
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            Lớp học
+                        </div>
+
+                        <div class="info-value"
+                             th:text="${sv.lop?.tenLop ?: '-'}">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- TRẠNG THÁI -->
+                <div class="col-md-6">
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            Trạng thái
+                        </div>
+
+                        <div class="info-value">
+
+                            <span class="status-badge"
+                                  th:classappend="${sv.trangThai != null and sv.trangThai.name()=='DANG_HOC' ? 'status-active' : 'status-inactive'}">
+
+                                <i class="fas fa-circle small"></i>
+
+                                <span th:text="${sv.trangThai ?: '-'}"></span>
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ĐỊA CHỈ -->
+                <div class="col-12">
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            Địa chỉ
+                        </div>
+
+                        <div class="info-value"
+                             th:text="${sv.diaChi ?: '-'}">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ACTION -->
+            <div class="action-wrapper">
+
+                <a th:href="@{/admin/sinh-vien}"
+                   class="btn btn-custom btn-back">
+
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại
+
+                </a>
+
+                <a th:href="@{/admin/sinh-vien/sua/{id}(id=${sv.id})}"
+                   class="btn btn-custom btn-edit">
+
+                    <i class="fas fa-edit"></i>
+                    Chỉnh sửa sinh viên
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</th:block>
+
+</body>
+</html>

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import java.util.List;
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name = "giang_vien")
@@ -30,6 +32,9 @@ public class GiangVien {
     @Column(name = "so_dien_thoai", length = 15)
     private String soDienThoai;
 
+    @Column(name = "ngay_sinh")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate ngaySinh;
     @Column(length = 100)
     @Email(message = "Email không đúng định dạng")
     private String email;
@@ -73,6 +78,14 @@ public class GiangVien {
 
     public void setHocVi(String hocVi) {
         this.hocVi = hocVi;
+    }
+
+    public LocalDate getNgaySinh() {
+        return ngaySinh;
+    }
+
+    public void setNgaySinh(LocalDate ngaySinh) {
+        this.ngaySinh = ngaySinh;
     }
 
     public String getChuyenNganh() {
