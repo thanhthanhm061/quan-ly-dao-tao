@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,8 @@ import jakarta.validation.Valid;
 import java.awt.*;
 import java.awt.Font;
 import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -440,24 +443,25 @@ class LopHocPhanController {
 @Controller
 @RequestMapping("/tkb")
 @RequiredArgsConstructor
-class ThoiKhoaBieuController {
+public class ThoiKhoaBieuController {
+
     private final ThoiKhoaBieuService tkbService;
     private final LopHocPhanService lhpService;
     private final GiangVienService gvService;
     private final SinhVienService svService;
     private final NguoiDungRepository nguoiDungRepo;
     private final GiangVienRepository giangVienRepo;
+    private final PhongHocService phongHocService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GIANG_VIEN')")
     public String xemTKB(@RequestParam(required = false) Long giangVienId,
-                          @RequestParam(required = false) String hocKy,
-                          Authentication auth, Model model) {
+                         @RequestParam(required = false) String hocKy,
+                         Authentication auth, Model model) {
         model.addAttribute("giangViens", gvService.findAll());
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
         model.addAttribute("giangVienIdChon", giangVienId);
         model.addAttribute("hocKyChon", hocKy);
-
         if (giangVienId != null && hocKy != null) {
             model.addAttribute("thoiKhoaBieus", tkbService.findByGiangVien(giangVienId, hocKy));
             model.addAttribute("giangVien", gvService.findById(giangVienId).orElse(null));
@@ -473,7 +477,6 @@ class ThoiKhoaBieuController {
         NguoiDung nd = nguoiDungRepo.findByUsername(username).orElseThrow();
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
         model.addAttribute("hocKyChon", hocKy);
-
         if (nd.getVaiTro() == VaiTro.GIANG_VIEN && hocKy != null) {
             GiangVien gv = giangVienRepo.findByNguoiDungId(nd.getId()).orElse(null);
             if (gv != null) {
@@ -490,27 +493,86 @@ class ThoiKhoaBieuController {
         return "thoikhoabieu/cua-toi";
     }
 
+    @GetMapping("/theo-tuan")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GIANG_VIEN')")
+    public String xemTheoTuan(
+            @RequestParam(required = false) Long giangVienId,
+            @RequestParam(required = false) String hocKy,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay,
+            Model model) {
+        if (ngay == null) ngay = LocalDate.now();
+        LocalDate thu2 = ngay.with(DayOfWeek.MONDAY);
+        model.addAttribute("giangViens", gvService.findAll());
+        model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
+        model.addAttribute("giangVienIdChon", giangVienId);
+        model.addAttribute("hocKyChon", hocKy);
+        model.addAttribute("ngayChon", ngay);
+        model.addAttribute("thu2", thu2);
+        model.addAttribute("thuTrongTuan",
+                List.of(thu2, thu2.plusDays(1), thu2.plusDays(2),
+                        thu2.plusDays(3), thu2.plusDays(4), thu2.plusDays(5)));
+        if (giangVienId != null && hocKy != null) {
+            model.addAttribute("thoiKhoaBieus",
+                    tkbService.findByGiangVienTuan(giangVienId, hocKy, ngay));
+            model.addAttribute("giangVien", gvService.findById(giangVienId).orElse(null));
+        }
+        return "thoikhoabieu/theo-tuan";
+    }
+
+    @GetMapping("/thong-ke")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String thongKe(@RequestParam(required = false) String hocKy, Model model) {
+        model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
+        model.addAttribute("hocKyChon", hocKy);
+        if (hocKy != null) {
+            model.addAttribute("danhSachTai", tkbService.thongKeTaiGiangDay(hocKy));
+        }
+        return "thoikhoabieu/thong-ke";
+    }
+
+    @GetMapping("/phong-trong")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseBody
+    public List<PhongHocDTO> timPhongTrong(
+            @RequestParam String hocKy,
+            @RequestParam int thu,
+            @RequestParam int tietBatDau,
+            @RequestParam int soTiet,
+            @RequestParam(defaultValue = "0") int sucCanThiet) {
+        return tkbService.timPhongTrong(hocKy, thu, tietBatDau, soTiet, sucCanThiet)
+                .stream().map(PhongHocDTO::from).toList();
+    }
+
     @GetMapping("/them")
     @PreAuthorize("hasRole('ADMIN')")
     public String themForm(Model model) {
         model.addAttribute("thoiKhoaBieu", new ThoiKhoaBieu());
         model.addAttribute("lopHocPhans", lhpService.findAll());
+        model.addAttribute("danhSachPhong", phongHocService.findAllHoatDong());
         return "thoikhoabieu/form";
     }
 
     @PostMapping("/them")
     @PreAuthorize("hasRole('ADMIN')")
     public String them(@ModelAttribute ThoiKhoaBieu tkb, RedirectAttributes ra) {
-        try { tkbService.save(tkb); ra.addFlashAttribute("success", "Thêm thời khóa biểu thành công!"); }
-        catch (Exception e) { ra.addFlashAttribute("error", e.getMessage()); }
+        try {
+            tkbService.save(tkb);
+            ra.addFlashAttribute("success", "Thêm thời khóa biểu thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/tkb";
     }
 
     @PostMapping("/xoa/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public String xoa(@PathVariable Long id, RedirectAttributes ra) {
-        try { tkbService.delete(id); ra.addFlashAttribute("success", "Đã xóa!"); }
-        catch (Exception e) { ra.addFlashAttribute("error", e.getMessage()); }
+        try {
+            tkbService.delete(id);
+            ra.addFlashAttribute("success", "Đã xóa!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/tkb";
     }
 }

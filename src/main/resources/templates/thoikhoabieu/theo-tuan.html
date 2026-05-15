@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Lịch theo tuần')}">
+<body><th:block th:fragment="content">
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/tkb}">
+                <i class="fas fa-calendar-alt me-1"></i>TKB Tổng quan
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" th:href="@{/tkb/theo-tuan}">
+                <i class="fas fa-calendar-week me-1"></i>Lịch theo tuần
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/tkb/thong-ke}">
+                <i class="fas fa-chart-bar me-1"></i>Thống kê tải
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/phong-hoc}">
+                <i class="fas fa-door-open me-1"></i>Quản lý phòng
+            </a>
+        </li>
+    </ul>
+
+    <!-- Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Giảng viên</label>
+                    <select name="giangVienId" class="form-select">
+                        <option value="">-- Chọn --</option>
+                        <option th:each="gv : ${giangViens}"
+                                th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
+                                th:selected="${gv.id == giangVienIdChon}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Học kỳ</label>
+                    <select name="hocKy" class="form-select">
+                        <option value="">-- Chọn --</option>
+                        <option th:each="hk : ${danhSachHocKy}"
+                                th:value="${hk}" th:text="${hk}"
+                                th:selected="${hk == hocKyChon}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Chọn ngày trong tuần</label>
+                    <input type="date" name="ngay" class="form-control"
+                           th:value="${ngayChon}"/>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-1"></i>Xem tuần này
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hiển thị lịch tuần -->
+    <div th:if="${thoiKhoaBieus != null}">
+
+        <div th:if="${#lists.isEmpty(thoiKhoaBieus)}" class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>Không có lịch trong tuần này
+        </div>
+
+        <div th:unless="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+        <span>
+          <i class="fas fa-calendar-week me-2"></i>
+          <span th:text="${giangVien?.hoTenVaHocVi ?: '---'}"></span>
+          — Tuần
+          <strong th:text="${thu2 != null ? #temporals.format(thu2,'dd/MM') : ''}"></strong>
+          →
+          <strong th:text="${thu2 != null ? #temporals.format(thu2.plusDays(5),'dd/MM/yyyy') : ''}"></strong>
+        </span>
+                <!-- Nút tuần trước / tuần sau -->
+                <div class="d-flex gap-1">
+                    <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},
+                       hocKy=${hocKyChon},
+                       ngay=${ngayChon != null ? ngayChon.minusWeeks(1) : ''})}"
+                       class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-chevron-left"></i> Tuần trước
+                    </a>
+                    <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},
+                       hocKy=${hocKyChon},
+                       ngay=${ngayChon != null ? ngayChon.plusWeeks(1) : ''})}"
+                       class="btn btn-sm btn-outline-secondary">
+                        Tuần sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0 text-center"
+                           style="min-width:800px;table-layout:fixed">
+                        <colgroup>
+                            <col style="width:70px"/>
+                            <col/><col/><col/><col/><col/><col/>
+                        </colgroup>
+                        <thead style="background:#1e3a5f;color:white">
+                        <tr>
+                            <th>Tiết</th>
+                            <!-- Hiển thị ngày cụ thể trong cột -->
+                            <th th:each="ngay,i : ${thuTrongTuan}">
+                                <div th:text="'Thứ ' + ${i.index + 2}"></div>
+                                <div class="small fw-normal opacity-75"
+                                     th:text="${#temporals.format(ngay,'dd/MM')}"></div>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="tiet : ${#numbers.sequence(1, 12)}" style="height:54px">
+                            <td class="fw-semibold small align-middle" style="background:#f8fafc"
+                                th:text="'Tiết ' + ${tiet}"></td>
+                            <td th:each="thu : ${#numbers.sequence(2, 7)}"
+                                style="padding:0;vertical-align:top;position:relative;overflow:visible">
+                                <th:block th:each="tkb,i : ${thoiKhoaBieus}">
+                                    <div th:if="${tkb.thuTrongTuan eq thu and tkb.tietBatDau eq tiet}"
+                                         class="d-flex flex-column justify-content-center p-1"
+                                         th:style="'position:absolute;z-index:2;left:2px;right:2px;top:2px;' +
+                         'height:' + ${tkb.soTiet * 54 - 4} + 'px;' +
+                         'background:' + ${i.index%6==0?'#dbeafe':i.index%6==1?'#d1fae5':
+                           i.index%6==2?'#fef3c7':i.index%6==3?'#ede9fe':
+                           i.index%6==4?'#fee2e2':'#e0f2fe'} +
+                         ';border-left:3px solid ' +
+                         ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':
+                           i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':
+                           i.index%6==4?'#dc2626':'#0284c7'} +
+                         ';border-radius:4px;overflow:hidden'">
+                    <span class="fw-semibold" style="font-size:.75rem;line-height:1.2"
+                          th:text="${tkb.lopHocPhan?.monHoc?.tenMon ?: '---'}"></span>
+                                        <span class="text-muted" style="font-size:.68rem"
+                                              th:text="'P.' + ${tkb.phongHoc ?: '?'} +
+                                   ' | T.' + ${tkb.tietBatDau} + '-' +
+                                   ${tkb.tietBatDau + tkb.soTiet - 1}"></span>
+                                        <span class="text-muted" style="font-size:.65rem"
+                                              th:if="${tkb.lopHocPhan?.monHoc?.soTinChi != null}"
+                                              th:text="${tkb.lopHocPhan.monHoc.soTinChi} + ' TC'"></span>
+                                    </div>
+                                </th:block>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${thoiKhoaBieus == null}" class="text-center py-5 text-muted">
+        <i class="fas fa-calendar-week fa-4x mb-3 d-block" style="opacity:.3"></i>
+        <h5>Chọn giảng viên, học kỳ và ngày để xem lịch tuần</h5>
+    </div>
+
+</th:block></body></html>

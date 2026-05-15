@@ -1,64 +1,320 @@
+<!-- thoikhoabieu/form.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::content}, 'Thêm Thời khóa biểu')}">
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Thêm Thời khóa biểu')}">
 <body><th:block th:fragment="content">
-<div class="card" style="max-width:620px;margin:0 auto">
-  <div class="card-header"><i class="fas fa-calendar-plus me-2"></i>Thêm Thời khóa biểu</div>
-  <div class="card-body p-4">
-    <form th:action="@{/tkb/them}" th:object="${thoiKhoaBieu}" method="post">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-      <div class="row g-3">
-        <div class="col-12">
-          <label class="form-label fw-semibold">Lớp học phần <span class="text-danger">*</span></label>
-          <select class="form-select" th:field="*{lopHocPhan.id}">
-            <option value="">-- Chọn lớp học phần --</option>
-            <option th:each="lhp:${lopHocPhans}" th:value="${lhp.id}"
-                    th:text="${lhp.maLhp+' | '+lhp.monHoc.tenMon+' | '+lhp.hocKy}"></option>
-          </select>
+
+    <div class="card" style="max-width:720px;margin:0 auto">
+        <div class="card-header d-flex align-items-center gap-2">
+            <i class="fas fa-calendar-plus"></i>
+            <span class="fw-semibold">Thêm Thời khóa biểu</span>
         </div>
-        <div class="col-md-6">
-          <label class="form-label fw-semibold">Thứ trong tuần <span class="text-danger">*</span></label>
-          <select class="form-select" th:field="*{thuTrongTuan}">
-            <option value="2">Thứ 2</option><option value="3">Thứ 3</option>
-            <option value="4">Thứ 4</option><option value="5">Thứ 5</option>
-            <option value="6">Thứ 6</option><option value="7">Thứ 7</option>
-          </select>
+        <div class="card-body p-4">
+            <form th:action="@{/tkb/them}" th:object="${thoiKhoaBieu}" method="post" id="tkbForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="row g-3">
+
+                    <!-- ===================== -->
+                    <!-- LỚP HỌC PHẦN          -->
+                    <!-- ===================== -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">
+                            Lớp học phần <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" th:field="*{lopHocPhan.id}" id="lhpSelect" required>
+                            <option value="">-- Chọn lớp học phần --</option>
+                            <option th:each="lhp : ${lopHocPhans}"
+                                    th:value="${lhp.id}"
+                                    th:text="${lhp.maLhp + ' | ' + lhp.monHoc.tenMon + ' | ' + lhp.hocKy}"
+                                    th:attr="data-tinchi=${lhp.monHoc.soTinChi},
+                             data-hocky=${lhp.hocKy},
+                             data-mon=${lhp.monHoc.tenMon}">
+                            </option>
+                        </select>
+                        <!-- Thông tin tín chỉ hiện ra sau khi chọn LHP -->
+                        <div id="tinChiInfo" class="alert alert-info py-2 px-3 mt-2 small" style="display:none">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <span id="tinChiText"></span>
+                        </div>
+                    </div>
+
+                    <!-- ===================== -->
+                    <!-- THỨ + TIẾT            -->
+                    <!-- ===================== -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">
+                            Thứ trong tuần <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" th:field="*{thuTrongTuan}" id="thuSelect">
+                            <option value="2">Thứ 2</option>
+                            <option value="3">Thứ 3</option>
+                            <option value="4">Thứ 4</option>
+                            <option value="5">Thứ 5</option>
+                            <option value="6">Thứ 6</option>
+                            <option value="7">Thứ 7</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">
+                            Tiết bắt đầu <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" th:field="*{tietBatDau}" id="tietSelect">
+                            <option th:each="t : ${#numbers.sequence(1,12)}"
+                                    th:value="${t}"
+                                    th:text="'Tiết ' + ${t}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Số tiết</label>
+                        <select class="form-select" th:field="*{soTiet}" id="soTietSelect">
+                            <option value="1">1 tiết</option>
+                            <option value="2">2 tiết</option>
+                            <option value="3">3 tiết</option>
+                            <option value="4">4 tiết</option>
+                            <option value="5">5 tiết</option>
+                        </select>
+                    </div>
+
+                    <!-- ===================== -->
+                    <!-- PHÒNG HỌC             -->
+                    <!-- ===================== -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Phòng học</label>
+                        <div class="input-group">
+                            <select class="form-select" th:field="*{phongHoc}" id="phongSelect">
+                                <option value="">-- Chọn hoặc nhập phòng --</option>
+                                <option th:each="p : ${danhSachPhong}"
+                                        th:value="${p.maPhong}"
+                                        th:text="${p.maPhong + ' (' + p.sucChua + ' chỗ' +
+                                (p.loaiPhong != null ? ' · ' + p.loaiPhong.name() : '') + ')'}">
+                                </option>
+                            </select>
+                            <button type="button" class="btn btn-outline-primary" id="btnTimPhong"
+                                    title="Tìm phòng còn trống cho ca học này">
+                                <i class="fas fa-search me-1"></i>Phòng trống
+                            </button>
+                        </div>
+
+                        <!-- Kết quả phòng trống -->
+                        <div id="phongTrongResult" class="mt-2" style="display:none">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <small class="text-muted fw-semibold">Phòng trống:</small>
+                                <span id="phongTrongCount" class="badge bg-success"></span>
+                            </div>
+                            <div id="phongTrongItems" class="d-flex flex-wrap gap-1"></div>
+                        </div>
+                        <div id="phongTrongEmpty" class="alert alert-warning py-2 small mt-2" style="display:none">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Không có phòng trống cho ca học này
+                        </div>
+                    </div>
+
+                    <!-- ===================== -->
+                    <!-- TUẦN BẮT ĐẦU / KẾT THÚC -->
+                    <!-- ===================== -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Tuần bắt đầu</label>
+                        <input type="date" class="form-control" th:field="*{tuanBatDau}" id="tuanBatDau"/>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Tuần kết thúc</label>
+                        <input type="date" class="form-control" th:field="*{tuanKetThuc}" id="tuanKetThuc"/>
+                    </div>
+
+                    <!-- Số tuần tự tính -->
+                    <div id="soTuanInfo" class="col-12" style="display:none">
+                        <div class="alert alert-secondary py-2 small mb-0">
+                            <i class="fas fa-calendar-week me-1"></i>
+                            <span id="soTuanText"></span>
+                        </div>
+                    </div>
+
+                    <!-- ===================== -->
+                    <!-- TUẦN HỌC (tùy chọn)  -->
+                    <!-- ===================== -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">
+                            Tuần học <span class="text-muted fw-normal small">(bỏ trống = học đủ tuần)</span>
+                        </label>
+                        <input type="text" class="form-control" th:field="*{tuanHoc}"
+                               placeholder="VD: 1,2,3,5,7 — bỏ tuần 4,6 nếu có lễ"/>
+                        <div class="form-text">Nhập số tuần cách nhau bởi dấu phẩy</div>
+                    </div>
+
+                    <!-- ===================== -->
+                    <!-- CẢNH BÁO              -->
+                    <!-- ===================== -->
+                    <div class="col-12">
+                        <div class="alert alert-warning small p-2 mb-0">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Hệ thống tự động kiểm tra <strong>trùng lịch giảng viên</strong>
+                            và <strong>trùng phòng học</strong> trước khi lưu.
+                        </div>
+                    </div>
+
+                    <!-- ===================== -->
+                    <!-- NÚT HÀNH ĐỘNG         -->
+                    <!-- ===================== -->
+                    <div class="col-12 d-flex gap-2 justify-content-end border-top pt-3">
+                        <a th:href="@{/tkb}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Quay lại
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-1"></i>Lưu thời khóa biểu
+                        </button>
+                    </div>
+
+                </div>
+            </form>
         </div>
-        <div class="col-md-3">
-          <label class="form-label fw-semibold">Tiết bắt đầu <span class="text-danger">*</span></label>
-          <select class="form-select" th:field="*{tietBatDau}">
-            <option th:each="t:${#numbers.sequence(1,12)}" th:value="${t}" th:text="'Tiết '+${t}"></option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label fw-semibold">Số tiết</label>
-          <select class="form-select" th:field="*{soTiet}">
-            <option value="1">1 tiết</option><option value="2">2 tiết</option>
-            <option value="3" selected>3 tiết</option><option value="4">4 tiết</option>
-            <option value="5">5 tiết</option>
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-semibold">Phòng học</label>
-          <input type="text" class="form-control" th:field="*{phongHoc}" placeholder="VD: A101, Lab1"/>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-semibold">Tuần bắt đầu</label>
-          <input type="date" class="form-control" th:field="*{tuanBatDau}"/>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-semibold">Tuần kết thúc</label>
-          <input type="date" class="form-control" th:field="*{tuanKetThuc}"/>
-        </div>
-        <div class="alert alert-warning small p-2 mb-0">
-          <i class="fas fa-exclamation-triangle me-1"></i>
-          Hệ thống sẽ tự động kiểm tra trùng lịch của giảng viên trước khi lưu.
-        </div>
-        <div class="col-12 d-flex gap-2 justify-content-end border-top pt-3">
-          <a th:href="@{/tkb}" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i>Quay lại</a>
-          <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i>Lưu thời khóa biểu</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- JAVASCRIPT            -->
+    <!-- ===================== -->
+    <script th:inline="javascript">
+        (function () {
+            const lhpSelect    = document.getElementById('lhpSelect');
+            const thuSelect    = document.getElementById('thuSelect');
+            const tietSelect   = document.getElementById('tietSelect');
+            const soTietSelect = document.getElementById('soTietSelect');
+            const phongSelect  = document.getElementById('phongSelect');
+            const btnTim       = document.getElementById('btnTimPhong');
+            const tuanBatDau   = document.getElementById('tuanBatDau');
+            const tuanKetThuc  = document.getElementById('tuanKetThuc');
+
+            // ── Hiển thị thông tin tín chỉ khi chọn LHP ──
+            lhpSelect.addEventListener('change', function () {
+                const opt    = this.selectedOptions[0];
+                const info   = document.getElementById('tinChiInfo');
+                const text   = document.getElementById('tinChiText');
+                const tinChi = parseInt(opt.dataset.tinchi || '0');
+                const mon    = opt.dataset.mon || '';
+
+                if (!this.value || tinChi === 0) {
+                    info.style.display = 'none';
+                    return;
+                }
+
+                const tongTiet  = tinChi * 15;
+                const soTuanHK  = 15;
+                const tietTuan  = Math.ceil(tongTiet / soTuanHK);
+
+                text.textContent =
+                    mon + ' — ' + tinChi + ' tín chỉ = ' + tongTiet +
+                    ' tiết/kỳ (~' + tietTuan + ' tiết/tuần). ' +
+                    'Gợi ý số tiết/buổi: ' + Math.min(tietTuan * 2, 5) + ' tiết.';
+
+                // Gợi ý số tiết
+                const goiY = Math.min(Math.max(tietTuan, 2), 5);
+                soTietSelect.value = goiY;
+
+                info.style.display = '';
+            });
+
+            // ── Tính số tuần khi chọn ngày ──
+            function tinhSoTuan() {
+                const bd = tuanBatDau.value;
+                const kt = tuanKetThuc.value;
+                const infoEl = document.getElementById('soTuanInfo');
+                const textEl = document.getElementById('soTuanText');
+
+                if (!bd || !kt) { infoEl.style.display = 'none'; return; }
+
+                const ms    = new Date(kt) - new Date(bd);
+                const soTuan = Math.round(ms / (7 * 24 * 3600 * 1000)) + 1;
+
+                if (soTuan <= 0) { infoEl.style.display = 'none'; return; }
+
+                textEl.textContent =
+                    'Khoảng thời gian: ' + soTuan + ' tuần (' +
+                    new Date(bd).toLocaleDateString('vi-VN') + ' → ' +
+                    new Date(kt).toLocaleDateString('vi-VN') + ')';
+
+                infoEl.style.display = '';
+            }
+
+            tuanBatDau.addEventListener('change', tinhSoTuan);
+            tuanKetThuc.addEventListener('change', tinhSoTuan);
+
+            // ── Tìm phòng trống ──
+            btnTim.addEventListener('click', async function () {
+                const opt   = lhpSelect.selectedOptions[0];
+                const hocKy = opt?.dataset?.hocky || '';
+                const thu   = thuSelect.value;
+                const tiet  = tietSelect.value;
+                const soTiet = soTietSelect.value;
+
+                if (!thu || !tiet || !soTiet) {
+                    alert('Vui lòng chọn thứ, tiết bắt đầu và số tiết trước');
+                    return;
+                }
+                if (!hocKy) {
+                    alert('Vui lòng chọn lớp học phần để xác định học kỳ');
+                    return;
+                }
+
+                btnTim.disabled = true;
+                btnTim.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang tìm...';
+
+                try {
+                    const url = `/tkb/phong-trong?hocKy=${encodeURIComponent(hocKy)}&thu=${thu}&tietBatDau=${tiet}&soTiet=${soTiet}`;
+                    const res  = await fetch(url);
+                    const data = await res.json();
+
+                    const resultEl = document.getElementById('phongTrongResult');
+                    const emptyEl  = document.getElementById('phongTrongEmpty');
+                    const itemsEl  = document.getElementById('phongTrongItems');
+                    const countEl  = document.getElementById('phongTrongCount');
+
+                    if (data.length === 0) {
+                        resultEl.style.display = 'none';
+                        emptyEl.style.display  = '';
+                        return;
+                    }
+
+                    emptyEl.style.display  = 'none';
+                    resultEl.style.display = '';
+                    countEl.textContent    = data.length + ' phòng';
+                    itemsEl.innerHTML      = '';
+
+                    data.forEach(p => {
+                        const btn = document.createElement('button');
+                        btn.type      = 'button';
+                        btn.className = 'btn btn-sm btn-outline-success';
+                        btn.innerHTML =
+                            '<i class="fas fa-door-open me-1"></i>' +
+                            p.maPhong + ' <span class="badge bg-success ms-1">' + p.sucChua + ' chỗ</span>';
+                        btn.onclick = () => {
+                            phongSelect.value = p.maPhong;
+                            // Highlight nút được chọn
+                            itemsEl.querySelectorAll('button').forEach(b =>
+                                b.classList.replace('btn-success', 'btn-outline-success'));
+                            btn.classList.replace('btn-outline-success', 'btn-success');
+                        };
+                        itemsEl.appendChild(btn);
+                    });
+
+                } catch (e) {
+                    alert('Lỗi khi tìm phòng: ' + e.message);
+                } finally {
+                    btnTim.disabled = false;
+                    btnTim.innerHTML = '<i class="fas fa-search me-1"></i>Phòng trống';
+                }
+            });
+
+            // ── Reset kết quả phòng khi đổi thứ/tiết ──
+            [thuSelect, tietSelect, soTietSelect].forEach(el => {
+                el.addEventListener('change', () => {
+                    document.getElementById('phongTrongResult').style.display = 'none';
+                    document.getElementById('phongTrongEmpty').style.display  = 'none';
+                });
+            });
+
+        })();
+    </script>
+
 </th:block></body></html>
