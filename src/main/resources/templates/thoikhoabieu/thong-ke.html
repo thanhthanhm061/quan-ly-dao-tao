@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Thống kê tải giảng dạy')}">
+<body><th:block th:fragment="content">
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/tkb}">
+                <i class="fas fa-calendar-alt me-1"></i>TKB Tổng quan
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/tkb/theo-tuan}">
+                <i class="fas fa-calendar-week me-1"></i>Lịch theo tuần
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" th:href="@{/tkb/thong-ke}">
+                <i class="fas fa-chart-bar me-1"></i>Thống kê tải
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/phong-hoc}">
+                <i class="fas fa-door-open me-1"></i>Quản lý phòng
+            </a>
+        </li>
+    </ul>
+
+    <!-- Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="d-flex gap-3 align-items-end flex-wrap">
+                <div>
+                    <label class="form-label fw-semibold">Học kỳ</label>
+                    <select name="hocKy" class="form-select" style="width:180px">
+                        <option value="">-- Chọn học kỳ --</option>
+                        <option th:each="hk : ${danhSachHocKy}"
+                                th:value="${hk}" th:text="${hk}"
+                                th:selected="${hk == hocKyChon}">
+                        </option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-chart-bar me-1"></i>Thống kê
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Kết quả -->
+    <div th:if="${danhSachTai != null and not #lists.isEmpty(danhSachTai)}">
+
+        <!-- Tóm tắt -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card border-0 bg-primary bg-opacity-10">
+                    <div class="card-body text-center">
+                        <div class="fs-2 fw-bold text-primary"
+                             th:text="${#lists.size(danhSachTai)}"></div>
+                        <div class="text-muted small">Giảng viên có lịch</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-success bg-opacity-10">
+                    <div class="card-body text-center">
+                        <div class="fs-2 fw-bold text-success"
+                             th:text="${danhSachTai.stream().mapToInt(t -> t.tongTiet()).sum()}">
+                        </div>
+                        <div class="text-muted small">Tổng tiết toàn trường</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-warning bg-opacity-10">
+                    <div class="card-body text-center">
+                        <div class="fs-2 fw-bold text-warning"
+                             th:text="${danhSachTai.stream().filter(t -> t.tyLeTai() > 1.0).count()}">
+                        </div>
+                        <div class="text-muted small">Giảng viên quá tải</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bảng chi tiết -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-bar me-2"></i>
+                Chi tiết tải giảng dạy — <span th:text="${hocKyChon}"></span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Giảng viên</th>
+                        <th class="text-center">Số lớp</th>
+                        <th class="text-center">Tổng tín chỉ</th>
+                        <th class="text-center">Tổng tiết/kỳ</th>
+                        <th class="text-center">Mức tải</th>
+                        <th style="min-width:200px">Biểu đồ</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="tai,i : ${danhSachTai}">
+                        <td class="text-muted small" th:text="${i.index + 1}"></td>
+                        <td>
+                            <span class="fw-semibold" th:text="${tai.hoTen}"></span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary" th:text="${tai.soLop}"></span>
+                        </td>
+                        <td class="text-center">
+              <span class="badge bg-info text-dark"
+                    th:text="${tai.tongTinChi} + ' TC'"></span>
+                        </td>
+                        <td class="text-center fw-semibold" th:text="${tai.tongTiet}"></td>
+                        <td class="text-center">
+              <span class="badge"
+                    th:classappend="'bg-' + ${tai.mauTai}"
+                    th:text="${tai.mucTai}">
+              </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height:10px">
+                                    <div class="progress-bar"
+                                         th:classappend="'bg-' + ${tai.mauTai}"
+                                         th:style="'width:' + ${T(java.lang.Math).min(tai.tyLeTai * 100, 100)} + '%'">
+                                    </div>
+                                </div>
+                                <small class="text-muted" style="white-space:nowrap"
+                                       th:text="${#numbers.formatDecimal(tai.tyLeTai * 100, 1, 0)} + '%'">
+                                </small>
+                            </div>
+                            <div class="text-muted" style="font-size:.7rem"
+                                 th:text="${tai.tongTiet} + ' / 270 tiết'"></div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${danhSachTai == null}" class="text-center py-5 text-muted">
+        <i class="fas fa-chart-bar fa-4x mb-3 d-block" style="opacity:.3"></i>
+        <h5>Chọn học kỳ để xem thống kê tải giảng dạy</h5>
+    </div>
+
+    <div th:if="${danhSachTai != null and #lists.isEmpty(danhSachTai)}"
+         class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>Chưa có dữ liệu thời khóa biểu trong học kỳ này
+    </div>
+
+</th:block></body></html>
