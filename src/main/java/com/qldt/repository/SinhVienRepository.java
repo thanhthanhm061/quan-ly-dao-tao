@@ -9,6 +9,10 @@ import java.util.Optional;
 
 public interface SinhVienRepository extends JpaRepository<SinhVien, Long> {
 
+    // =========================
+    // TÌM KIẾM
+    // =========================
+
     Optional<SinhVien> findByMaSv(String maSv);
 
     boolean existsByMaSv(String maSv);
@@ -22,8 +26,15 @@ public interface SinhVienRepository extends JpaRepository<SinhVien, Long> {
     long countByLopId(Long lopId);
 
     // =========================
+    // XEM CHI TIẾT SINH VIÊN
+    // =========================
+
+    Optional<SinhVien> findById(Long id);
+
+    // =========================
     // THỐNG KÊ SINH VIÊN THEO KHOA
     // =========================
+
     @Query("""
         SELECT 
             sv.lop.khoa.tenKhoa,
