@@ -18,4 +18,5 @@ public interface ThoiKhoaBieuService {
     List<TaiGiangDayDTO> thongKeTaiGiangDay(String hocKy);
     List<PhongHoc> timPhongTrong(String hocKy, int thu, int tietBd, int soTiet, int sucCanThiet);
     List<PhongHoc> findAllPhong();
+
 }

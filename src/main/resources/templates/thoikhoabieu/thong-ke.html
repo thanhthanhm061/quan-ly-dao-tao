@@ -3,139 +3,235 @@
       th:replace="~{layout/base :: layout(~{::content}, 'Thống kê tải giảng dạy')}">
 <body><th:block th:fragment="content">
 
-    <!-- Tabs -->
-    <ul class="nav nav-tabs mb-4">
-        <li class="nav-item">
-            <a class="nav-link" th:href="@{/tkb}">
-                <i class="fas fa-calendar-alt me-1"></i>TKB Tổng quan
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" th:href="@{/tkb/theo-tuan}">
-                <i class="fas fa-calendar-week me-1"></i>Lịch theo tuần
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link active" th:href="@{/tkb/thong-ke}">
-                <i class="fas fa-chart-bar me-1"></i>Thống kê tải
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" th:href="@{/phong-hoc}">
-                <i class="fas fa-door-open me-1"></i>Quản lý phòng
-            </a>
-        </li>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+        .stat-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+            gap:16px;
+            margin-bottom:22px;
+        }
+
+        .stat-card{
+            background:#fff;
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            padding:22px;
+            box-shadow:var(--shadow);
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            min-height:120px;
+        }
+        :root {
+            --navy:#0f2542; --navy-light:#1e3a5f;
+            --surface:#f8fafc; --border:#e2e8f0; --text:#0f172a; --text-muted:#64748b;
+            --radius:10px; --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.06);
+            --green:#059669; --amber:#d97706; --rose:#dc2626; --blue:#2563eb;
+        }
+        body { font-family:'Be Vietnam Pro',sans-serif; background:#f1f5f9; }
+
+        .tkb-tabs { display:flex; gap:4px; background:#fff; border-radius:12px; padding:5px;
+            box-shadow:var(--shadow); margin-bottom:22px; border:none; }
+        .tkb-tabs .nav-item { flex:1; }
+        .tkb-tabs .nav-link { border:none; border-radius:8px; font-weight:500; font-size:.85rem;
+            color:var(--text-muted); padding:8px 10px; text-align:center; transition:.2s; white-space:nowrap; }
+        .tkb-tabs .nav-link:hover { background:var(--surface); color:var(--navy); }
+        .tkb-tabs .nav-link.active { background:var(--navy); color:#fff; }
+
+        .filter-card { border:1.5px solid var(--border); border-radius:var(--radius);
+            background:#fff; padding:18px 22px; margin-bottom:20px;
+            box-shadow:0 1px 4px rgba(0,0,0,.05); }
+        .form-label { font-size:.82rem; font-weight:600; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; }
+        .form-select { border:1.5px solid var(--border); border-radius:8px;
+            font-size:.9rem; padding:9px 12px; }
+        .form-select:focus { border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; }
+        .btn-primary { background:var(--navy); border-color:var(--navy); border-radius:8px;
+            font-weight:600; font-size:.88rem; }
+
+        /* Summary cards */
+        .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:22px; }
+        .stat-card { background:#fff; border:1px solid var(--border); border-radius:var(--radius);
+            padding:20px; text-align:center; box-shadow:var(--shadow);
+            border-top:3px solid transparent; }
+        .stat-card.blue { border-top-color:var(--blue); }
+        .stat-card.green { border-top-color:var(--green); }
+        .stat-card.amber { border-top-color:var(--amber); }
+        .stat-card .stat-num { font-size:2rem; font-weight:800; line-height:1; margin-bottom:4px; }
+        .stat-card .stat-lbl { font-size:.8rem; color:var(--text-muted); font-weight:500; }
+        .stat-card.blue .stat-num { color:var(--blue); }
+        .stat-card.green .stat-num { color:var(--green); }
+        .stat-card.amber .stat-num { color:var(--amber); }
+
+        /* Table */
+        .card { border:1px solid var(--border); border-radius:var(--radius);
+            box-shadow:var(--shadow); background:#fff; }
+        .card-header { background:var(--navy); color:#fff;
+            border-radius:var(--radius) var(--radius) 0 0 !important;
+            padding:14px 20px; font-weight:600; border:none; }
+
+        .stat-table { width:100%; border-collapse:collapse; }
+        .stat-table thead th { background:var(--surface); font-size:.78rem; font-weight:700;
+            color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;
+            padding:10px 16px; border-bottom:2px solid var(--border); }
+        .stat-table tbody td { padding:12px 16px; font-size:.88rem; border-bottom:1px solid #f0f4f8;
+            vertical-align:middle; }
+        .stat-table tbody tr:last-child td { border-bottom:none; }
+        .stat-table tbody tr:hover { background:#f8fafd; }
+
+        /* Progress */
+        .progress-wrap { display:flex; align-items:center; gap:8px; }
+        .progress { flex:1; height:8px; border-radius:4px; background:#e5e7eb; overflow:hidden; }
+        .progress-bar { height:100%; border-radius:4px; transition:width .4s ease; }
+        .progress-bar.bg-success { background:var(--green) !important; }
+        .progress-bar.bg-warning { background:var(--amber) !important; }
+        .progress-bar.bg-danger  { background:var(--rose)  !important; }
+        .pct-label { font-size:.78rem; font-weight:600; white-space:nowrap; width:42px; text-align:right; }
+
+        .tag { display:inline-flex; align-items:center; font-size:.75rem;
+            padding:3px 10px; border-radius:20px; font-weight:600; }
+        .tag-success { background:#d1fae5; color:#065f46; }
+        .tag-warning { background:#fef3c7; color:#92400e; }
+        .tag-danger  { background:#fee2e2; color:#991b1b; }
+        .tag-muted   { background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; }
+        .tag-info    { background:#dbeafe; color:#1e40af; }
+
+        .rank-num { width:28px; height:28px; border-radius:50%; display:inline-flex;
+            align-items:center; justify-content:center; font-size:.78rem; font-weight:700; }
+        .rank-1 { background:#fbbf24; color:#78350f; }
+        .rank-2 { background:#94a3b8; color:#1e293b; }
+        .rank-3 { background:#c084fc; color:#4a044e; }
+        .rank-n { background:#f1f5f9; color:#64748b; }
+
+        .empty-state { text-align:center; padding:56px 20px; color:var(--text-muted); }
+        .empty-state i { font-size:3rem; opacity:.25; display:block; margin-bottom:14px; }
+        .empty-state h5 { font-weight:600; color:#334155; }
+
+        @media(max-width:640px) { .stat-grid { grid-template-columns:1fr; } }
+    </style>
+
+    <!-- ── TABS ── -->
+    <ul class="tkb-tabs nav">
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb}">
+            <i class="fas fa-calendar-alt me-1"></i>Tổng quan</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb/theo-tuan}">
+            <i class="fas fa-calendar-week me-1"></i>Theo tuần</a></li>
+        <li class="nav-item"><a class="nav-link active" th:href="@{/tkb/thong-ke}">
+            <i class="fas fa-chart-bar me-1"></i>Thống kê tải</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb/phong-hoc}">
+            <i class="fas fa-door-open me-1"></i>Phòng học</a></li>
     </ul>
 
-    <!-- Filter -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" class="d-flex gap-3 align-items-end flex-wrap">
-                <div>
-                    <label class="form-label fw-semibold">Học kỳ</label>
-                    <select name="hocKy" class="form-select" style="width:180px">
-                        <option value="">-- Chọn học kỳ --</option>
-                        <option th:each="hk : ${danhSachHocKy}"
-                                th:value="${hk}" th:text="${hk}"
-                                th:selected="${hk == hocKyChon}">
-                        </option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-chart-bar me-1"></i>Thống kê
-                </button>
-            </form>
-        </div>
+    <!-- ── FILTER ── -->
+    <div class="filter-card">
+        <form method="get" class="d-flex gap-3 align-items-end flex-wrap">
+            <div>
+                <label class="form-label">Học kỳ</label>
+                <select name="hocKy" class="form-select" style="min-width:190px">
+                    <option value="">— Chọn học kỳ —</option>
+                    <option th:each="hk : ${danhSachHocKy}"
+                            th:value="${hk}" th:text="${hk}"
+                            th:selected="${hk == hocKyChon}">
+                    </option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-chart-bar me-1"></i>Xem thống kê
+            </button>
+        </form>
     </div>
 
-    <!-- Kết quả -->
+    <!-- ── KẾT QUẢ ── -->
     <div th:if="${danhSachTai != null and not #lists.isEmpty(danhSachTai)}">
 
-        <!-- Tóm tắt -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="card border-0 bg-primary bg-opacity-10">
-                    <div class="card-body text-center">
-                        <div class="fs-2 fw-bold text-primary"
-                             th:text="${#lists.size(danhSachTai)}"></div>
-                        <div class="text-muted small">Giảng viên có lịch</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 bg-success bg-opacity-10">
-                    <div class="card-body text-center">
-                        <div class="fs-2 fw-bold text-success"
-                             th:text="${danhSachTai.stream().mapToInt(t -> t.tongTiet()).sum()}">
-                        </div>
-                        <div class="text-muted small">Tổng tiết toàn trường</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 bg-warning bg-opacity-10">
-                    <div class="card-body text-center">
-                        <div class="fs-2 fw-bold text-warning"
-                             th:text="${danhSachTai.stream().filter(t -> t.tyLeTai() > 1.0).count()}">
-                        </div>
-                        <div class="text-muted small">Giảng viên quá tải</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Summary cards -->
+        <div class="stat-grid">
 
-        <!-- Bảng chi tiết -->
+            <div class="stat-card blue">
+                <div class="stat-num"
+                     th:text="${#lists.size(danhSachTai)}"></div>
+                <div class="stat-lbl">
+                    <i class="fas fa-chalkboard-teacher me-1"></i>
+                    Giảng viên có lịch
+                </div>
+            </div>
+
+            <div class="stat-card green">
+                <div class="stat-num"
+                     th:text="${tongTietToanTruong}"></div>
+                <div class="stat-lbl">
+                    <i class="fas fa-clock me-1"></i>
+                    Tổng tiết toàn trường
+                </div>
+            </div>
+
+            <div class="stat-card amber">
+                <div class="stat-num"
+                     th:text="${soGVQuaTai}"></div>
+                <div class="stat-lbl">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Giảng viên quá tải
+                </div>
+            </div>
+
+        </div>
+        <!-- Detail table -->
         <div class="card">
             <div class="card-header">
                 <i class="fas fa-chart-bar me-2"></i>
-                Chi tiết tải giảng dạy — <span th:text="${hocKyChon}"></span>
+                Chi tiết tải giảng dạy
+                <span class="ms-2 opacity-75 fw-normal" th:text="'— ' + ${hocKyChon}"></span>
             </div>
             <div class="card-body p-0">
-                <table class="table table-hover align-middle mb-0">
+                <table class="stat-table">
                     <thead>
                     <tr>
                         <th>#</th>
                         <th>Giảng viên</th>
                         <th class="text-center">Số lớp</th>
-                        <th class="text-center">Tổng tín chỉ</th>
-                        <th class="text-center">Tổng tiết/kỳ</th>
+                        <th class="text-center">Tín chỉ</th>
+                        <th class="text-center">Tổng tiết</th>
                         <th class="text-center">Mức tải</th>
-                        <th style="min-width:200px">Biểu đồ</th>
+                        <th style="min-width:220px">Biểu đồ tải <span class="opacity-50 fw-normal">(/ 270 tiết)</span></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="tai,i : ${danhSachTai}">
-                        <td class="text-muted small" th:text="${i.index + 1}"></td>
                         <td>
-                            <span class="fw-semibold" th:text="${tai.hoTen}"></span>
-                        </td>
-                        <td class="text-center">
-                            <span class="badge bg-secondary" th:text="${tai.soLop}"></span>
-                        </td>
-                        <td class="text-center">
-              <span class="badge bg-info text-dark"
-                    th:text="${tai.tongTinChi} + ' TC'"></span>
-                        </td>
-                        <td class="text-center fw-semibold" th:text="${tai.tongTiet}"></td>
-                        <td class="text-center">
-              <span class="badge"
-                    th:classappend="'bg-' + ${tai.mauTai}"
-                    th:text="${tai.mucTai}">
-              </span>
+            <span class="rank-num"
+                  th:classappend="${i.index==0?'rank-1':i.index==1?'rank-2':i.index==2?'rank-3':'rank-n'}"
+                  th:text="${i.index+1}"></span>
                         </td>
                         <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="progress flex-grow-1" style="height:10px">
+                            <div class="fw-semibold" style="font-size:.9rem" th:text="${tai.hoTen}"></div>
+                        </td>
+                        <td class="text-center">
+                            <span class="tag tag-muted" th:text="${tai.soLop} + ' lớp'"></span>
+                        </td>
+                        <td class="text-center">
+                            <span class="tag tag-info" th:text="${tai.tongTinChi} + ' TC'"></span>
+                        </td>
+                        <td class="text-center fw-bold" style="font-size:.95rem"
+                            th:text="${tai.tongTiet}"></td>
+                        <td class="text-center">
+            <span class="tag"
+                  th:classappend="'tag-' + ${tai.mauTai}"
+                  th:text="${tai.mucTai}"></span>
+                        </td>
+                        <td>
+                            <div class="progress-wrap">
+                                <div class="progress">
                                     <div class="progress-bar"
                                          th:classappend="'bg-' + ${tai.mauTai}"
-                                         th:style="'width:' + ${T(java.lang.Math).min(tai.tyLeTai * 100, 100)} + '%'">
+                                         th:style="'width:' + ${T(java.lang.Math).min(tai.tyLeTai * 100.0, 100.0)} + '%'">
                                     </div>
                                 </div>
-                                <small class="text-muted" style="white-space:nowrap"
-                                       th:text="${#numbers.formatDecimal(tai.tyLeTai * 100, 1, 0)} + '%'">
-                                </small>
+                                <span class="pct-label"
+                                      th:style="'color:' + ${tai.mauTai == 'danger' ? '#dc2626' : tai.mauTai == 'warning' ? '#d97706' : '#059669'}"
+                                      th:text="${#numbers.formatDecimal(tai.tyLeTai*100,1,0)} + '%'"></span>
                             </div>
-                            <div class="text-muted" style="font-size:.7rem"
+                            <div style="font-size:.7rem;color:var(--text-muted);margin-top:2px"
                                  th:text="${tai.tongTiet} + ' / 270 tiết'"></div>
                         </td>
                     </tr>
@@ -145,14 +241,21 @@
         </div>
     </div>
 
-    <div th:if="${danhSachTai == null}" class="text-center py-5 text-muted">
-        <i class="fas fa-chart-bar fa-4x mb-3 d-block" style="opacity:.3"></i>
-        <h5>Chọn học kỳ để xem thống kê tải giảng dạy</h5>
+    <!-- ── CHƯA CHỌN / TRỐNG ── -->
+    <div th:if="${danhSachTai == null}" class="card">
+        <div class="empty-state">
+            <i class="fas fa-chart-bar"></i>
+            <h5>Chọn học kỳ để xem thống kê tải giảng dạy</h5>
+            <p>Hệ thống tổng hợp tổng số tiết, số lớp và mức độ tải của từng giảng viên.</p>
+        </div>
     </div>
 
-    <div th:if="${danhSachTai != null and #lists.isEmpty(danhSachTai)}"
-         class="alert alert-info">
-        <i class="fas fa-info-circle me-2"></i>Chưa có dữ liệu thời khóa biểu trong học kỳ này
+    <div th:if="${danhSachTai != null and #lists.isEmpty(danhSachTai)}" class="card">
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h5>Chưa có dữ liệu</h5>
+            <p>Chưa có thời khóa biểu nào được tạo trong học kỳ này.</p>
+        </div>
     </div>
 
 </th:block></body></html>

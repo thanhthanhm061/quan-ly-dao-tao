@@ -184,7 +184,9 @@ public class ThoiKhoaBieuServiceImpl implements ThoiKhoaBieuService {
 
     @Override
     public List<ThoiKhoaBieu> findBySinhVienTuan(Long svId, String hocKy, LocalDate ngayTrongTuan) {
-        return List.of();
+        LocalDate thu2 = ngayTrongTuan.with(DayOfWeek.MONDAY);
+        LocalDate thu7 = thu2.plusDays(5);
+        return tkbRepo.findBySinhVienAndTuan(svId, hocKy, thu2, thu7);
     }
 
     @Override

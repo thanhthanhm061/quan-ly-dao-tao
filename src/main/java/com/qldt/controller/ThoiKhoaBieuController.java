@@ -494,39 +494,141 @@ public class ThoiKhoaBieuController {
     }
 
     @GetMapping("/theo-tuan")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GIANG_VIEN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GIANG_VIEN', 'SINH_VIEN')")
     public String xemTheoTuan(
             @RequestParam(required = false) Long giangVienId,
             @RequestParam(required = false) String hocKy,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate ngay,
+            Authentication auth,
             Model model) {
-        if (ngay == null) ngay = LocalDate.now();
+
+        if (ngay == null) {
+            ngay = LocalDate.now();
+        }
+
         LocalDate thu2 = ngay.with(DayOfWeek.MONDAY);
-        model.addAttribute("giangViens", gvService.findAll());
+
+        model.addAttribute("thu2", thu2);
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
-        model.addAttribute("giangVienIdChon", giangVienId);
         model.addAttribute("hocKyChon", hocKy);
         model.addAttribute("ngayChon", ngay);
-        model.addAttribute("thu2", thu2);
+
         model.addAttribute("thuTrongTuan",
-                List.of(thu2, thu2.plusDays(1), thu2.plusDays(2),
-                        thu2.plusDays(3), thu2.plusDays(4), thu2.plusDays(5)));
-        if (giangVienId != null && hocKy != null) {
-            model.addAttribute("thoiKhoaBieus",
-                    tkbService.findByGiangVienTuan(giangVienId, hocKy, ngay));
-            model.addAttribute("giangVien", gvService.findById(giangVienId).orElse(null));
+                List.of(
+                        thu2,
+                        thu2.plusDays(1),
+                        thu2.plusDays(2),
+                        thu2.plusDays(3),
+                        thu2.plusDays(4),
+                        thu2.plusDays(5)
+                ));
+
+        String username = auth.getName();
+
+        NguoiDung nd = nguoiDungRepo
+                .findByUsername(username)
+                .orElseThrow();
+
+        // ================= ADMIN =================
+        if (nd.getVaiTro() == VaiTro.ADMIN) {
+
+            model.addAttribute("giangViens", gvService.findAll());
+            model.addAttribute("giangVienIdChon", giangVienId);
+
+            if (giangVienId != null && hocKy != null) {
+
+                model.addAttribute(
+                        "thoiKhoaBieus",
+                        tkbService.findByGiangVienTuan(
+                                giangVienId,
+                                hocKy,
+                                ngay
+                        )
+                );
+
+                model.addAttribute(
+                        "giangVien",
+                        gvService.findById(giangVienId).orElse(null)
+                );
+            }
         }
+
+        // ================= GIANG VIEN =================
+        else if (nd.getVaiTro() == VaiTro.GIANG_VIEN) {
+
+            GiangVien gv = giangVienRepo
+                    .findByNguoiDungId(nd.getId())
+                    .orElse(null);
+
+            if (gv != null && hocKy != null) {
+
+                model.addAttribute(
+                        "thoiKhoaBieus",
+                        tkbService.findByGiangVienTuan(
+                                gv.getId(),
+                                hocKy,
+                                ngay
+                        )
+                );
+
+                model.addAttribute("giangVien", gv);
+            }
+        }
+
+        // ================= SINH VIEN =================
+        else if (nd.getVaiTro() == VaiTro.SINH_VIEN) {
+
+            SinhVien sv = svService
+                    .findByNguoiDungId(nd.getId())
+                    .orElse(null);
+
+            if (sv != null && hocKy != null) {
+
+                model.addAttribute(
+                        "thoiKhoaBieus",
+                        tkbService.findBySinhVienTuan(
+                                sv.getId(),
+                                hocKy,
+                                ngay
+                        )
+                );
+
+                model.addAttribute("sinhVien", sv);
+            }
+        }
+
         return "thoikhoabieu/theo-tuan";
     }
-
     @GetMapping("/thong-ke")
     @PreAuthorize("hasRole('ADMIN')")
-    public String thongKe(@RequestParam(required = false) String hocKy, Model model) {
+    public String thongKe(@RequestParam(required = false) String hocKy,
+                          Model model) {
+
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
         model.addAttribute("hocKyChon", hocKy);
-        if (hocKy != null) {
-            model.addAttribute("danhSachTai", tkbService.thongKeTaiGiangDay(hocKy));
+
+        if (hocKy != null && !hocKy.isBlank()) {
+
+            List<TaiGiangDayDTO> ds = tkbService.thongKeTaiGiangDay(hocKy);
+
+            model.addAttribute("danhSachTai", ds);
+
+            // Tổng tiết
+            int tongTietToanTruong = ds.stream()
+                    .mapToInt(TaiGiangDayDTO::tongTiet)
+                    .sum();
+
+            // GV quá tải
+            long soGVQuaTai = ds.stream()
+                    .filter(t -> t.tyLeTai() > 1.0)
+                    .count();
+
+            model.addAttribute("tongTietToanTruong", tongTietToanTruong);
+            model.addAttribute("soGVQuaTai", soGVQuaTai);
         }
+
         return "thoikhoabieu/thong-ke";
     }
 

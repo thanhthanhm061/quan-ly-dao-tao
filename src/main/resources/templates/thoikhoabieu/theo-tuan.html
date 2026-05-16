@@ -1,149 +1,230 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml"
       th:replace="~{layout/base :: layout(~{::content}, 'Lịch theo tuần')}">
 <body><th:block th:fragment="content">
 
-    <!-- Tabs -->
-    <ul class="nav nav-tabs mb-4">
-        <li class="nav-item">
-            <a class="nav-link" th:href="@{/tkb}">
-                <i class="fas fa-calendar-alt me-1"></i>TKB Tổng quan
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link active" th:href="@{/tkb/theo-tuan}">
-                <i class="fas fa-calendar-week me-1"></i>Lịch theo tuần
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" th:href="@{/tkb/thong-ke}">
-                <i class="fas fa-chart-bar me-1"></i>Thống kê tải
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" th:href="@{/phong-hoc}">
-                <i class="fas fa-door-open me-1"></i>Quản lý phòng
-            </a>
-        </li>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --navy:#0f2542; --navy-light:#1e3a5f; --blue:#2563eb;
+            --surface:#f8fafc; --border:#e2e8f0; --text:#0f172a; --text-muted:#64748b;
+            --radius:10px; --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.06);
+        }
+        body { font-family:'Be Vietnam Pro',sans-serif; background:#f1f5f9; }
+
+        .tkb-tabs { display:flex; gap:4px; background:#fff; border-radius:12px; padding:5px;
+            box-shadow:var(--shadow); margin-bottom:22px; border:none; }
+        .tkb-tabs .nav-item { flex:1; }
+        .tkb-tabs .nav-link { border:none; border-radius:8px; font-weight:500; font-size:.85rem;
+            color:var(--text-muted); padding:8px 10px; text-align:center; transition:.2s; white-space:nowrap; }
+        .tkb-tabs .nav-link:hover { background:var(--surface); color:var(--navy); }
+        .tkb-tabs .nav-link.active { background:var(--navy); color:#fff; }
+
+        .filter-card { border:1.5px solid var(--border); border-radius:var(--radius);
+            background:#fff; padding:18px 22px; margin-bottom:20px;
+            box-shadow:0 1px 4px rgba(0,0,0,.05); }
+        .form-label { font-size:.82rem; font-weight:600; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; }
+        .form-select,.form-control { border:1.5px solid var(--border); border-radius:8px;
+            font-size:.9rem; padding:9px 12px; color:var(--text); transition:.2s; }
+        .form-select:focus,.form-control:focus { border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; }
+        .btn-primary { background:var(--navy); border-color:var(--navy); border-radius:8px;
+            font-weight:600; font-size:.88rem; }
+        .btn-outline-secondary { border-radius:8px; font-size:.82rem; font-weight:500; }
+
+        /* Week navigation bar */
+        .week-nav { display:flex; align-items:center; gap:10px; }
+        .week-nav .week-label { font-size:.92rem; font-weight:600; color:#334155; }
+        .week-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 12px;
+            border:1.5px solid var(--border); border-radius:8px; background:#fff;
+            font-size:.82rem; font-weight:500; color:var(--text-muted); text-decoration:none;
+            transition:.2s; }
+        .week-btn:hover { background:var(--navy); color:#fff; border-color:var(--navy); }
+
+        /* Card */
+        .card { border:1px solid var(--border); border-radius:var(--radius);
+            box-shadow:var(--shadow); background:#fff; }
+        .card-header { background:var(--navy); color:#fff;
+            border-radius:var(--radius) var(--radius) 0 0 !important;
+            padding:14px 20px; font-weight:600; border:none;
+            display:flex; align-items:center; justify-content:space-between; }
+
+        /* Grid */
+        .tkb-grid-wrap { overflow-x:auto; }
+        .tkb-grid { width:100%; min-width:760px; border-collapse:collapse; table-layout:fixed; }
+        .tkb-grid th { background:var(--navy); color:#fff; font-weight:600; font-size:.8rem;
+            padding:10px 5px; text-align:center; border:1px solid rgba(255,255,255,.1); }
+        .tkb-grid th .date-sub { font-size:.72rem; font-weight:400; opacity:.7; display:block; margin-top:2px; }
+        .tkb-grid th.today-col { background:#1d4ed8 !important; }
+        .tkb-grid td { border:1px solid #e8edf3; padding:0; vertical-align:top;
+            position:relative; overflow:visible; height:52px; }
+        .tkb-grid td.tiet-label { background:var(--surface); font-size:.78rem; font-weight:700;
+            color:var(--text-muted); text-align:center; vertical-align:middle; }
+        .tkb-grid td.today-col { background:#f0f6ff; }
+
+        .tkb-cell { position:absolute; z-index:2; left:2px; right:2px; top:2px;
+            border-radius:6px; overflow:hidden; display:flex; flex-direction:column;
+            justify-content:center; padding:5px 7px; cursor:default; transition:transform .15s,box-shadow .15s; }
+        .tkb-cell:hover { transform:scale(1.02); z-index:10; box-shadow:0 4px 16px rgba(0,0,0,.15); }
+        .tkb-cell .mon { font-size:.73rem; font-weight:700; line-height:1.25; }
+        .tkb-cell .meta { font-size:.66rem; opacity:.75; margin-top:2px; }
+
+        .tag { display:inline-flex; align-items:center; font-size:.75rem;
+            padding:3px 10px; border-radius:20px; font-weight:600; }
+        .tag-primary { background:#dbeafe; color:#1e40af; }
+
+        .empty-state { text-align:center; padding:56px 20px; color:var(--text-muted); }
+        .empty-state i { font-size:3rem; opacity:.25; display:block; margin-bottom:14px; }
+        .empty-state h5 { font-weight:600; color:#334155; }
+
+        /* Today highlight badge */
+        .today-badge { background:#dbeafe; color:#1e40af; font-size:.7rem; font-weight:700;
+            padding:1px 6px; border-radius:4px; margin-top:2px; display:inline-block; }
+    </style>
+
+    <!-- ── TABS ── -->
+    <ul class="tkb-tabs nav">
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb}">
+            <i class="fas fa-calendar-alt me-1"></i>Tổng quan</a></li>
+        <li class="nav-item"><a class="nav-link active" th:href="@{/tkb/theo-tuan}">
+            <i class="fas fa-calendar-week me-1"></i>Theo tuần</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb/thong-ke}">
+            <i class="fas fa-chart-bar me-1"></i>Thống kê tải</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb/phong-hoc}">
+            <i class="fas fa-door-open me-1"></i>Phòng học</a></li>
     </ul>
 
-    <!-- Filter -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold">Giảng viên</label>
-                    <select name="giangVienId" class="form-select">
-                        <option value="">-- Chọn --</option>
-                        <option th:each="gv : ${giangViens}"
-                                th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
-                                th:selected="${gv.id == giangVienIdChon}">
-                        </option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold">Học kỳ</label>
-                    <select name="hocKy" class="form-select">
-                        <option value="">-- Chọn --</option>
-                        <option th:each="hk : ${danhSachHocKy}"
-                                th:value="${hk}" th:text="${hk}"
-                                th:selected="${hk == hocKyChon}">
-                        </option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold">Chọn ngày trong tuần</label>
-                    <input type="date" name="ngay" class="form-control"
-                           th:value="${ngayChon}"/>
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search me-1"></i>Xem tuần này
-                    </button>
-                </div>
-            </form>
-        </div>
+    <!-- ── FILTER ── -->
+    <div class="filter-card">
+        <form method="get" class="row g-3 align-items-end">
+
+            <!-- Chỉ ADMIN mới thấy dropdown GV -->
+            <div class="col-md-3" sec:authorize="hasRole('ADMIN')">
+                <label class="form-label">Giảng viên</label>
+                <select name="giangVienId" class="form-select">
+                    <option value="">— Chọn —</option>
+                    <option th:each="gv : ${giangViens}"
+                            th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
+                            th:selected="${gv.id == giangVienIdChon}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Học kỳ</label>
+                <select name="hocKy" class="form-select">
+                    <option value="">— Chọn —</option>
+                    <option th:each="hk : ${danhSachHocKy}"
+                            th:value="${hk}" th:text="${hk}"
+                            th:selected="${hk == hocKyChon}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Chọn ngày trong tuần</label>
+                <input type="date" name="ngay" class="form-control"
+                       th:value="${ngayChon}"/>
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Xem tuần này
+                </button>
+            </div>
+        </form>
     </div>
 
-    <!-- Hiển thị lịch tuần -->
+    <!-- ── LỊCH TUẦN ── -->
     <div th:if="${thoiKhoaBieus != null}">
 
-        <div th:if="${#lists.isEmpty(thoiKhoaBieus)}" class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>Không có lịch trong tuần này
+        <div th:if="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
+            <div class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <h5>Không có lịch trong tuần này</h5>
+                <p>Thử chọn tuần khác hoặc kiểm tra lại học kỳ đã chọn.</p>
+            </div>
         </div>
 
         <div th:unless="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
         <span>
           <i class="fas fa-calendar-week me-2"></i>
-          <span th:text="${giangVien?.hoTenVaHocVi ?: '---'}"></span>
-          — Tuần
-          <strong th:text="${thu2 != null ? #temporals.format(thu2,'dd/MM') : ''}"></strong>
-          →
-          <strong th:text="${thu2 != null ? #temporals.format(thu2.plusDays(5),'dd/MM/yyyy') : ''}"></strong>
+            <!-- ADMIN hiển thị tên GV, GV/SV hiển thị tên riêng -->
+          <span th:if="${giangVien != null}" th:text="${giangVien.hoTenVaHocVi}"></span>
+          <span th:if="${sinhVien != null}" th:text="${sinhVien.hoTen}"></span>
         </span>
-                <!-- Nút tuần trước / tuần sau -->
-                <div class="d-flex gap-1">
+                    <!-- Tiêu đề tuần: dùng thuTrongTuan[0] và [5] -->
+                    <span class="opacity-75" style="font-weight:400; font-size:.88rem"
+                          th:if="${thuTrongTuan != null and !#lists.isEmpty(thuTrongTuan)}"
+                          th:text="'Tuần ' + ${#temporals.format(thuTrongTuan[0],'dd/MM')} + ' – ' + ${#temporals.format(thuTrongTuan[5],'dd/MM/yyyy')}">
+        </span>
+                    <span class="tag tag-primary"
+                          th:text="${#lists.size(thoiKhoaBieus)} + ' buổi'"></span>
+                </div>
+                <!-- Navigation tuần trước / sau -->
+                <div class="week-nav">
                     <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},
-                       hocKy=${hocKyChon},
-                       ngay=${ngayChon != null ? ngayChon.minusWeeks(1) : ''})}"
-                       class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-chevron-left"></i> Tuần trước
+           hocKy=${hocKyChon},
+           ngay=${ngayChon != null ? ngayChon.minusWeeks(1) : ''})}"
+                       class="week-btn">
+                        <i class="fas fa-chevron-left"></i> Trước
                     </a>
                     <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},
-                       hocKy=${hocKyChon},
-                       ngay=${ngayChon != null ? ngayChon.plusWeeks(1) : ''})}"
-                       class="btn btn-sm btn-outline-secondary">
-                        Tuần sau <i class="fas fa-chevron-right"></i>
+           hocKy=${hocKyChon},
+           ngay=${ngayChon != null ? ngayChon.plusWeeks(1) : ''})}"
+                       class="week-btn">
+                        Sau <i class="fas fa-chevron-right"></i>
                     </a>
                 </div>
             </div>
 
             <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-bordered mb-0 text-center"
-                           style="min-width:800px;table-layout:fixed">
+                <div class="tkb-grid-wrap">
+                    <table class="tkb-grid">
                         <colgroup>
-                            <col style="width:70px"/>
+                            <col style="width:60px"/>
                             <col/><col/><col/><col/><col/><col/>
                         </colgroup>
-                        <thead style="background:#1e3a5f;color:white">
+                        <thead>
                         <tr>
                             <th>Tiết</th>
-                            <!-- Hiển thị ngày cụ thể trong cột -->
-                            <th th:each="ngay,i : ${thuTrongTuan}">
+                            <th th:each="ngay,i : ${thuTrongTuan}"
+                                th:classappend="${ngay.equals(#temporals.createToday()) ? ' today-col' : ''}">
                                 <div th:text="'Thứ ' + ${i.index + 2}"></div>
-                                <div class="small fw-normal opacity-75"
-                                     th:text="${#temporals.format(ngay,'dd/MM')}"></div>
+                                <span class="date-sub" th:text="${#temporals.format(ngay,'dd/MM')}"></span>
+                                <span th:if="${ngay.equals(#temporals.createToday())}" class="today-badge">Hôm nay</span>
                             </th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="tiet : ${#numbers.sequence(1, 12)}" style="height:54px">
-                            <td class="fw-semibold small align-middle" style="background:#f8fafc"
-                                th:text="'Tiết ' + ${tiet}"></td>
-                            <td th:each="thu : ${#numbers.sequence(2, 7)}"
-                                style="padding:0;vertical-align:top;position:relative;overflow:visible">
+                        <tr th:each="tiet : ${#numbers.sequence(1,12)}">
+                            <td class="tiet-label" th:text="'T' + ${tiet}"></td>
+                            <td th:each="thuIdx,iter : ${thuTrongTuan}"
+                                th:classappend="${thuIdx.equals(#temporals.createToday()) ? ' today-col' : ''}">
                                 <th:block th:each="tkb,i : ${thoiKhoaBieus}">
-                                    <div th:if="${tkb.thuTrongTuan eq thu and tkb.tietBatDau eq tiet}"
-                                         class="d-flex flex-column justify-content-center p-1"
-                                         th:style="'position:absolute;z-index:2;left:2px;right:2px;top:2px;' +
-                         'height:' + ${tkb.soTiet * 54 - 4} + 'px;' +
-                         'background:' + ${i.index%6==0?'#dbeafe':i.index%6==1?'#d1fae5':
-                           i.index%6==2?'#fef3c7':i.index%6==3?'#ede9fe':
-                           i.index%6==4?'#fee2e2':'#e0f2fe'} +
-                         ';border-left:3px solid ' +
-                         ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':
-                           i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':
-                           i.index%6==4?'#dc2626':'#0284c7'} +
-                         ';border-radius:4px;overflow:hidden'">
-                    <span class="fw-semibold" style="font-size:.75rem;line-height:1.2"
-                          th:text="${tkb.lopHocPhan?.monHoc?.tenMon ?: '---'}"></span>
-                                        <span class="text-muted" style="font-size:.68rem"
-                                              th:text="'P.' + ${tkb.phongHoc ?: '?'} +
-                                   ' | T.' + ${tkb.tietBatDau} + '-' +
-                                   ${tkb.tietBatDau + tkb.soTiet - 1}"></span>
-                                        <span class="text-muted" style="font-size:.65rem"
+                                    <!-- thuTrongTuan[iter.index] = ngày; tkb.thuTrongTuan = số thứ (2-7) -->
+                                    <div th:if="${tkb.thuTrongTuan eq (iter.index + 2) and tkb.tietBatDau eq tiet}"
+                                         class="tkb-cell"
+                                         th:style="'height:' + ${tkb.soTiet*52-4} + 'px;' +
+                       'background:' + ${i.index%6==0?'#dbeafe':i.index%6==1?'#d1fae5':
+                         i.index%6==2?'#fef3c7':i.index%6==3?'#ede9fe':
+                         i.index%6==4?'#fee2e2':'#e0f2fe'} +
+                       ';border-left:3px solid ' +
+                       ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':
+                         i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':
+                         i.index%6==4?'#dc2626':'#0284c7'}">
+                  <span class="mon"
+                        th:style="'color:' + ${i.index%6==0?'#1e40af':i.index%6==1?'#065f46':
+                          i.index%6==2?'#92400e':i.index%6==3?'#5b21b6':
+                          i.index%6==4?'#991b1b':'#0c4a6e'}"
+                        th:text="${tkb.lopHocPhan?.monHoc?.tenMon ?: '---'}"></span>
+                                        <span class="meta text-muted"
+                                              th:text="'P.' + ${tkb.phongHoc ?: '?'} + ' · T' +
+                                 ${tkb.tietBatDau} + '–' + ${tkb.tietBatDau+tkb.soTiet-1}"></span>
+                                        <span class="meta text-muted"
                                               th:if="${tkb.lopHocPhan?.monHoc?.soTinChi != null}"
                                               th:text="${tkb.lopHocPhan.monHoc.soTinChi} + ' TC'"></span>
                                     </div>
@@ -157,9 +238,13 @@
         </div>
     </div>
 
-    <div th:if="${thoiKhoaBieus == null}" class="text-center py-5 text-muted">
-        <i class="fas fa-calendar-week fa-4x mb-3 d-block" style="opacity:.3"></i>
-        <h5>Chọn giảng viên, học kỳ và ngày để xem lịch tuần</h5>
+    <!-- ── CHƯA CHỌN ── -->
+    <div th:if="${thoiKhoaBieus == null}" class="card">
+        <div class="empty-state">
+            <i class="fas fa-calendar-week"></i>
+            <h5>Chọn học kỳ và ngày để xem lịch tuần</h5>
+            <p>ADMIN có thể chọn thêm giảng viên cần xem.</p>
+        </div>
     </div>
 
 </th:block></body></html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Phòng học')}">
+<body><th:block th:fragment="content">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+        :root {
+            --navy:#0f2542; --blue:#2563eb; --green:#059669;
+            --surface:#f8fafc; --border:#e2e8f0; --text:#0f172a; --text-muted:#64748b;
+            --radius:10px; --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.06);
+        }
+        body { font-family:'Be Vietnam Pro',sans-serif; background:#f1f5f9; }
+
+        .page-wrapper { max-width:640px; margin:0 auto; }
+        .page-header { display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+        .back-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px;
+            border:1.5px solid var(--border); border-radius:8px; background:#fff;
+            font-size:.85rem; font-weight:500; color:var(--text-muted); text-decoration:none; transition:.2s; }
+        .back-btn:hover { background:var(--navy); color:#fff; border-color:var(--navy); }
+        .page-title { font-size:1.15rem; font-weight:700; color:var(--navy); margin:0; }
+
+        .card { border:1px solid var(--border); border-radius:var(--radius);
+            box-shadow:var(--shadow); background:#fff; }
+
+        .form-section { padding:22px 26px; border-bottom:1px solid #f0f4f8; }
+        .form-section:last-child { border-bottom:none; }
+        .section-title { font-size:.72rem; font-weight:700; text-transform:uppercase;
+            letter-spacing:.07em; color:var(--text-muted); margin-bottom:16px;
+            display:flex; align-items:center; gap:6px; }
+        .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+        .form-label { font-size:.83rem; font-weight:600; color:#374151; margin-bottom:5px; display:block; }
+        .req { color:#dc2626; }
+        .hint { font-weight:400; font-size:.78rem; color:var(--text-muted); margin-left:4px; }
+
+        .form-control, .form-select { width:100%; border:1.5px solid var(--border); border-radius:8px;
+            font-size:.9rem; padding:9px 12px; color:var(--text); font-family:inherit;
+            transition:.18s; box-sizing:border-box; }
+        .form-control:focus, .form-select:focus { border-color:var(--blue);
+            box-shadow:0 0 0 3px #dbeafe; outline:none; }
+
+        /* Loại phòng cards */
+        .loai-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:4px; }
+        .loai-card { position:relative; }
+        .loai-card input[type=radio] { position:absolute; opacity:0; width:0; }
+        .loai-card label { display:flex; align-items:center; gap:10px; padding:12px 14px;
+            border:2px solid var(--border); border-radius:9px; cursor:pointer;
+            transition:.18s; background:#fff; font-size:.88rem; font-weight:500; }
+        .loai-card label:hover { border-color:var(--blue); background:#eff6ff; }
+        .loai-card input:checked + label { border-color:var(--blue); background:#eff6ff; }
+        .loai-icon { width:34px; height:34px; border-radius:8px; display:flex;
+            align-items:center; justify-content:center; font-size:.9rem; flex-shrink:0; }
+
+        /* Toggle hoạt động */
+        .toggle-row { display:flex; align-items:center; justify-content:space-between;
+            padding:14px 0; }
+        .toggle-label { font-size:.88rem; font-weight:600; color:var(--text); }
+        .toggle-sub   { font-size:.78rem; color:var(--text-muted); }
+        .toggle-switch { position:relative; width:44px; height:24px; }
+        .toggle-switch input { opacity:0; width:0; height:0; }
+        .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0;
+            background:#d1d5db; border-radius:24px; transition:.3s; }
+        .slider:before { content:''; position:absolute; height:18px; width:18px; left:3px; bottom:3px;
+            background:#fff; border-radius:50%; transition:.3s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+        input:checked + .slider { background:var(--green); }
+        input:checked + .slider:before { transform:translateX(20px); }
+
+        /* Sức chứa preview */
+        .cap-preview { margin-top:8px; display:flex; align-items:center; gap:8px; }
+        .cap-bar { flex:1; height:6px; border-radius:3px; background:#e5e7eb; }
+        .cap-bar-fill { height:100%; border-radius:3px; background:var(--blue); transition:width .3s; }
+        .cap-label { font-size:.78rem; font-weight:600; color:var(--text-muted); min-width:60px; text-align:right; }
+
+        .btn-save { background:var(--green); color:#fff; border:none; border-radius:8px;
+            padding:10px 26px; font-size:.9rem; font-weight:600; cursor:pointer; transition:.18s; }
+        .btn-save:hover { background:#047857; }
+        .btn-cancel { background:#f1f5f9; color:#475569; border:1.5px solid var(--border);
+            border-radius:8px; padding:10px 20px; font-size:.9rem; font-weight:600;
+            text-decoration:none; transition:.18s; }
+        .btn-cancel:hover { background:#e2e8f0; color:#374151; }
+    </style>
+
+    <div class="page-wrapper">
+
+        <!-- Header -->
+        <div class="page-header">
+            <a th:href="@{/phong-hoc}" class="back-btn">
+                <i class="fas fa-arrow-left"></i>Quay lại
+            </a>
+            <h4 class="page-title">
+                <i class="fas fa-door-open me-2" style="color:var(--blue)"></i>
+                <span th:text="${phongHoc.id != null ? 'Chỉnh sửa phòng ' + phongHoc.maPhong : 'Thêm phòng học mới'}"></span>
+            </h4>
+        </div>
+
+        <div class="card">
+            <form th:action="${phongHoc.id != null ? '/phong-hoc/sua/' + phongHoc.id : '/phong-hoc/them'}"
+                  th:object="${phongHoc}" method="post" id="phongForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <!-- ① THÔNG TIN CƠ BẢN -->
+                <div class="form-section">
+                    <div class="section-title"><i class="fas fa-info-circle me-1"></i>Thông tin cơ bản</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Mã phòng <span class="req">*</span></label>
+                            <input type="text" class="form-control" th:field="*{maPhong}"
+                                   placeholder="VD: A101, Lab-2, HT-A" required
+                                   style="font-family:'Courier New',monospace;font-weight:700;font-size:.95rem"
+                                   th:readonly="${phongHoc.id != null}"/>
+                            <div class="form-text" style="font-size:.75rem;color:var(--text-muted)">
+                                Mã phòng không thể thay đổi sau khi tạo
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tên phòng <span class="hint">(tùy chọn)</span></label>
+                            <input type="text" class="form-control" th:field="*{tenPhong}"
+                                   placeholder="VD: Phòng học A101"/>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Ghi chú <span class="hint">(tùy chọn)</span></label>
+                            <input type="text" class="form-control" th:field="*{ghiChu}"
+                                   placeholder="VD: Có máy chiếu, điều hòa 2 chiều..."/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ② SỨC CHỨA -->
+                <div class="form-section">
+                    <div class="section-title"><i class="fas fa-users me-1"></i>Sức chứa</div>
+                    <label class="form-label">Số chỗ ngồi tối đa <span class="req">*</span></label>
+                    <input type="number" class="form-control" th:field="*{sucChua}"
+                           id="sucChuaInput" min="1" max="500" placeholder="VD: 50"
+                           style="max-width:160px" required/>
+                    <div class="cap-preview">
+                        <div class="cap-bar">
+                            <div class="cap-bar-fill" id="capBarFill" style="width:0%"></div>
+                        </div>
+                        <span class="cap-label" id="capLabel">0 / 500</span>
+                    </div>
+                </div>
+
+                <!-- ③ LOẠI PHÒNG -->
+                <div class="form-section">
+                    <div class="section-title"><i class="fas fa-th-large me-1"></i>Loại phòng</div>
+                    <div class="loai-grid">
+                        <div class="loai-card" th:each="loai : ${danhSachLoai}">
+                            <input type="radio" th:id="'loai_' + ${loai.name()}"
+                                   th:field="*{loaiPhong}" th:value="${loai.name()}"/>
+                            <label th:for="'loai_' + ${loai.name()}">
+                                <div class="loai-icon"
+                                     th:style="${loai.name() == 'LY_THUYET' ? 'background:#dbeafe;color:#2563eb' :
+                               loai.name() == 'THUC_HANH' ? 'background:#d1fae5;color:#059669' :
+                               loai.name() == 'HOI_TRUONG' ? 'background:#ede9fe;color:#7c3aed' :
+                               'background:#fef3c7;color:#d97706'}">
+                                    <i th:class="${loai.name() == 'LY_THUYET' ? 'fas fa-chalkboard' :
+                               loai.name() == 'THUC_HANH' ? 'fas fa-flask' :
+                               loai.name() == 'HOI_TRUONG' ? 'fas fa-theater-masks' :
+                               'fas fa-desktop'}"></i>
+                                </div>
+                                <div>
+                                    <div th:text="${loai.name().replace('_',' ')}"></div>
+                                    <div style="font-size:.72rem;color:var(--text-muted);font-weight:400"
+                                         th:text="${loai.name() == 'LY_THUYET' ? 'Phòng học thường' :
+                                loai.name() == 'THUC_HANH' ? 'Phòng thí nghiệm' :
+                                loai.name() == 'HOI_TRUONG' ? 'Sảnh lớn / hội trường' :
+                                'Phòng máy tính'}">
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ④ TRẠNG THÁI -->
+                <div class="form-section">
+                    <div class="section-title"><i class="fas fa-toggle-on me-1"></i>Trạng thái</div>
+                    <div class="toggle-row">
+                        <div>
+                            <div class="toggle-label">Phòng đang hoạt động</div>
+                            <div class="toggle-sub">Tắt để ẩn phòng khỏi danh sách xếp lịch</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" th:field="*{hoatDong}" id="hoatDongToggle"/>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ⑤ ACTIONS -->
+                <div class="form-section">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a th:href="@{/phong-hoc}" class="btn-cancel">
+                            <i class="fas fa-times me-1"></i>Hủy
+                        </a>
+                        <button type="submit" class="btn-save">
+                            <i class="fas fa-save me-1"></i>
+                            <span th:text="${phongHoc.id != null ? 'Cập nhật' : 'Thêm phòng'}"></span>
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            const input  = document.getElementById('sucChuaInput');
+            const fill   = document.getElementById('capBarFill');
+            const label  = document.getElementById('capLabel');
+            const MAX    = 500;
+
+            function updateBar() {
+                const v = parseInt(input?.value || '0');
+                const pct = Math.min(v / MAX * 100, 100);
+                if (fill)  fill.style.width = pct + '%';
+                if (label) label.textContent = v + ' / ' + MAX;
+                if (fill) {
+                    fill.style.background = v > 300 ? '#059669' : v > 100 ? '#2563eb' : '#94a3b8';
+                }
+            }
+
+            input?.addEventListener('input', updateBar);
+            updateBar(); // init
+        })();
+    </script>
+
+</th:block></body></html>

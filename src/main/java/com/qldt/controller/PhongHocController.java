@@ -10,8 +10,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Controller
-@RequestMapping("/phong-hoc")
+@RequestMapping("/tkb/phong-hoc")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class PhongHocController {
@@ -20,7 +22,31 @@ public class PhongHocController {
 
     @GetMapping
     public String danhSach(Model model) {
-        model.addAttribute("danhSachPhong", phongHocService.findAll());
+
+        List<PhongHoc> ds = phongHocService.findAll();
+
+        model.addAttribute("danhSachPhong", ds);
+
+        model.addAttribute("tongPhong", ds.size());
+
+        long dangHoatDong = ds.stream()
+                .filter(PhongHoc::isHoatDong)
+                .count();
+
+        model.addAttribute("dangHoatDong", dangHoatDong);
+
+        int tongSucChua = ds.stream()
+                .mapToInt(PhongHoc::getSucChua)
+                .sum();
+
+        model.addAttribute("tongSucChua", tongSucChua);
+
+        long voHieu = ds.stream()
+                .filter(p -> !p.isHoatDong())
+                .count();
+
+        model.addAttribute("voHieu", voHieu);
+
         return "phonghoc/danh-sach";
     }
 

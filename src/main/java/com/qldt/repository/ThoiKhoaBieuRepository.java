@@ -169,4 +169,25 @@ public interface ThoiKhoaBieuRepository
             @Param("tietKetThuc") int tietKetThuc,
             @Param("sucCanThiet") int sucCanThiet
     );
+
+        // =========================
+        // LỊCH SINH VIÊN THEO TUẦN
+        @Query("""
+        SELECT DISTINCT t
+        FROM ThoiKhoaBieu t
+        JOIN FETCH t.lopHocPhan l
+        JOIN FETCH l.monHoc
+        JOIN l.dangKys dk
+        WHERE dk.sinhVien.id = :svId
+          AND l.hocKy = :hocKy
+          AND t.tuanBatDau <= :ngayKetThuc
+          AND t.tuanKetThuc >= :ngayBatDau
+        ORDER BY t.thuTrongTuan, t.tietBatDau
+        """)
+        List<ThoiKhoaBieu> findBySinhVienAndTuan(
+                @Param("svId") Long svId,
+                @Param("hocKy") String hocKy,
+                @Param("ngayBatDau") LocalDate ngayBatDau,
+                @Param("ngayKetThuc") LocalDate ngayKetThuc
+        );
 }
