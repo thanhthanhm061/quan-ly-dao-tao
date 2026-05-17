@@ -452,6 +452,7 @@ public class ThoiKhoaBieuController {
     private final NguoiDungRepository nguoiDungRepo;
     private final GiangVienRepository giangVienRepo;
     private final PhongHocService phongHocService;
+    private final TimeSlotService timeSlotService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GIANG_VIEN')")
@@ -462,6 +463,7 @@ public class ThoiKhoaBieuController {
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
         model.addAttribute("giangVienIdChon", giangVienId);
         model.addAttribute("hocKyChon", hocKy);
+        model.addAttribute("tietMap", timeSlotService.buildTietMap());
         if (giangVienId != null && hocKy != null) {
             model.addAttribute("thoiKhoaBieus", tkbService.findByGiangVien(giangVienId, hocKy));
             model.addAttribute("giangVien", gvService.findById(giangVienId).orElse(null));
@@ -477,6 +479,7 @@ public class ThoiKhoaBieuController {
         NguoiDung nd = nguoiDungRepo.findByUsername(username).orElseThrow();
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
         model.addAttribute("hocKyChon", hocKy);
+        model.addAttribute("tietMap", timeSlotService.buildTietMap());
         if (nd.getVaiTro() == VaiTro.GIANG_VIEN && hocKy != null) {
             GiangVien gv = giangVienRepo.findByNguoiDungId(nd.getId()).orElse(null);
             if (gv != null) {
@@ -514,7 +517,7 @@ public class ThoiKhoaBieuController {
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
         model.addAttribute("hocKyChon", hocKy);
         model.addAttribute("ngayChon", ngay);
-
+        model.addAttribute("tietMap", timeSlotService.buildTietMap());
         model.addAttribute("thuTrongTuan",
                 List.of(
                         thu2,
@@ -677,6 +680,27 @@ public class ThoiKhoaBieuController {
         }
         return "redirect:/tkb";
     }
+    @GetMapping("/sua/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String suaForm(@PathVariable Long id, Model model) {
+        model.addAttribute("thoiKhoaBieu", tkbService.findById(id).orElseThrow());
+        model.addAttribute("lopHocPhans", lhpService.findAll());
+        model.addAttribute("danhSachPhong", phongHocService.findAllHoatDong());
+        return "thoikhoabieu/form";
+    }
+
+    @PostMapping("/sua/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String sua(@PathVariable Long id, @ModelAttribute ThoiKhoaBieu tkb, RedirectAttributes ra) {
+        try {
+            tkb.setId(id);
+            tkbService.save(tkb);
+            ra.addFlashAttribute("success", "Cập nhật thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/tkb";
+    }
 }
 
 // =====================================================================
@@ -703,6 +727,7 @@ class GiangVienPortalController {
         return "giangvien/dashboard";
     }
 
+
     @GetMapping("/lop/{id}/danh-sach")
     public String danhSachSinhVien(@PathVariable Long id, Model model) {
         LopHocPhan lhp = lhpService.findById(id).orElseThrow();
@@ -711,6 +736,26 @@ class GiangVienPortalController {
         return "giangvien/danh-sach-sv";
     }
 
+    //xem chi tiết giảng viên
+    @GetMapping("/chi-tiet-gv")
+    public String chiTiet(Authentication auth, Model model) {
+        NguoiDung nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
+        GiangVien gv = giangVienRepo.findByNguoiDungId(nd.getId()).orElse(null);
+        model.addAttribute("giangVien", gv);
+
+        if (gv != null) {
+            List<LopHocPhan> lopHocPhans = lhpService.findByGiangVien(gv.getId());
+            model.addAttribute("soLopHocPhan", lopHocPhans.size());
+            model.addAttribute("soSinhVien", lopHocPhans.stream()
+                    .mapToInt(lhp -> lhpService.getDanhSachDangKy(lhp.getId()).size())
+                    .sum());
+        } else {
+            model.addAttribute("soLopHocPhan", 0);
+            model.addAttribute("soSinhVien", 0);
+        }
+
+        return "giangvien/chi-tiet-gv";
+    }
     @PostMapping("/cap-nhat-diem")
     public String capNhatDiem(@RequestParam Long dkId, @RequestParam Long lhpId,
                                @RequestParam(required = false) Double diemQT,
@@ -763,6 +808,31 @@ class SinhVienPortalController {
             }
         }
         return "sinhvien/dang-ky";
+    }
+
+    //xem chi tiết sinh viên
+    @GetMapping("/chi-tiet-sv")
+    public String chiTiet(Authentication auth, Model model) {
+        NguoiDung nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
+        SinhVien sv = svService.findByNguoiDungId(nd.getId()).orElse(null);
+        model.addAttribute("sinhVien", sv);
+
+        if (sv != null) {
+            List<DangKy> dangKys = lhpService.getDangKyCuaSinhVien(sv.getId());
+            model.addAttribute("soHocPhan", dangKys.size());
+            model.addAttribute("soHocPhanDat", dangKys.stream().filter(DangKy::isDat).count());
+            OptionalDouble tb = dangKys.stream()
+                    .filter(dk -> dk.getDiemTongKet() != null)
+                    .mapToDouble(DangKy::getDiemTongKet)
+                    .average();
+            model.addAttribute("diemTB", tb.isPresent() ? tb.getAsDouble() : null);
+        } else {
+            model.addAttribute("soHocPhan", 0);
+            model.addAttribute("soHocPhanDat", 0);
+            model.addAttribute("diemTB", null);
+        }
+
+        return "sinhvien/chi-tiet-sv";
     }
 
     @PostMapping("/dang-ky")

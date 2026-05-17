@@ -97,7 +97,8 @@
         </div>
 
         <div class="card">
-            <form th:action="@{/tkb/them}" th:object="${thoiKhoaBieu}" method="post" id="tkbForm">
+            <form th:action="${thoiKhoaBieu.id == null ? '/tkb/them' : '/tkb/sua/' + thoiKhoaBieu.id}"
+                  th:object="${thoiKhoaBieu}" method="post" id="tkbForm">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
                 <!-- ① LỚP HỌC PHẦN -->

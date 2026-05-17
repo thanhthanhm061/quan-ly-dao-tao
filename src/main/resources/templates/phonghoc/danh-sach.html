@@ -136,26 +136,7 @@
 
     <!-- ── TABS ── -->
     <ul class="tkb-tabs nav">
-        <li class="nav-item">
-            <a class="nav-link" th:href="@{/tkb}">
-                <i class="fas fa-calendar-alt me-1"></i>Tổng quan
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" th:href="@{/tkb/theo-tuan}">
-                <i class="fas fa-calendar-week me-1"></i>Theo tuần
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" th:href="@{/tkb/thong-ke}">
-                <i class="fas fa-chart-bar me-1"></i>Thống kê tải
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link active" th:href="@{/tkb/phong-hoc}">
+            <a class="nav-link active" th:href="@{/admin/phong-hoc}">
                 <i class="fas fa-door-open me-1"></i>Phòng học
             </a>
         </li>
@@ -179,7 +160,7 @@
             <i class="fas fa-door-open" style="color:var(--blue)"></i>
             Quản lý phòng học
         </div>
-        <a th:href="@{/phong-hoc/them}" class="btn-add">
+        <a th:href="@{/admin/phong-hoc/them}" class="btn-add">
             <i class="fas fa-plus"></i>Thêm phòng mới
         </a>
     </div>
@@ -315,10 +296,10 @@
                             th:text="${p.ghiChu != null ? p.ghiChu : '—'}"></td>
                         <td>
                             <div class="action-btns" style="justify-content:center">
-                                <a th:href="@{/phong-hoc/sua/{id}(id=${p.id})}" class="btn-edit">
+                                <a th:href="@{/admin/phong-hoc/sua/{id}(id=${p.id})}" class="btn-edit">
                                     <i class="fas fa-edit"></i>Sửa
                                 </a>
-                                <form th:action="@{/phong-hoc/xoa/{id}(id=${p.id})}" method="post"
+                                <form th:action="@{/admin/phong-hoc/xoa/{id}(id=${p.id})}" method="post"
                                       class="d-inline"
                                       onsubmit="return confirm('Vô hiệu hóa phòng này?')">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>

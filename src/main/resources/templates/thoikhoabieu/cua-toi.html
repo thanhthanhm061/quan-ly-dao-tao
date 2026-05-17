@@ -61,7 +61,14 @@
         .tkb-cell:hover { transform:scale(1.02); z-index:10; box-shadow:0 4px 16px rgba(0,0,0,.12); }
         .tkb-cell .mon { font-size:.73rem; font-weight:700; line-height:1.25; }
         .tkb-cell .meta { font-size:.66rem; opacity:.75; margin-top:2px; }
-
+        .tkb-grid th .date-sub {
+            font-size: .72rem;
+            font-weight: 400;
+            opacity: .7;
+            display: block;
+            margin-top: 2px;
+        }
+        .tkb-grid th.today-col { background: #1d4ed8 !important; }
         /* Detail table */
         .detail-table { width:100%; border-collapse:collapse; }
         .detail-table thead th { background:var(--surface); font-size:.78rem; font-weight:700;
@@ -163,8 +170,12 @@
                             <thead>
                             <tr>
                                 <th>Tiết</th>
-                                <th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th>
-                                <th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th>
+                                <th id="th-2">Thứ 2<span class="date-sub"></span></th>
+                                <th id="th-3">Thứ 3<span class="date-sub"></span></th>
+                                <th id="th-4">Thứ 4<span class="date-sub"></span></th>
+                                <th id="th-5">Thứ 5<span class="date-sub"></span></th>
+                                <th id="th-6">Thứ 6<span class="date-sub"></span></th>
+                                <th id="th-7">Thứ 7<span class="date-sub"></span></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -190,6 +201,20 @@
                                             <span class="meta text-muted"
                                                   th:text="'P.' + ${tkb.phongHoc ?: '?'} + ' · T' +
                                    ${tkb.tietBatDau} + '–' + ${tkb.tietBatDau+tkb.soTiet-1}"></span>
+                                            <!-- THÊM: Giảng viên -->
+                                            <span class="meta text-muted"
+                                                  th:if="${tkb.lopHocPhan?.giangVien != null}"
+                                                  th:text="${tkb.lopHocPhan.giangVien.hoTen}"></span>
+
+                                            <!-- THÊM: Giờ học theo tiết -->
+                                            <span class="meta text-muted"
+                                                  th:if="${tietMap != null and tietMap[tkb.tietBatDau] != null}"
+                                                  th:text="${#temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm')}
+                                                       + ' – ' +
+                                                       ${tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
+                                                         #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?'}">
+                                        </span>
+
                                         </div>
                                     </th:block>
                                 </td>
@@ -254,3 +279,27 @@
     </div>
 
 </th:block></body></html>
+<script>
+    (function () {
+        const today = new Date();
+        // Tìm thứ 2 của tuần hiện tại
+        const dow = today.getDay(); // 0=CN,1=T2...6=T7
+        const diffToMon = (dow === 0) ? -6 : 1 - dow;
+        const monday = new Date(today);
+        monday.setDate(today.getDate() + diffToMon);
+
+        for (let i = 0; i < 6; i++) {
+            const d = new Date(monday);
+            d.setDate(monday.getDate() + i);
+            const dd = String(d.getDate()).padStart(2,'0');
+            const mm = String(d.getMonth()+1).padStart(2,'0');
+            const th = document.getElementById('th-' + (i + 2));
+            if (!th) continue;
+            th.querySelector('.date-sub').textContent = dd + '/' + mm;
+            // Highlight hôm nay
+            if (d.toDateString() === today.toDateString()) {
+                th.classList.add('today-col');
+            }
+        }
+    })();
+</script>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Quản lý ca học')}">
+<body><th:block th:fragment="content">
+
+    <div class="card" style="border:none;border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.07)">
+
+        <div class="card-header d-flex justify-content-between align-items-center"
+             style="background:linear-gradient(135deg,#1e3a8a,#2563eb);color:white;border-radius:18px 18px 0 0;padding:18px 24px">
+        <span style="font-size:18px;font-weight:700">
+            <i class="fas fa-clock me-2"></i>Danh sách ca học
+        </span>
+            <a th:href="@{/admin/time-slots/them}" class="btn btn-light btn-sm fw-semibold text-primary">
+                <i class="fas fa-plus me-1"></i>Thêm ca học
+            </a>
+        </div>
+
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead style="background:#f8fafc">
+                <tr>
+                    <th style="padding:16px">Tiết</th>
+                    <th>Tên ca</th>
+                    <th>Giờ bắt đầu</th>
+                    <th>Giờ kết thúc</th>
+                    <th>Trạng thái</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(timeSlots)}">
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fas fa-clock fa-3x mb-3 d-block" style="opacity:.2"></i>
+                        Chưa có ca học nào
+                    </td>
+                </tr>
+                <tr th:each="ts : ${timeSlots}">
+                    <td>
+                    <span class="badge"
+                          style="background:#dbeafe;color:#1e40af;padding:6px 12px;border-radius:20px;font-weight:700"
+                          th:text="'Tiết ' + ${ts.tietSo}"></span>
+                    </td>
+                    <td class="fw-semibold" th:text="${ts.tenCa ?: '-'}"></td>
+                    <td>
+                    <span style="color:#059669;font-weight:600"
+                          th:text="${ts.gioBatDau}"></span>
+                    </td>
+                    <td>
+                    <span style="color:#dc2626;font-weight:600"
+                          th:text="${ts.gioKetThuc}"></span>
+                    </td>
+                    <td>
+                    <span class="badge"
+                          th:classappend="${ts.active ? 'bg-success' : 'bg-secondary'}"
+                          th:text="${ts.active ? 'Đang dùng' : 'Tắt'}"></span>
+                    </td>
+                    <td class="text-center">
+                        <a th:href="@{/admin/time-slots/sua/{id}(id=${ts.id})}"
+                           class="btn btn-sm btn-outline-warning me-1">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form th:action="@{/admin/time-slots/xoa/{id}(id=${ts.id})}"
+                              method="post" class="d-inline"
+                              onsubmit="return confirm('Xóa ca học này?')">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</th:block></body></html>

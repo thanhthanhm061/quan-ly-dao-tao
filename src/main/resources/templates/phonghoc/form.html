@@ -85,7 +85,7 @@
 
         <!-- Header -->
         <div class="page-header">
-            <a th:href="@{/phong-hoc}" class="back-btn">
+            <a th:href="@{/admin/phong-hoc}" class="back-btn">
                 <i class="fas fa-arrow-left"></i>Quay lại
             </a>
             <h4 class="page-title">
@@ -95,7 +95,7 @@
         </div>
 
         <div class="card">
-            <form th:action="${phongHoc.id != null ? '/phong-hoc/sua/' + phongHoc.id : '/phong-hoc/them'}"
+            <form th:action="${phongHoc.id != null ? '/admin/phong-hoc/sua/' + phongHoc.id : '/admin/phong-hoc/them'}"
                   th:object="${phongHoc}" method="post" id="phongForm">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
@@ -191,7 +191,7 @@
                 <!-- ⑤ ACTIONS -->
                 <div class="form-section">
                     <div class="d-flex gap-2 justify-content-end">
-                        <a th:href="@{/phong-hoc}" class="btn-cancel">
+                        <a th:href="@{/admin/phong-hoc}" class="btn-cancel">
                             <i class="fas fa-times me-1"></i>Hủy
                         </a>
                         <button type="submit" class="btn-save">

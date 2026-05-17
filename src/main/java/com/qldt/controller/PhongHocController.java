@@ -13,7 +13,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequestMapping("/tkb/phong-hoc")
+@RequestMapping("/admin/phong-hoc")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class PhongHocController {

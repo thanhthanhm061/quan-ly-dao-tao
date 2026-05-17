@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Thêm/Sửa ca học')}">
+<body><th:block th:fragment="content">
+
+    <div class="card" style="max-width:520px;margin:0 auto;border:none;border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.07)">
+
+        <div class="card-header"
+             style="background:linear-gradient(135deg,#1e3a8a,#2563eb);color:white;border-radius:18px 18px 0 0;padding:18px 24px;font-size:17px;font-weight:700">
+            <i class="fas fa-clock me-2"></i>
+            <span th:text="${timeSlot.id == null ? 'Thêm ca học mới' : 'Cập nhật ca học'}"></span>
+        </div>
+
+        <div class="card-body p-4">
+            <form th:action="${timeSlot.id == null ? '/admin/time-slots/them' : '/admin/time-slots/sua/' + timeSlot.id}"
+                  th:object="${timeSlot}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Số tiết <span class="text-danger">*</span></label>
+                        <select class="form-select" th:field="*{tietSo}" required>
+                            <option value="">-- Chọn tiết --</option>
+                            <option th:each="t : ${#numbers.sequence(1,12)}"
+                                    th:value="${t}" th:text="'Tiết ' + ${t}"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Tên ca</label>
+                        <input type="text" class="form-control" th:field="*{tenCa}"
+                               placeholder="VD: Sáng 1, Chiều 1"/>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Giờ bắt đầu <span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" th:field="*{gioBatDau}" required/>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Giờ kết thúc <span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" th:field="*{gioKetThuc}" required/>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2 justify-content-end border-top pt-3 mt-1">
+                        <a th:href="@{/admin/time-slots}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Quay lại
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            <span th:text="${timeSlot.id == null ? 'Thêm mới' : 'Cập nhật'}"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</th:block></body></html>

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -281,5 +282,10 @@ public class ThoiKhoaBieuServiceImpl implements ThoiKhoaBieuService {
                 svId,
                 hocKy
         );
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<ThoiKhoaBieu> findById(Long id) {
+        return tkbRepo.findById(id);
     }
 }

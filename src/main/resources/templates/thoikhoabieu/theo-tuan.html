@@ -91,8 +91,6 @@
             <i class="fas fa-calendar-week me-1"></i>Theo tuần</a></li>
         <li class="nav-item"><a class="nav-link" th:href="@{/tkb/thong-ke}">
             <i class="fas fa-chart-bar me-1"></i>Thống kê tải</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/tkb/phong-hoc}">
-            <i class="fas fa-door-open me-1"></i>Phòng học</a></li>
     </ul>
 
     <!-- ── FILTER ── -->
@@ -227,6 +225,19 @@
                                         <span class="meta text-muted"
                                               th:if="${tkb.lopHocPhan?.monHoc?.soTinChi != null}"
                                               th:text="${tkb.lopHocPhan.monHoc.soTinChi} + ' TC'"></span>
+                                        <!-- THÊM: Giảng viên -->
+                                        <span class="meta text-muted"
+                                              th:if="${tkb.lopHocPhan?.giangVien != null}"
+                                              th:text="${tkb.lopHocPhan.giangVien.hoTen}"></span>
+
+                                        <!-- THÊM: Giờ học theo tiết -->
+                                        <span class="meta text-muted"
+                                              th:if="${tietMap != null and tietMap[tkb.tietBatDau] != null}"
+                                              th:text="${#temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm')}
+                                                       + ' – ' +
+                                                       ${tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
+                                                         #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?'}">
+                                        </span>
                                     </div>
                                 </th:block>
                             </td>

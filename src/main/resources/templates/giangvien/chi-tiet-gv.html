@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Thông tin cá nhân')}">
+
+<body>
+<th:block th:fragment="content">
+
+    <style>
+        body { background: #f1f5f9; }
+
+        .detail-card {
+            border: none;
+            border-radius: 28px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 12px 35px rgba(0,0,0,.08);
+        }
+
+        .detail-header {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            padding: 35px 40px;
+            color: white;
+            position: relative;
+        }
+
+        .detail-header::after {
+            content: '';
+            position: absolute;
+            right: -40px; top: -40px;
+            width: 180px; height: 180px;
+            background: rgba(255,255,255,.08);
+            border-radius: 50%;
+        }
+
+        .avatar {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.15);
+            border: 4px solid rgba(255,255,255,.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 42px; color: white;
+            backdrop-filter: blur(6px);
+            flex-shrink: 0;
+        }
+
+        .gv-name { font-size: 30px; font-weight: 700; margin-bottom: 6px; }
+
+        .gv-code {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,.12);
+            padding: 8px 14px; border-radius: 14px;
+            font-size: 14px; color: #e2e8f0;
+            margin-bottom: 8px;
+        }
+
+        .gv-hocvi {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,.1);
+            padding: 5px 12px; border-radius: 20px;
+            font-size: 13px; color: #bfdbfe;
+        }
+
+        /* STATS */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-radius: 18px;
+            padding: 22px;
+            text-align: center;
+            border: 1px solid #bfdbfe;
+        }
+
+        .stat-num {
+            font-size: 32px; font-weight: 800;
+            color: #1d4ed8; line-height: 1; margin-bottom: 6px;
+        }
+
+        .stat-label { font-size: 13px; color: #64748b; font-weight: 500; }
+
+        /* BODY */
+        .detail-body { padding: 35px; }
+
+        .section-title {
+            font-size: 13px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: #64748b; margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* INFO ITEM */
+        .info-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 22px; height: 100%;
+            transition: all .25s ease;
+            position: relative; overflow: hidden;
+        }
+
+        .info-item::before {
+            content: '';
+            position: absolute; left: 0; top: 0;
+            width: 5px; height: 100%;
+            background: #2563eb; opacity: .8;
+        }
+
+        .info-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(37,99,235,.10);
+            background: #ffffff;
+        }
+
+        .info-label {
+            font-size: 13px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .5px;
+            color: #64748b; margin-bottom: 10px;
+        }
+
+        .info-value {
+            font-size: 17px; font-weight: 700;
+            color: #0f172a; word-break: break-word;
+        }
+
+        /* ACTIONS */
+        .action-wrapper {
+            margin-top: 35px;
+            display: flex; gap: 14px; flex-wrap: wrap;
+        }
+
+        .btn-custom {
+            border: none; border-radius: 14px;
+            padding: 12px 22px; font-weight: 600;
+            transition: all .25s ease;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+
+        .btn-custom:hover { transform: translateY(-2px); }
+        .btn-back { background: #e2e8f0; color: #0f172a; }
+        .btn-back:hover { background: #cbd5e1; }
+        .btn-lop { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; }
+        .btn-tkb { background: linear-gradient(135deg, #059669, #047857); color: white; }
+
+        @media(max-width: 768px) {
+            .detail-header { flex-direction: column; text-align: center; padding: 30px 20px; }
+            .detail-body { padding: 22px; }
+            .gv-name { font-size: 24px; }
+            .stats-row { grid-template-columns: 1fr; }
+            .action-wrapper { flex-direction: column; }
+            .btn-custom { width: 100%; justify-content: center; }
+        }
+    </style>
+
+    <div th:if="${giangVien == null}" class="alert alert-warning rounded-4">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Không tìm thấy thông tin giảng viên. Vui lòng liên hệ admin.
+    </div>
+
+    <div th:if="${giangVien != null}" class="card detail-card">
+
+        <!-- HEADER -->
+        <div class="detail-header d-flex align-items-center gap-4">
+
+            <div class="avatar">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+
+            <div style="position:relative;z-index:1">
+                <div class="gv-name" th:text="${giangVien.hoTen}"></div>
+
+                <div class="gv-code">
+                    <i class="fas fa-id-badge"></i>
+                    Mã GV: <span th:text="${giangVien.maGv}"></span>
+                </div>
+
+                <div th:if="${giangVien.hocVi != null}" class="gv-hocvi">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span th:text="${giangVien.hocVi}"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BODY -->
+        <div class="detail-body">
+
+            <!-- THỐNG KÊ -->
+            <div class="section-title">
+                <i class="fas fa-chart-bar text-primary"></i>
+                Tổng quan giảng dạy
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-num" th:text="${soLopHocPhan}">0</div>
+                    <div class="stat-label">Lớp học phần đang dạy</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num" th:text="${soSinhVien}">0</div>
+                    <div class="stat-label">Sinh viên đang quản lý</div>
+                </div>
+            </div>
+
+            <!-- THÔNG TIN CÁ NHÂN -->
+            <div class="section-title">
+                <i class="fas fa-user text-primary"></i>
+                Thông tin cá nhân
+            </div>
+
+            <div class="row g-4">
+
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Họ và tên</div>
+                        <div class="info-value" th:text="${giangVien.hoTen ?: '-'}"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Mã giảng viên</div>
+                        <div class="info-value" th:text="${giangVien.maGv ?: '-'}"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Học vị</div>
+                        <div class="info-value" th:text="${giangVien.hocVi ?: '-'}"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Chuyên ngành</div>
+                        <div class="info-value" th:text="${giangVien.chuyenNganh ?: '-'}"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Ngày sinh</div>
+                        <div class="info-value" th:text="${giangVien.ngaySinh ?: '-'}"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Khoa</div>
+                        <div class="info-value" th:text="${giangVien.khoa?.tenKhoa ?: '-'}"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value" th:text="${giangVien.email ?: '-'}"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Số điện thoại</div>
+                        <div class="info-value" th:text="${giangVien.soDienThoai ?: '-'}"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="action-wrapper">
+
+                <a th:href="@{/giangvien/dashboard}" class="btn btn-custom btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại
+                </a>
+
+                <a th:href="@{/tkb/cua-toi}" class="btn btn-custom btn-tkb">
+                    <i class="fas fa-calendar-alt"></i>
+                    Thời khóa biểu
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</th:block>
+</body>
+</html>
