@@ -282,7 +282,9 @@ class GiangVienController {
 
     @GetMapping("/them")
     public String themForm(Model model) {
-        model.addAttribute("giangVien", new GiangVien());
+        GiangVien gv = new GiangVien();
+        gv.setKhoa(new Khoa());
+        model.addAttribute("giangVien", gv);
         addFormData(model);
         return "giangvien/form";
     }
@@ -291,6 +293,7 @@ class GiangVienController {
     public String them(@Valid @ModelAttribute GiangVien gv, BindingResult result,
                        Model model, RedirectAttributes ra) {
         if (result.hasErrors()) {
+            result.getAllErrors().forEach(e -> System.out.println("LỖI: " + e));
             addFormData(model);
             return "giangvien/form";
         }
@@ -343,4 +346,5 @@ class GiangVienController {
         }
         return "redirect:/admin/giang-vien";
     }
+
 }
