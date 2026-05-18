@@ -13,7 +13,11 @@
         body{
             background:#f1f5f9;
         }
-
+        .gv-header .badge{
+            font-size:13px;
+            padding:7px 12px;
+            border-radius:30px;
+        }
         .gv-card{
             border:none;
             border-radius:24px;
@@ -119,6 +123,11 @@
             <div class="gv-title">
                 <i class="fas fa-chalkboard-teacher"></i>
                 <span>Danh sách Giảng viên</span>
+
+                <span class="badge bg-light text-primary"
+                      th:text="${tongSo}">
+        0
+            </span>
             </div>
 
             <a th:href="@{/admin/giang-vien/them}"

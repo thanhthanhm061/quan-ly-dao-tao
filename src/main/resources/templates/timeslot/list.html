@@ -2,7 +2,78 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/base :: layout(~{::content}, 'Quản lý ca học')}">
 <body><th:block th:fragment="content">
+    <style>
+        .delete-toast{
+            position:fixed;
+            top:25px;
+            left:50%;
+            transform:translateX(-50%) translateY(-20px);
+            width:340px;
+            background:#fff;
+            border-radius:16px;
+            box-shadow:0 14px 40px rgba(0,0,0,.18);
+            border:1px solid #fee2e2;
+            z-index:9999;
+            opacity:0;
+            pointer-events:none;
+            transition:.25s;
+        }
 
+        .delete-toast.show{
+            opacity:1;
+            pointer-events:auto;
+            transform:translateX(-50%) translateY(0);
+        }
+
+        .delete-toast-header{
+            background:linear-gradient(135deg,#dc2626,#ef4444);
+            color:white;
+            padding:14px 16px;
+            font-weight:700;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            border-radius:16px 16px 0 0;
+        }
+
+        .delete-toast-body{
+            padding:16px;
+        }
+
+        .delete-info{
+            background:#f8fafc;
+            border:1px solid #e2e8f0;
+            border-radius:12px;
+            padding:10px 12px;
+            font-size:.85rem;
+            color:#475569;
+            line-height:1.8;
+        }
+
+        .delete-actions{
+            display:flex;
+            justify-content:flex-end;
+            gap:8px;
+            margin-top:14px;
+        }
+
+        .btn-cancel{
+            border:1px solid #e2e8f0;
+            background:white;
+            padding:7px 14px;
+            border-radius:10px;
+            font-weight:600;
+        }
+
+        .btn-confirm{
+            border:none;
+            background:linear-gradient(135deg,#dc2626,#ef4444);
+            color:white;
+            padding:7px 14px;
+            border-radius:10px;
+            font-weight:600;
+        }
+    </style>
     <div class="card" style="border:none;border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.07)">
 
         <div class="card-header d-flex justify-content-between align-items-center"
@@ -60,10 +131,19 @@
                             <i class="fas fa-edit"></i>
                         </a>
                         <form th:action="@{/admin/time-slots/xoa/{id}(id=${ts.id})}"
-                              method="post" class="d-inline"
-                              onsubmit="return confirm('Xóa ca học này?')">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <button class="btn btn-sm btn-outline-danger">
+                              method="post"
+                              class="d-inline delete-form">
+
+                            <input type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}"/>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger btn-delete-slot"
+                                    th:attr="
+                                        data-tiet=${ts.tietSo},
+                                        data-tenca=${ts.tenCa}
+                                    ">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>
@@ -73,5 +153,78 @@
             </table>
         </div>
     </div>
+    <!-- Toast xác nhận xóa -->
+    <div class="delete-toast" id="deleteToast">
 
-</th:block></body></html>
+        <div class="delete-toast-header">
+            <i class="fas fa-trash-alt"></i>
+            <span>Xác nhận xóa</span>
+        </div>
+
+        <div class="delete-toast-body">
+            <p class="mb-2 fw-semibold">Bạn muốn xóa ca học này?</p>
+
+            <div class="delete-info">
+                <div><strong>Tiết:</strong> <span id="toastTiet"></span></div>
+                <div><strong>Tên ca:</strong> <span id="toastTenCa"></span></div>
+            </div>
+
+            <div class="delete-actions">
+                <button type="button" class="btn-cancel" id="btnCancelDelete">
+                    Hủy
+                </button>
+
+                <button type="button" class="btn-confirm" id="btnConfirmDelete">
+                    <i class="fas fa-trash me-1"></i>Xóa
+                </button>
+            </div>
+        </div>
+
+    </div>
+    <script>
+    (function () {
+
+        const toast = document.getElementById('deleteToast');
+        const btnCancel = document.getElementById('btnCancelDelete');
+        const btnConfirm = document.getElementById('btnConfirmDelete');
+
+        let currentForm = null;
+
+        document.querySelectorAll('.btn-delete-slot').forEach(btn => {
+            btn.addEventListener('click', function () {
+
+                currentForm = this.closest('form');
+
+                document.getElementById('toastTiet').textContent =
+                    'Tiết ' + (this.dataset.tiet || '-');
+
+                document.getElementById('toastTenCa').textContent =
+                    this.dataset.tenca || '-';
+
+                toast.classList.add('show');
+            });
+        });
+
+        btnCancel.addEventListener('click', function () {
+            toast.classList.remove('show');
+        });
+
+        btnConfirm.addEventListener('click', function () {
+            toast.classList.remove('show');
+            if (currentForm) currentForm.submit();
+        });
+
+        document.addEventListener('click', function (e) {
+            if (
+                toast.classList.contains('show') &&
+                !toast.contains(e.target) &&
+                !e.target.closest('.btn-delete-slot')
+            ) {
+                toast.classList.remove('show');
+            }
+        });
+
+    })();
+</script>
+</th:block>
+</body></html>
