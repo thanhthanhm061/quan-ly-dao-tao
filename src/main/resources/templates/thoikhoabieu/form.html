@@ -174,10 +174,14 @@
                         <option value="">— Chọn lớp học phần —</option>
                         <option th:each="lhp : ${lopHocPhans}"
                                 th:value="${lhp.id}"
-                                th:text="${lhp.maLhp + ' | ' + lhp.monHoc.tenMon + ' | ' + lhp.hocKy}"
+                                th:text="${lhp.maLhp + ' | '
+                 + lhp.monHoc.tenMon + ' | GV: '
+                 + (lhp.giangVien != null ? lhp.giangVien.hoTenVaHocVi : 'Chưa có GV')
+                 + ' | ' + lhp.hocKy}"
+
                                 th:attr="data-tinchi=${lhp.monHoc.soTinChi},
-                                         data-hocky=${lhp.hocKy},
-                                         data-mon=${lhp.monHoc.tenMon}">
+                 data-hocky=${lhp.hocKy},
+                 data-mon=${lhp.monHoc.tenMon}">
                         </option>
                     </select>
 
