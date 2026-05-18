@@ -65,7 +65,7 @@ public class PhongHocController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/phong-hoc";
+        return "redirect:/admin/phong-hoc";
     }
 
     @GetMapping("/sua/{id}")
@@ -88,7 +88,7 @@ public class PhongHocController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/phong-hoc";
+        return "redirect:/admin/phong-hoc";
     }
 
     @PostMapping("/xoa/{id}")
@@ -99,6 +99,21 @@ public class PhongHocController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/phong-hoc";
+        return "redirect:/admin/phong-hoc";
+    }
+    @PostMapping("/kich-hoat/{id}")
+    public String kichHoat(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            PhongHoc phongHoc = phongHocService.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng"));
+
+            phongHoc.setHoatDong(true);
+            phongHocService.save(phongHoc);
+
+            ra.addFlashAttribute("success", "Đã kích hoạt lại phòng " + phongHoc.getMaPhong());
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/phong-hoc";
     }
 }

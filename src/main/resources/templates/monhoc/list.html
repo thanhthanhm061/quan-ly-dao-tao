@@ -1,47 +1,341 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::content}, 'Quản lý Môn học')}">
-<body><th:block th:fragment="content">
-<div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <span><i class="fas fa-book me-2"></i>Danh sách Môn học</span>
-    <a th:href="@{/admin/mon-hoc/them}" class="btn btn-warning btn-sm"><i class="fas fa-plus me-1"></i>Thêm mới</a>
-  </div>
-  <div class="card-body">
-    <form method="get" class="d-flex gap-2 mb-3">
-      <input type="text" name="search" class="form-control" placeholder="Tìm theo tên môn..." th:value="${search}"/>
-      <button class="btn btn-outline-warning px-4">Tìm</button>
-      <a th:href="@{/admin/mon-hoc}" class="btn btn-outline-secondary">Reset</a>
-    </form>
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead><tr><th>#</th><th>Mã môn</th><th>Tên môn học</th><th>Tín chỉ</th><th>Loại</th><th>Khoa</th><th>Thao tác</th></tr></thead>
-        <tbody>
-          <tr th:if="${#lists.isEmpty(monHocs)}">
-            <td colspan="7" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Không có dữ liệu</td>
-          </tr>
-          <tr th:each="mon,i : ${monHocs}">
-            <td th:text="${i.count}"></td>
-            <td><code th:text="${mon.maMon}"></code></td>
-            <td class="fw-semibold" th:text="${mon.tenMon}"></td>
-            <td><span class="badge bg-warning text-dark" th:text="${mon.soTinChi}+' TC'"></span></td>
-            <td>
-              <span class="badge"
-                    th:classappend="${mon.loaiMon.name()=='LY_THUYET'?'bg-primary':mon.loaiMon.name()=='THUC_HANH'?'bg-success':'bg-secondary'}"
-                    th:text="${mon.loaiMon}"></span>
-            </td>
-            <td class="small" th:text="${mon.khoa?.tenKhoa ?: '-'}"></td>
-            <td>
-              <a th:href="@{/admin/mon-hoc/sua/{id}(id=${mon.id})}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
-              <form th:action="@{/admin/mon-hoc/xoa/{id}(id=${mon.id})}" method="post" class="d-inline"
-                    onsubmit="return confirm('Xác nhận xóa môn học này?')">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <button class="btn btn-sm btn-outline-danger ms-1"><i class="fas fa-trash"></i></button>
-              </form>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Quản lý Môn học')}">
+<body>
+<th:block th:fragment="content">
+
+    <div class="card custom-card">
+        <div class="card-header custom-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold fs-5">
+            <i class="fas fa-book me-2"></i>Danh sách Môn học
+        </span>
+
+            <a th:href="@{/admin/mon-hoc/them}" class="btn btn-light btn-sm add-btn">
+                <i class="fas fa-plus me-1"></i>Thêm mới
+            </a>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Search -->
+            <div class="d-flex justify-content-end mb-3">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text"
+                           id="searchInput"
+                           class="form-control search-input"
+                           placeholder="Tìm theo tên hoặc mã môn học...">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-header">
+                    <tr>
+                        <th>#</th>
+                        <th>Mã môn</th>
+                        <th>Tên môn học</th>
+                        <th>Tín chỉ</th>
+                        <th>Loại</th>
+                        <th>Khoa</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(monHocs)}">
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x d-block mb-2"></i>
+                            Không có dữ liệu
+                        </td>
+                    </tr>
+
+                    <tr th:each="mon,i : ${monHocs}">
+                        <td th:text="${i.count}"></td>
+                        <td><code th:text="${mon.maMon}"></code></td>
+                        <td class="fw-semibold" th:text="${mon.tenMon}"></td>
+                        <td>
+                        <span class="badge bg-warning text-dark"
+                              th:text="${mon.soTinChi}+' TC'"></span>
+                        </td>
+
+                        <td>
+                        <span class="badge"
+                              th:classappend="${mon.loaiMon.name()=='LY_THUYET'
+                              ? 'bg-primary'
+                              : mon.loaiMon.name()=='THUC_HANH'
+                              ? 'bg-success'
+                              : 'bg-secondary'}"
+                              th:text="${mon.loaiMon}">
+                        </span>
+                        </td>
+
+                        <td class="small" th:text="${mon.khoa?.tenKhoa ?: '-'}"></td>
+
+                        <td>
+                            <a th:href="@{/admin/mon-hoc/sua/{id}(id=${mon.id})}"
+                               class="btn btn-sm btn-outline-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+
+                            <form th:action="@{/admin/mon-hoc/xoa/{id}(id=${mon.id})}"
+                                  method="post"
+                                  class="d-inline delete-form"
+                                  th:data-ten="${mon.tenMon}">
+                                <input type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+
+                                <button class="btn btn-sm btn-outline-danger ms-1">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
-</th:block></body></html>
+
+    <style>
+        .add-btn{
+            color:#1d4ed8 !important;
+            font-weight:600;
+            border-radius:10px;
+            padding:6px 14px;
+            border:none;
+            background:white;
+        }
+
+        .add-btn:hover{
+            background:#eff6ff;
+            color:#1e40af !important;
+        }
+        .custom-card{
+            border:none;
+            border-radius:18px;
+            overflow:hidden;
+            box-shadow:0 8px 25px rgba(0,0,0,.08);
+        }
+
+        .custom-header{
+            background:linear-gradient(135deg,#1e3a8a,#2563eb);
+            color:white;
+            padding:16px 22px;
+            border:none;
+        }
+
+        .table-header{
+            background:#eff6ff;
+        }
+
+        .table-header th{
+            color:#1e3a8a;
+            font-weight:700;
+            border-bottom:none;
+        }
+
+        .search-box{
+            position:relative;
+            width:360px;
+        }
+
+        .search-icon{
+            position:absolute;
+            left:14px;
+            top:50%;
+            transform:translateY(-50%);
+            color:#94a3b8;
+            font-size:14px;
+        }
+
+        .search-input{
+            padding-left:42px;
+            border-radius:14px;
+            border:1px solid #dbeafe;
+            height:44px;
+            background:#f8fafc;
+        }
+
+        .search-input:focus{
+            border-color:#3b82f6;
+            box-shadow:0 0 0 4px rgba(59,130,246,.12);
+            background:white;
+        }
+
+        /* toast */
+        .custom-toast-container{
+            position:fixed;
+            top:25px;
+            left:50%;
+            transform:translateX(-50%);
+            z-index:99999;
+        }
+
+        .custom-toast{
+            width:360px;
+            background:#fff;
+            border-radius:16px;
+            box-shadow:0 10px 30px rgba(0,0,0,.15);
+            border-left:5px solid #ef4444;
+            animation:slideDown .25s ease;
+            overflow:hidden;
+        }
+
+        @keyframes slideDown{
+            from{
+                opacity:0;
+                transform:translateY(-20px);
+            }
+            to{
+                opacity:1;
+                transform:translateY(0);
+            }
+        }
+
+        .toast-header-custom{
+            display:flex;
+            gap:12px;
+            padding:16px;
+        }
+
+        .toast-icon{
+            width:40px;
+            height:40px;
+            border-radius:50%;
+            background:#fee2e2;
+            color:#dc2626;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .toast-title{
+            font-weight:700;
+            font-size:15px;
+        }
+
+        .toast-message{
+            font-size:13px;
+            color:#64748b;
+        }
+
+        .toast-actions{
+            display:flex;
+            justify-content:flex-end;
+            gap:8px;
+            padding:0 16px 16px;
+        }
+
+        .toast-btn{
+            border:none;
+            padding:8px 14px;
+            border-radius:10px;
+            font-size:13px;
+            font-weight:600;
+            cursor:pointer;
+        }
+
+        .toast-btn-cancel{
+            background:#f1f5f9;
+        }
+
+        .toast-btn-confirm{
+            background:#dc2626;
+            color:#fff;
+        }
+    </style>
+
+    <div class="custom-toast-container"></div>
+
+    <script>
+        function showDeleteToast(title, message, onConfirm){
+            const container = document.querySelector('.custom-toast-container');
+            container.innerHTML = '';
+
+            const toast = document.createElement('div');
+            toast.className = 'custom-toast';
+
+            toast.innerHTML = `
+                <div class="toast-header-custom">
+                    <div class="toast-icon">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                    <div>
+                        <div class="toast-title">${title}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+                </div>
+
+                <div class="toast-actions">
+                    <button class="toast-btn toast-btn-cancel">Hủy</button>
+                    <button class="toast-btn toast-btn-confirm">Xóa</button>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            toast.querySelector('.toast-btn-cancel').onclick = () => toast.remove();
+
+            toast.querySelector('.toast-btn-confirm').onclick = () => {
+                toast.remove();
+                onConfirm();
+            };
+        }
+
+        document.querySelectorAll('.delete-form').forEach(form=>{
+            form.addEventListener('submit', function(e){
+                e.preventDefault();
+
+                showDeleteToast(
+                    'Xác nhận xóa',
+                    `Bạn có chắc muốn xóa môn "${this.dataset.ten}"?`,
+                    ()=> this.submit()
+                );
+            });
+        });
+
+        document.getElementById('searchInput').addEventListener('keyup', function () {
+            const keyword = this.value.trim().toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            let hasResult = false;
+
+            rows.forEach(row => {
+                if (row.id === 'noResultRow' || row.querySelector('td[colspan]')) return;
+
+                const cells = row.querySelectorAll('td');
+                const maMon = cells[1]?.innerText.toLowerCase() || '';
+                const tenMon = cells[2]?.innerText.toLowerCase() || '';
+
+                if (maMon.includes(keyword) || tenMon.includes(keyword)) {
+                    row.style.display = '';
+                    hasResult = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            let emptyRow = document.getElementById('noResultRow');
+
+            if (!hasResult && keyword !== '') {
+                if (!emptyRow) {
+                    emptyRow = document.createElement('tr');
+                    emptyRow.id = 'noResultRow';
+                    emptyRow.innerHTML = `
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="fas fa-search-minus fa-2x d-block mb-2 opacity-50"></i>
+                            Không tìm thấy môn học phù hợp
+                        </td>
+                    `;
+                    document.querySelector('tbody').appendChild(emptyRow);
+                }
+            } else {
+                if (emptyRow) emptyRow.remove();
+            }
+        });
+    </script>
+
+</th:block>
+</body>
+</html>

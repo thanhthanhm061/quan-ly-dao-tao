@@ -355,7 +355,143 @@
 
     <script th:inline="javascript">
         (function () {
-            /* ─── Elements ─── */
+
+            /* ─────────────────────────────────────────
+               TOAST UI
+            ───────────────────────────────────────── */
+            function showToast(message, type = 'success') {
+
+                // Không cho hiện nhiều toast cùng lúc
+                const oldToast = document.querySelector('.custom-success-toast');
+                if (oldToast) oldToast.remove();
+
+                const toast = document.createElement('div');
+
+                toast.className = 'custom-success-toast';
+
+                toast.innerHTML = `
+                    <div class="toast-box ${type}">
+                        <div class="toast-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+
+                        <div class="toast-content">
+                            <div class="toast-title">
+                                Thành công
+                            </div>
+
+                            <div class="toast-message">
+                                ${message}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 10);
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);
+
+                }, 2600);
+            }
+
+            /* ─────────────────────────────────────────
+               STYLE TOAST
+            ───────────────────────────────────────── */
+            const style = document.createElement('style');
+
+            style.innerHTML = `
+                .custom-success-toast{
+                    position:fixed;
+                    top:85px;
+                    left:50%;
+                    transform:translateX(-50%) translateY(-20px);
+                    z-index:99999;
+                    opacity:0;
+                    transition:.28s ease;
+                }
+
+                .custom-success-toast.show{
+                    opacity:1;
+                    transform:translateX(-50%) translateY(0);
+                }
+
+                .toast-box{
+                    min-width:340px;
+                    max-width:420px;
+                    background:#fff;
+                    border-radius:18px;
+                    padding:18px 20px;
+                    box-shadow:0 12px 40px rgba(0,0,0,.18);
+                    display:flex;
+                    align-items:center;
+                    gap:16px;
+                    border-left:5px solid #16a34a;
+                }
+
+                .toast-icon{
+                    width:52px;
+                    height:52px;
+                    border-radius:50%;
+                    background:#dcfce7;
+                    color:#16a34a;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-size:1.4rem;
+                    flex-shrink:0;
+                }
+
+                .toast-title{
+                    font-size:15px;
+                    font-weight:700;
+                    color:#111827;
+                    margin-bottom:2px;
+                }
+
+                .toast-message{
+                    font-size:14px;
+                    color:#6b7280;
+                    line-height:1.4;
+                }
+            `;
+
+            document.head.appendChild(style);
+
+            /* ─────────────────────────────────────────
+               HIỆN THỊ FLASH MESSAGE 1 LẦN
+            ───────────────────────────────────────── */
+
+            const successMessage = /*[[${success}]]*/ null;
+
+            if (
+                successMessage &&
+                !sessionStorage.getItem('tkb_success_shown')
+            ) {
+
+                showToast(successMessage);
+
+                sessionStorage.setItem(
+                    'tkb_success_shown',
+                    '1'
+                );
+
+                setTimeout(() => {
+                    sessionStorage.removeItem('tkb_success_shown');
+                }, 3000);
+            }
+
+            /* ─────────────────────────────────────────
+               ELEMENTS
+            ───────────────────────────────────────── */
             const lhpSelect    = document.getElementById('lhpSelect');
             const thuSelect    = document.getElementById('thuSelect');
             const tietSelect   = document.getElementById('tietSelect');
@@ -368,21 +504,26 @@
             const tuanGrid     = document.getElementById('tuanGrid');
             const tuanSummary  = document.getElementById('tuanSummary');
 
-            /* ─── State ─── */
-            let totalWeeks   = 0;        // số tuần trong khoảng ngày
-            let selectedWeeks= new Set();// tuần đang bật (số 1-based)
-            let suggestCount = 0;        // số tuần gợi ý từ LHP
+            /* ─────────────────────────────────────────
+               STATE
+            ───────────────────────────────────────── */
+            let totalWeeks    = 0;
+            let selectedWeeks = new Set();
+            let suggestCount  = 0;
 
             /* ══════════════════════════════════════
-               1. PANEL TÍN CHỈ (luôn hiện khi chọn LHP)
-               ══════════════════════════════════════ */
+               1. PANEL TÍN CHỈ
+            ══════════════════════════════════════ */
             lhpSelect.addEventListener('change', onLhpChange);
 
             function onLhpChange() {
-                const opt     = lhpSelect.selectedOptions[0];
-                const panel   = document.getElementById('tinChiPanel');
-                const tinChi  = parseInt(opt?.dataset?.tinchi || '0');
-                const mon     = opt?.dataset?.mon || '';
+
+                const opt    = lhpSelect.selectedOptions[0];
+                const panel  = document.getElementById('tinChiPanel');
+
+                const tinChi = parseInt(
+                    opt?.dataset?.tinchi || '0'
+                );
 
                 if (!lhpSelect.value || tinChi === 0) {
                     panel.classList.remove('visible');
@@ -390,203 +531,181 @@
                 }
 
                 const tongTiet  = tinChi * 15;
-                const soTuan15  = 15;             // chuẩn 15 tuần/kỳ
-                const tietBuoi  = Math.min(Math.max(Math.ceil(tongTiet / soTuan15), 2), 5);
-                const soTuanHoc = Math.ceil(tongTiet / tietBuoi);
+                const soTuan15  = 15;
+                const tietBuoi  =
+                    Math.min(
+                        Math.max(
+                            Math.ceil(tongTiet / soTuan15),
+                            2
+                        ),
+                        5
+                    );
 
-                document.getElementById('statTinChi').textContent  = tinChi + ' TC';
-                document.getElementById('statTongTiet').textContent = tongTiet + ' tiết';
-                document.getElementById('statSoTuan').textContent   = soTuanHoc + ' tuần';
-                document.getElementById('statTietBuoi').textContent = tietBuoi + ' tiết';
-                document.getElementById('statFormula').textContent  =
-                    tinChi + ' TC × 15 = ' + tongTiet + ' tiết/kỳ ÷ ' + tietBuoi + ' tiết/buổi = ' + soTuanHoc + ' buổi';
+                const soTuanHoc =
+                    Math.ceil(tongTiet / tietBuoi);
+
+                document.getElementById('statTinChi').textContent =
+                    tinChi + ' TC';
+
+                document.getElementById('statTongTiet').textContent =
+                    tongTiet + ' tiết';
+
+                document.getElementById('statSoTuan').textContent =
+                    soTuanHoc + ' tuần';
+
+                document.getElementById('statTietBuoi').textContent =
+                    tietBuoi + ' tiết';
+
+                document.getElementById('statFormula').textContent =
+                    tinChi + ' TC × 15 = ' +
+                    tongTiet +
+                    ' tiết/kỳ';
 
                 soTietSelect.value = tietBuoi;
+
                 suggestCount = soTuanHoc;
 
                 panel.classList.add('visible');
             }
 
             /* ══════════════════════════════════════
-               2. LƯỚI TUẦN: sinh grid khi thay đổi ngày
-               ══════════════════════════════════════ */
+               2. TUẦN HỌC
+            ══════════════════════════════════════ */
+
             tuanBatDau.addEventListener('change', onDateChange);
             tuanKetThuc.addEventListener('change', onDateChange);
 
             function onDateChange() {
-                const bd = tuanBatDau.value, kt = tuanKetThuc.value;
-                const infoEl  = document.getElementById('weekCalcInfo');
-                const infoTxt = document.getElementById('weekCalcText');
+
+                const bd = tuanBatDau.value;
+                const kt = tuanKetThuc.value;
+
+                const infoEl =
+                    document.getElementById('weekCalcInfo');
+
+                const infoTxt =
+                    document.getElementById('weekCalcText');
 
                 if (!bd || !kt || new Date(kt) < new Date(bd)) {
+
                     infoEl.classList.remove('visible');
+
                     renderGrid(0);
+
                     return;
                 }
 
-                const msPerWeek = 7 * 24 * 3600 * 1000;
-                totalWeeks = Math.round((new Date(kt) - new Date(bd)) / msPerWeek) + 1;
+                const msPerWeek =
+                    7 * 24 * 3600 * 1000;
+
+                totalWeeks =
+                    Math.round(
+                        (new Date(kt) - new Date(bd))
+                        / msPerWeek
+                    ) + 1;
 
                 infoTxt.textContent =
-                    totalWeeks + ' tuần  (' +
-                    new Date(bd).toLocaleDateString('vi-VN') + ' → ' +
-                    new Date(kt).toLocaleDateString('vi-VN') + ')';
+                    totalWeeks + ' tuần';
+
                 infoEl.classList.add('visible');
 
-                // mặc định: bật tất cả
-                selectedWeeks = new Set(Array.from({length: totalWeeks}, (_, i) => i + 1));
+                selectedWeeks =
+                    new Set(
+                        Array.from(
+                            {length: totalWeeks},
+                            (_, i) => i + 1
+                        )
+                    );
+
                 renderGrid(totalWeeks);
+
                 syncHiddenInput();
             }
 
             function renderGrid(n) {
+
                 if (n === 0) {
+
                     tuanGrid.innerHTML =
-                        '<div style="font-size:.82rem;color:var(--text-muted);padding:8px 0;">' +
-                        '<i class="fas fa-arrow-up me-1"></i>Chọn tuần bắt đầu &amp; kết thúc để hiển thị lưới tuần</div>';
+                        '<div style="font-size:.82rem;color:#64748b;padding:8px 0;">Chọn tuần bắt đầu & kết thúc</div>';
+
                     tuanSummary.innerHTML = '';
+
                     return;
                 }
 
                 tuanGrid.innerHTML = '';
+
                 for (let i = 1; i <= n; i++) {
+
                     const cell = document.createElement('div');
-                    cell.className = 'tuan-cell' + (selectedWeeks.has(i) ? ' on' : '');
+
+                    cell.className =
+                        'tuan-cell' +
+                        (selectedWeeks.has(i) ? ' on' : '');
+
                     cell.textContent = i;
-                    cell.dataset.week = i;
-                    cell.addEventListener('click', () => toggleWeek(i, cell));
+
+                    cell.addEventListener('click', () => {
+
+                        if (selectedWeeks.has(i)) {
+                            selectedWeeks.delete(i);
+                            cell.classList.remove('on');
+                        } else {
+                            selectedWeeks.add(i);
+                            cell.classList.add('on');
+                        }
+
+                        renderSummary();
+
+                        syncHiddenInput();
+                    });
+
                     tuanGrid.appendChild(cell);
                 }
-                renderSummary();
-            }
 
-            function toggleWeek(w, cell) {
-                if (selectedWeeks.has(w)) {
-                    selectedWeeks.delete(w);
-                    cell.classList.remove('on');
-                } else {
-                    selectedWeeks.add(w);
-                    cell.classList.add('on');
-                }
                 renderSummary();
-                syncHiddenInput();
             }
 
             function renderSummary() {
-                const sorted = [...selectedWeeks].sort((a,b) => a - b);
-                tuanSummary.innerHTML = '';
+
+                const sorted =
+                    [...selectedWeeks].sort((a,b)=>a-b);
+
                 if (!sorted.length) {
-                    tuanSummary.textContent = 'Chưa chọn tuần nào';
+
+                    tuanSummary.innerHTML =
+                        'Chưa chọn tuần';
+
                     return;
                 }
-                const info = document.createElement('span');
-                info.innerHTML = '<strong>' + sorted.length + '</strong> tuần được chọn: ';
-                tuanSummary.appendChild(info);
-                sorted.forEach(w => {
-                    const chip = document.createElement('span');
-                    chip.className = 'tuan-chip';
-                    chip.textContent = 'T' + w;
-                    tuanSummary.appendChild(chip);
-                });
+
+                tuanSummary.innerHTML =
+                    '<strong>' +
+                    sorted.length +
+                    '</strong> tuần đã chọn';
             }
 
             function syncHiddenInput() {
-                const sorted = [...selectedWeeks].sort((a,b) => a - b);
-                tuanHocInput.value = sorted.join(',');
+
+                tuanHocInput.value =
+                    [...selectedWeeks]
+                        .sort((a,b)=>a-b)
+                        .join(',');
             }
 
             /* ══════════════════════════════════════
-               3. TOOLBAR NHANH
-               ══════════════════════════════════════ */
-            document.getElementById('tuanToolbar').addEventListener('click', function(e) {
-                const btn = e.target.closest('[data-action]');
-                if (!btn || !totalWeeks) return;
+               INIT
+            ══════════════════════════════════════ */
 
-                const action = btn.dataset.action;
-
-                if (action === 'all') {
-                    selectedWeeks = new Set(Array.from({length: totalWeeks}, (_, i) => i + 1));
-                } else if (action === 'none') {
-                    selectedWeeks.clear();
-                } else if (action === 'odd') {
-                    selectedWeeks = new Set(Array.from({length: totalWeeks}, (_, i) => i+1).filter(w => w % 2 === 1));
-                } else if (action === 'even') {
-                    selectedWeeks = new Set(Array.from({length: totalWeeks}, (_, i) => i+1).filter(w => w % 2 === 0));
-                } else if (action === 'auto') {
-                    // Tự động: lấy đúng suggestCount tuần đầu tiên
-                    if (!suggestCount) { alert('Vui lòng chọn lớp học phần trước'); return; }
-                    const n = Math.min(suggestCount, totalWeeks);
-                    selectedWeeks = new Set(Array.from({length: n}, (_, i) => i + 1));
-                }
-
-                renderGrid(totalWeeks);
-                syncHiddenInput();
-            });
-
-            /* ══════════════════════════════════════
-               4. TÌM PHÒNG TRỐNG
-               ══════════════════════════════════════ */
-            btnTim.addEventListener('click', async function () {
-                const opt    = lhpSelect.selectedOptions[0];
-                const hocKy  = opt?.dataset?.hocky || '';
-                const thu    = thuSelect.value;
-                const tiet   = tietSelect.value;
-                const soTiet = soTietSelect.value;
-
-                if (!hocKy) { alert('Vui lòng chọn lớp học phần để xác định học kỳ'); return; }
-
-                btnTim.disabled = true;
-                btnTim.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang tìm...';
-
-                const resultEl = document.getElementById('phongTrongResult');
-                const emptyEl  = document.getElementById('phongTrongEmpty');
-                const itemsEl  = document.getElementById('phongTrongItems');
-                const countEl  = document.getElementById('phongTrongCount');
-                resultEl.style.display = 'none';
-                emptyEl.style.display  = 'none';
-
-                try {
-                    const url = `/tkb/phong-trong?hocKy=${encodeURIComponent(hocKy)}&thu=${thu}&tietBatDau=${tiet}&soTiet=${soTiet}`;
-                    const res  = await fetch(url);
-                    const data = await res.json();
-
-                    if (data.length === 0) { emptyEl.style.display = ''; return; }
-
-                    countEl.textContent = data.length + ' phòng';
-                    itemsEl.innerHTML   = '';
-                    data.forEach(p => {
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'room-btn';
-                        btn.innerHTML = '<i class="fas fa-door-open"></i>' + p.maPhong +
-                            ' <span class="cap">(' + p.sucChua + ' chỗ)</span>';
-                        btn.onclick = () => {
-                            phongSelect.value = p.maPhong;
-                            itemsEl.querySelectorAll('.room-btn').forEach(b => b.classList.remove('selected'));
-                            btn.classList.add('selected');
-                        };
-                        itemsEl.appendChild(btn);
-                    });
-                    resultEl.style.display = '';
-                } catch (err) {
-                    alert('Lỗi khi tìm phòng: ' + err.message);
-                } finally {
-                    btnTim.disabled = false;
-                    btnTim.innerHTML = '<i class="fas fa-search me-1"></i>Tìm phòng trống';
-                }
-            });
-
-            // Reset phòng khi đổi thứ/tiết
-            [thuSelect, tietSelect, soTietSelect].forEach(el =>
-                el.addEventListener('change', () => {
-                    document.getElementById('phongTrongResult').style.display = 'none';
-                    document.getElementById('phongTrongEmpty').style.display  = 'none';
-                })
-            );
-
-            /* ── Trigger nếu form đang edit (có giá trị sẵn) ── */
             if (lhpSelect.value) onLhpChange();
-            if (tuanBatDau.value && tuanKetThuc.value) onDateChange();
+
+            if (
+                tuanBatDau.value &&
+                tuanKetThuc.value
+            ) {
+                onDateChange();
+            }
 
         })();
     </script>

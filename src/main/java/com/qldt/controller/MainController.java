@@ -277,6 +277,7 @@ class GiangVienController {
     public String list(@RequestParam(required = false) String search, Model model) {
         model.addAttribute("giangViens", search != null ? gvService.search(search) : gvService.findAll());
         model.addAttribute("search", search);
+        model.addAttribute("tongSo", gvService.count());
         return "giangvien/list";
     }
 

@@ -131,6 +131,76 @@
         .empty-state h5 { font-weight:600; color:#334155; }
 
         @media(max-width:768px) { .stats-row { grid-template-columns:repeat(2,1fr); } }
+        .delete-toast{
+        position:fixed;
+        top:25px;
+        left:50%;
+        transform:translateX(-50%) translateY(-20px);
+        width:340px;
+        background:#fff;
+        border-radius:16px;
+        box-shadow:0 14px 40px rgba(0,0,0,.18);
+        border:1px solid #fee2e2;
+        z-index:9999;
+        opacity:0;
+        pointer-events:none;
+        transition:.25s;
+    }
+
+    .delete-toast.show{
+        opacity:1;
+        pointer-events:auto;
+        transform:translateX(-50%) translateY(0);
+    }
+
+    .delete-toast-header{
+        background:linear-gradient(135deg,#dc2626,#ef4444);
+        color:#fff;
+        padding:14px 16px;
+        font-weight:700;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        border-radius:16px 16px 0 0;
+    }
+
+    .delete-toast-body{
+        padding:16px;
+    }
+
+    .delete-info{
+        background:#f8fafc;
+        border:1px solid #e2e8f0;
+        border-radius:12px;
+        padding:10px 12px;
+        font-size:.85rem;
+        color:#475569;
+        line-height:1.8;
+    }
+
+    .delete-actions{
+        display:flex;
+        justify-content:flex-end;
+        gap:8px;
+        margin-top:14px;
+    }
+
+    .btn-cancel{
+        border:1px solid #e2e8f0;
+        background:#fff;
+        padding:7px 14px;
+        border-radius:10px;
+        font-weight:600;
+    }
+
+    .btn-confirm{
+        border:none;
+        background:linear-gradient(135deg,#dc2626,#ef4444);
+        color:white;
+        padding:7px 14px;
+        border-radius:10px;
+        font-weight:600;
+    }
     </style>
     </style>
 
@@ -141,18 +211,6 @@
             </a>
         </li>
     </ul>
-
-    <!-- Flash messages -->
-    <div th:if="${success}" class="flash-success">
-        <i class="fas fa-check-circle me-2"></i><span th:text="${success}"></span>
-    </div>
-    <!-- Flash messages -->
-    <div th:if="${success}" class="flash-success">
-        <i class="fas fa-check-circle me-2"></i><span th:text="${success}"></span>
-    </div>
-    <div th:if="${error}" class="flash-error">
-        <i class="fas fa-exclamation-circle me-2"></i><span th:text="${error}"></span>
-    </div>
 
     <!-- Page header -->
     <div class="page-header">
@@ -299,12 +357,36 @@
                                 <a th:href="@{/admin/phong-hoc/sua/{id}(id=${p.id})}" class="btn-edit">
                                     <i class="fas fa-edit"></i>Sửa
                                 </a>
-                                <form th:action="@{/admin/phong-hoc/xoa/{id}(id=${p.id})}" method="post"
-                                      class="d-inline"
-                                      onsubmit="return confirm('Vô hiệu hóa phòng này?')">
-                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                    <button type="submit" class="btn-del">
+                                <form th:if="${p.hoatDong}"
+                                      th:action="@{/admin/phong-hoc/xoa/{id}(id=${p.id})}"
+                                      method="post"
+                                      class="d-inline disable-form">
+
+                                    <input type="hidden"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}"/>
+
+                                    <button type="button"
+                                            class="btn-del btn-disable-room"
+                                            th:attr="
+                data-maphong=${p.maPhong},
+                data-tenphong=${p.tenPhong}
+            ">
                                         <i class="fas fa-ban"></i>Vô hiệu
+                                    </button>
+                                </form>
+
+                                <form th:unless="${p.hoatDong}"
+                                      th:action="@{/admin/phong-hoc/kich-hoat/{id}(id=${p.id})}"
+                                      method="post"
+                                      class="d-inline">
+
+                                    <input type="hidden"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}"/>
+
+                                    <button type="submit" class="btn-edit">
+                                        <i class="fas fa-check-circle"></i>Kích hoạt lại
                                     </button>
                                 </form>
                             </div>
@@ -315,39 +397,128 @@
             </div>
         </div>
     </div>
+    <div class="delete-toast" id="disableToast">
 
+        <div class="delete-toast-header">
+            <i class="fas fa-ban"></i>
+            <span>Xác nhận vô hiệu hóa</span>
+        </div>
+
+        <div class="delete-toast-body">
+            <p class="mb-2 fw-semibold">Bạn muốn vô hiệu hóa phòng này?</p>
+
+            <div class="delete-info">
+                <div><strong>Mã phòng:</strong> <span id="toastMaPhong"></span></div>
+                <div><strong>Tên phòng:</strong> <span id="toastTenPhong"></span></div>
+            </div>
+
+            <div class="delete-actions">
+                <button type="button" class="btn-cancel" id="btnCancelDisable">
+                    Hủy
+                </button>
+
+                <button type="button" class="btn-confirm" id="btnConfirmDisable">
+                    <i class="fas fa-ban me-1"></i>Vô hiệu
+                </button>
+            </div>
+        </div>
+    </div>
     <script>
-        (function(){
+        (function () {
+
+            const toast = document.getElementById('disableToast');
+            const btnCancel = document.getElementById('btnCancelDisable');
+            const btnConfirm = document.getElementById('btnConfirmDisable');
+
             const searchInput = document.getElementById('searchInput');
-            const loaiFilter  = document.getElementById('loaiFilter');
-            const ttFilter    = document.getElementById('trangThaiFilter');
-            const countEl     = document.getElementById('roomCount');
+            const loaiFilter = document.getElementById('loaiFilter');
+            const trangThaiFilter = document.getElementById('trangThaiFilter');
+            const roomCount = document.getElementById('roomCount');
 
-            function filterTable() {
-                const q    = searchInput.value.toLowerCase();
-                const loai = loaiFilter.value;
-                const tt   = ttFilter.value;
-                const rows = document.querySelectorAll('#roomTable tbody tr');
-                let visible = 0;
-                rows.forEach(row => {
-                    const ma     = (row.dataset.ma || '').toLowerCase();
-                    const loaiR  = row.dataset.loai || '';
-                    const active = row.dataset.active;
-                    const text   = row.textContent.toLowerCase();
+            let currentForm = null;
 
-                    const matchQ  = !q    || text.includes(q);
-                    const matchL  = !loai || loaiR === loai;
-                    const matchTT = !tt   || (tt === 'active' ? active === 'true' : active === 'false');
+            // ===============================
+            // CONFIRM VÔ HIỆU
+            // ===============================
+            document.querySelectorAll('.btn-disable-room').forEach(btn => {
+                btn.addEventListener('click', function () {
 
-                    row.style.display = (matchQ && matchL && matchTT) ? '' : 'none';
-                    if (matchQ && matchL && matchTT) visible++;
+                    currentForm = this.closest('form');
+
+                    document.getElementById('toastMaPhong').textContent =
+                        this.dataset.maphong || '-';
+
+                    document.getElementById('toastTenPhong').textContent =
+                        this.dataset.tenphong || '-';
+
+                    toast.classList.add('show');
                 });
-                if (countEl) countEl.textContent = visible + ' phòng';
+            });
+
+            btnCancel.addEventListener('click', function () {
+                toast.classList.remove('show');
+            });
+
+            btnConfirm.addEventListener('click', function () {
+                toast.classList.remove('show');
+                if (currentForm) currentForm.submit();
+            });
+
+            document.addEventListener('click', function (e) {
+                if (
+                    toast.classList.contains('show') &&
+                    !toast.contains(e.target) &&
+                    !e.target.closest('.btn-disable-room')
+                ) {
+                    toast.classList.remove('show');
+                }
+            });
+
+            // ===============================
+            // FILTER + SEARCH
+            // ===============================
+            function filterRooms() {
+                const keyword = searchInput.value.toLowerCase().trim();
+                const loaiValue = loaiFilter.value;
+                const trangThaiValue = trangThaiFilter.value;
+
+                const rows = document.querySelectorAll('#roomTable tbody tr');
+
+                let visibleCount = 0;
+
+                rows.forEach(row => {
+                    const maPhong = (row.dataset.ma || '').toLowerCase();
+                    const tenPhong = row.children[1].innerText.toLowerCase();
+                    const loaiPhong = row.dataset.loai || '';
+                    const active = row.dataset.active === 'true';
+
+                    const matchKeyword =
+                        maPhong.includes(keyword) ||
+                        tenPhong.includes(keyword);
+
+                    const matchLoai =
+                        !loaiValue || loaiPhong === loaiValue;
+
+                    const matchTrangThai =
+                        !trangThaiValue ||
+                        (trangThaiValue === 'active' && active) ||
+                        (trangThaiValue === 'inactive' && !active);
+
+                    if (matchKeyword && matchLoai && matchTrangThai) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                roomCount.textContent = visibleCount + ' phòng';
             }
 
-            searchInput?.addEventListener('input', filterTable);
-            loaiFilter?.addEventListener('change', filterTable);
-            ttFilter?.addEventListener('change', filterTable);
+            searchInput.addEventListener('input', filterRooms);
+            loaiFilter.addEventListener('change', filterRooms);
+            trangThaiFilter.addEventListener('change', filterRooms);
+
         })();
     </script>
 
