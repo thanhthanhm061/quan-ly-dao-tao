@@ -240,18 +240,10 @@ class SinhVienController {
         return "redirect:/admin/sinh-vien";
     }
     @GetMapping("/chi-tiet/{id}")
-    public String chiTietSinhVien(
-            @PathVariable Long id,
-            Model model
-    ) {
-
-        SinhVien sv = svService.findById(id)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Không tìm thấy sinh viên"));
-
+    public String chiTietSinhVien(@PathVariable Long id, Model model) {
+        SinhVien sv = svService.findByIdWithLopAndCvht(id)  // đổi ở đây
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sinh viên"));
         model.addAttribute("sv", sv);
-
-
         return "sinhvien/chi-tiet";
     }
     @PostMapping("/xoa/{id}")

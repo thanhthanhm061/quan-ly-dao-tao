@@ -25,7 +25,6 @@
         .card { border:1px solid var(--border); border-radius:var(--radius);
             box-shadow:var(--shadow); background:#fff; }
 
-        /* Section dividers */
         .form-section { padding:22px 26px; border-bottom:1px solid #f0f4f8; }
         .form-section:last-child { border-bottom:none; }
         .section-title { font-size:.72rem; font-weight:700; text-transform:uppercase;
@@ -41,9 +40,36 @@
             font-size:.9rem; padding:9px 12px; color:var(--text); transition:.18s; }
         .form-select:focus, .form-control:focus { border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; outline:none; }
 
-        /* Info alert */
+        /* ── Tín chỉ stats panel (luôn hiển thị khi chọn LHP) ── */
+        .tinchi-panel {
+            display:none;
+            background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);
+            border:1.5px solid #bfdbfe;
+            border-radius:10px;
+            padding:14px 18px;
+            margin-top:12px;
+            gap:0;
+        }
+        .tinchi-panel.visible { display:block; }
+        .tinchi-panel-title {
+            font-size:.72rem; font-weight:700; text-transform:uppercase;
+            letter-spacing:.06em; color:#1e40af; margin-bottom:10px;
+            display:flex; align-items:center; gap:5px;
+        }
+        .tinchi-stats {
+            display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+        }
+        .tinchi-stat {
+            background:#fff; border-radius:8px; padding:10px 12px;
+            border:1px solid #dbeafe; text-align:center;
+        }
+        .tinchi-stat .val { font-size:1.3rem; font-weight:700; color:var(--navy); line-height:1; }
+        .tinchi-stat .lbl { font-size:.7rem; color:var(--text-muted); margin-top:3px; font-weight:500; }
+        .tinchi-stat.accent .val { color:var(--green); }
+
+        /* Info / warn boxes */
         .info-box { background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px;
-            padding:10px 14px; font-size:.83rem; color:#1e40af; display:none; margin-top:8px; }
+            padding:10px 14px; font-size:.83rem; color:#1e40af; margin-top:8px; }
         .info-box i { margin-right:5px; }
 
         .warn-box { background:#fffbeb; border:1px solid #fde68a; border-radius:8px;
@@ -54,7 +80,7 @@
         .input-group .form-select { border-right:0; border-radius:8px 0 0 8px !important; }
         .input-group .btn { border-radius:0 8px 8px 0 !important; }
         .btn-outline-primary { border:1.5px solid var(--blue); color:var(--blue); border-radius:8px;
-            font-size:.85rem; font-weight:600; padding:9px 14px; }
+            font-size:.85rem; font-weight:600; padding:9px 14px; background:#fff; }
         .btn-outline-primary:hover { background:var(--blue); color:#fff; }
 
         .room-results { margin-top:10px; }
@@ -72,16 +98,55 @@
 
         /* Buttons */
         .btn-success { background:var(--green); border-color:var(--green); border-radius:8px;
-            font-weight:600; font-size:.9rem; padding:10px 24px; }
-        .btn-success:hover { background:#047857; border-color:#047857; }
-        .btn-secondary { background:#f1f5f9; border-color:#e2e8f0; color:#475569;
-            border-radius:8px; font-weight:600; font-size:.9rem; padding:10px 20px; }
+            font-weight:600; font-size:.9rem; padding:10px 24px; color:#fff; border:none; cursor:pointer; }
+        .btn-success:hover { background:#047857; }
+        .btn-secondary { background:#f1f5f9; border:1.5px solid #e2e8f0; color:#475569;
+            border-radius:8px; font-weight:600; font-size:.9rem; padding:10px 20px; text-decoration:none;
+            display:inline-flex; align-items:center; }
         .btn-secondary:hover { background:#e2e8f0; }
 
-        /* Tuan hoc chips preview */
-        .tuan-preview { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+        /* ── Tuần học panel nâng cấp ── */
+        .tuan-toolbar {
+            display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;
+        }
+        .tuan-toolbar-btn {
+            font-size:.75rem; font-weight:600; padding:4px 10px;
+            border-radius:6px; border:1.5px solid var(--border);
+            background:#fff; color:var(--text-muted); cursor:pointer; transition:.16s;
+        }
+        .tuan-toolbar-btn:hover { background:var(--blue); color:#fff; border-color:var(--blue); }
+        .tuan-toolbar-btn.active { background:#dbeafe; color:#1e40af; border-color:#93c5fd; }
+
+        .tuan-grid {
+            display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px;
+        }
+        .tuan-cell {
+            width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+            border-radius:8px; border:1.5px solid var(--border);
+            font-size:.78rem; font-weight:700; cursor:pointer; transition:.16s;
+            background:#fff; color:var(--text-muted); user-select:none;
+        }
+        .tuan-cell:hover { border-color:var(--blue); color:var(--blue); background:#eff6ff; }
+        .tuan-cell.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+        .tuan-cell.disabled { opacity:.3; pointer-events:none; }
+
+        .tuan-summary {
+            font-size:.8rem; color:var(--text-muted); margin-top:6px;
+            display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+        }
+        .tuan-summary strong { color:var(--navy); }
         .tuan-chip { font-size:.72rem; padding:2px 8px; border-radius:12px;
             background:#dbeafe; color:#1e40af; font-weight:600; }
+
+        /* Week auto-calc info */
+        .week-calc-info {
+            background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px;
+            padding:10px 14px; font-size:.83rem; color:#166534;
+            margin-top:8px; display:none;
+            align-items:center; gap:8px;
+        }
+        .week-calc-info.visible { display:flex; }
+        .week-calc-info i { flex-shrink:0; }
     </style>
 
     <div class="page-wrapper">
@@ -111,12 +176,38 @@
                                 th:value="${lhp.id}"
                                 th:text="${lhp.maLhp + ' | ' + lhp.monHoc.tenMon + ' | ' + lhp.hocKy}"
                                 th:attr="data-tinchi=${lhp.monHoc.soTinChi},
-                           data-hocky=${lhp.hocKy},
-                           data-mon=${lhp.monHoc.tenMon}">
+                                         data-hocky=${lhp.hocKy},
+                                         data-mon=${lhp.monHoc.tenMon}">
                         </option>
                     </select>
-                    <div id="tinChiInfo" class="info-box">
-                        <i class="fas fa-info-circle"></i><span id="tinChiText"></span>
+
+                    <!-- Panel tín chỉ – luôn hiển thị khi chọn LHP -->
+                    <div class="tinchi-panel" id="tinChiPanel">
+                        <div class="tinchi-panel-title">
+                            <i class="fas fa-calculator"></i> Quy đổi tín chỉ → tiết học
+                        </div>
+                        <div class="tinchi-stats">
+                            <div class="tinchi-stat">
+                                <div class="val" id="statTinChi">—</div>
+                                <div class="lbl">Tín chỉ</div>
+                            </div>
+                            <div class="tinchi-stat">
+                                <div class="val" id="statTongTiet">—</div>
+                                <div class="lbl">Tổng tiết/kỳ</div>
+                            </div>
+                            <div class="tinchi-stat">
+                                <div class="val" id="statSoTuan">—</div>
+                                <div class="lbl">Tuần học</div>
+                            </div>
+                            <div class="tinchi-stat accent">
+                                <div class="val" id="statTietBuoi">—</div>
+                                <div class="lbl">Tiết/buổi (gợi ý)</div>
+                            </div>
+                        </div>
+                        <div style="font-size:.75rem;color:var(--text-muted);margin-top:8px;">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Công thức: <strong id="statFormula">1 TC × 15 = 15 tiết lý thuyết</strong>
+                        </div>
                     </div>
                 </div>
 
@@ -165,7 +256,7 @@
                             <option th:each="p : ${danhSachPhong}"
                                     th:value="${p.maPhong}"
                                     th:text="${p.maPhong + ' (' + p.sucChua + ' chỗ' +
-                    (p.loaiPhong != null ? ' · ' + p.loaiPhong.name() : '') + ')'}">
+                                    (p.loaiPhong != null ? ' · ' + p.loaiPhong.name() : '') + ')'}">
                             </option>
                         </select>
                         <button type="button" class="btn btn-outline-primary" id="btnTimPhong">
@@ -173,7 +264,6 @@
                         </button>
                     </div>
 
-                    <!-- Kết quả phòng trống -->
                     <div id="phongTrongResult" class="room-results" style="display:none">
                         <div class="label">
                             Phòng trống: <span id="phongTrongCount" style="color:var(--green)"></span>
@@ -185,7 +275,7 @@
                     </div>
                 </div>
 
-                <!-- ④ TUẦN HỌC -->
+                <!-- ④ TUẦN HỌC (NÂNG CẤP) -->
                 <div class="form-section">
                     <div class="section-title"><i class="fas fa-calendar-week me-1"></i>Khoảng thời gian</div>
                     <div class="row g-3">
@@ -197,22 +287,47 @@
                             <label class="form-label">Tuần kết thúc</label>
                             <input type="date" class="form-control" th:field="*{tuanKetThuc}" id="tuanKetThuc"/>
                         </div>
-                        <div id="soTuanInfo" class="col-12" style="display:none">
-                            <div class="info-box" style="display:flex;margin-top:0">
-                                <i class="fas fa-calendar-check me-1"></i>
-                                <span id="soTuanText"></span>
+
+                        <!-- Week calc info -->
+                        <div class="col-12">
+                            <div class="week-calc-info" id="weekCalcInfo">
+                                <i class="fas fa-calendar-check"></i>
+                                <span id="weekCalcText"></span>
                             </div>
                         </div>
+
+                        <!-- Tuần học cụ thể: grid toggle -->
                         <div class="col-12">
-                            <label class="form-label">
-                                Tuần học cụ thể <span class="hint">(bỏ trống = áp dụng tất cả các tuần)</span>
+                            <label class="form-label" style="margin-bottom:10px;">
+                                Tuần học cụ thể
+                                <span class="hint">(click để bật/tắt từng tuần)</span>
                             </label>
-                            <input type="text" class="form-control" th:field="*{tuanHoc}" id="tuanHocInput"
-                                   placeholder="VD: 1,2,3,5,7 — bỏ tuần lễ"/>
-                            <div class="form-text" style="font-size:.78rem">
-                                Nhập số tuần cách nhau bởi dấu phẩy.
+
+                            <!-- Toolbar nhanh -->
+                            <div class="tuan-toolbar" id="tuanToolbar">
+                                <button type="button" class="tuan-toolbar-btn" data-action="all">Chọn tất cả</button>
+                                <button type="button" class="tuan-toolbar-btn" data-action="none">Bỏ chọn tất cả</button>
+                                <button type="button" class="tuan-toolbar-btn" data-action="odd">Tuần lẻ</button>
+                                <button type="button" class="tuan-toolbar-btn" data-action="even">Tuần chẵn</button>
+                                <button type="button" class="tuan-toolbar-btn" data-action="auto" id="btnAutoWeek"
+                                        style="background:#eff6ff;color:#2563eb;border-color:#93c5fd;">
+                                    <i class="fas fa-magic me-1"></i>Tự động từ LHP
+                                </button>
                             </div>
-                            <div id="tuanPreview" class="tuan-preview"></div>
+
+                            <!-- Grid tuần -->
+                            <div class="tuan-grid" id="tuanGrid">
+                                <!-- JS sinh ra -->
+                                <div style="font-size:.82rem;color:var(--text-muted);padding:8px 0;">
+                                    <i class="fas fa-arrow-up me-1"></i>
+                                    Chọn tuần bắt đầu &amp; kết thúc để hiển thị lưới tuần
+                                </div>
+                            </div>
+
+                            <div class="tuan-summary" id="tuanSummary"></div>
+
+                            <!-- Hidden input truyền về server -->
+                            <input type="hidden" th:field="*{tuanHoc}" id="tuanHocInput"/>
                         </div>
                     </div>
                 </div>
@@ -240,6 +355,7 @@
 
     <script th:inline="javascript">
         (function () {
+            /* ─── Elements ─── */
             const lhpSelect    = document.getElementById('lhpSelect');
             const thuSelect    = document.getElementById('thuSelect');
             const tietSelect   = document.getElementById('tietSelect');
@@ -249,54 +365,167 @@
             const tuanBatDau   = document.getElementById('tuanBatDau');
             const tuanKetThuc  = document.getElementById('tuanKetThuc');
             const tuanHocInput = document.getElementById('tuanHocInput');
+            const tuanGrid     = document.getElementById('tuanGrid');
+            const tuanSummary  = document.getElementById('tuanSummary');
 
-            // ── Thông tin tín chỉ khi chọn LHP ──
-            lhpSelect.addEventListener('change', function () {
-                const opt    = this.selectedOptions[0];
-                const info   = document.getElementById('tinChiInfo');
-                const text   = document.getElementById('tinChiText');
-                const tinChi = parseInt(opt?.dataset?.tinchi || '0');
-                const mon    = opt?.dataset?.mon || '';
-                if (!this.value || tinChi === 0) { info.style.display = 'none'; return; }
-                const tongTiet = tinChi * 15;
-                const tietTuan = Math.ceil(tongTiet / 15);
-                text.textContent = mon + ' — ' + tinChi + ' TC = ' + tongTiet +
-                    ' tiết/kỳ. Gợi ý số tiết/buổi: ' + Math.min(Math.max(tietTuan, 2), 5) + ' tiết.';
-                soTietSelect.value = Math.min(Math.max(tietTuan, 2), 5);
-                info.style.display = 'flex';
-            });
+            /* ─── State ─── */
+            let totalWeeks   = 0;        // số tuần trong khoảng ngày
+            let selectedWeeks= new Set();// tuần đang bật (số 1-based)
+            let suggestCount = 0;        // số tuần gợi ý từ LHP
 
-            // ── Số tuần ──
-            function tinhSoTuan() {
-                const bd = tuanBatDau.value, kt = tuanKetThuc.value;
-                const infoEl = document.getElementById('soTuanInfo');
-                const textEl = document.getElementById('soTuanText');
-                if (!bd || !kt) { infoEl.style.display = 'none'; return; }
-                const soTuan = Math.round((new Date(kt) - new Date(bd)) / (7*24*3600*1000)) + 1;
-                if (soTuan <= 0) { infoEl.style.display = 'none'; return; }
-                textEl.textContent = 'Khoảng thời gian: ' + soTuan + ' tuần (' +
-                    new Date(bd).toLocaleDateString('vi-VN') + ' → ' + new Date(kt).toLocaleDateString('vi-VN') + ')';
-                document.querySelector('#soTuanInfo .info-box').style.display = 'flex';
-                infoEl.style.display = '';
+            /* ══════════════════════════════════════
+               1. PANEL TÍN CHỈ (luôn hiện khi chọn LHP)
+               ══════════════════════════════════════ */
+            lhpSelect.addEventListener('change', onLhpChange);
+
+            function onLhpChange() {
+                const opt     = lhpSelect.selectedOptions[0];
+                const panel   = document.getElementById('tinChiPanel');
+                const tinChi  = parseInt(opt?.dataset?.tinchi || '0');
+                const mon     = opt?.dataset?.mon || '';
+
+                if (!lhpSelect.value || tinChi === 0) {
+                    panel.classList.remove('visible');
+                    return;
+                }
+
+                const tongTiet  = tinChi * 15;
+                const soTuan15  = 15;             // chuẩn 15 tuần/kỳ
+                const tietBuoi  = Math.min(Math.max(Math.ceil(tongTiet / soTuan15), 2), 5);
+                const soTuanHoc = Math.ceil(tongTiet / tietBuoi);
+
+                document.getElementById('statTinChi').textContent  = tinChi + ' TC';
+                document.getElementById('statTongTiet').textContent = tongTiet + ' tiết';
+                document.getElementById('statSoTuan').textContent   = soTuanHoc + ' tuần';
+                document.getElementById('statTietBuoi').textContent = tietBuoi + ' tiết';
+                document.getElementById('statFormula').textContent  =
+                    tinChi + ' TC × 15 = ' + tongTiet + ' tiết/kỳ ÷ ' + tietBuoi + ' tiết/buổi = ' + soTuanHoc + ' buổi';
+
+                soTietSelect.value = tietBuoi;
+                suggestCount = soTuanHoc;
+
+                panel.classList.add('visible');
             }
-            tuanBatDau.addEventListener('change', tinhSoTuan);
-            tuanKetThuc.addEventListener('change', tinhSoTuan);
 
-            // ── Preview tuần học ──
-            tuanHocInput.addEventListener('input', function () {
-                const preview = document.getElementById('tuanPreview');
-                const val = this.value.trim();
-                preview.innerHTML = '';
-                if (!val) return;
-                val.split(',').map(s => s.trim()).filter(Boolean).forEach(t => {
+            /* ══════════════════════════════════════
+               2. LƯỚI TUẦN: sinh grid khi thay đổi ngày
+               ══════════════════════════════════════ */
+            tuanBatDau.addEventListener('change', onDateChange);
+            tuanKetThuc.addEventListener('change', onDateChange);
+
+            function onDateChange() {
+                const bd = tuanBatDau.value, kt = tuanKetThuc.value;
+                const infoEl  = document.getElementById('weekCalcInfo');
+                const infoTxt = document.getElementById('weekCalcText');
+
+                if (!bd || !kt || new Date(kt) < new Date(bd)) {
+                    infoEl.classList.remove('visible');
+                    renderGrid(0);
+                    return;
+                }
+
+                const msPerWeek = 7 * 24 * 3600 * 1000;
+                totalWeeks = Math.round((new Date(kt) - new Date(bd)) / msPerWeek) + 1;
+
+                infoTxt.textContent =
+                    totalWeeks + ' tuần  (' +
+                    new Date(bd).toLocaleDateString('vi-VN') + ' → ' +
+                    new Date(kt).toLocaleDateString('vi-VN') + ')';
+                infoEl.classList.add('visible');
+
+                // mặc định: bật tất cả
+                selectedWeeks = new Set(Array.from({length: totalWeeks}, (_, i) => i + 1));
+                renderGrid(totalWeeks);
+                syncHiddenInput();
+            }
+
+            function renderGrid(n) {
+                if (n === 0) {
+                    tuanGrid.innerHTML =
+                        '<div style="font-size:.82rem;color:var(--text-muted);padding:8px 0;">' +
+                        '<i class="fas fa-arrow-up me-1"></i>Chọn tuần bắt đầu &amp; kết thúc để hiển thị lưới tuần</div>';
+                    tuanSummary.innerHTML = '';
+                    return;
+                }
+
+                tuanGrid.innerHTML = '';
+                for (let i = 1; i <= n; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'tuan-cell' + (selectedWeeks.has(i) ? ' on' : '');
+                    cell.textContent = i;
+                    cell.dataset.week = i;
+                    cell.addEventListener('click', () => toggleWeek(i, cell));
+                    tuanGrid.appendChild(cell);
+                }
+                renderSummary();
+            }
+
+            function toggleWeek(w, cell) {
+                if (selectedWeeks.has(w)) {
+                    selectedWeeks.delete(w);
+                    cell.classList.remove('on');
+                } else {
+                    selectedWeeks.add(w);
+                    cell.classList.add('on');
+                }
+                renderSummary();
+                syncHiddenInput();
+            }
+
+            function renderSummary() {
+                const sorted = [...selectedWeeks].sort((a,b) => a - b);
+                tuanSummary.innerHTML = '';
+                if (!sorted.length) {
+                    tuanSummary.textContent = 'Chưa chọn tuần nào';
+                    return;
+                }
+                const info = document.createElement('span');
+                info.innerHTML = '<strong>' + sorted.length + '</strong> tuần được chọn: ';
+                tuanSummary.appendChild(info);
+                sorted.forEach(w => {
                     const chip = document.createElement('span');
                     chip.className = 'tuan-chip';
-                    chip.textContent = 'Tuần ' + t;
-                    preview.appendChild(chip);
+                    chip.textContent = 'T' + w;
+                    tuanSummary.appendChild(chip);
                 });
+            }
+
+            function syncHiddenInput() {
+                const sorted = [...selectedWeeks].sort((a,b) => a - b);
+                tuanHocInput.value = sorted.join(',');
+            }
+
+            /* ══════════════════════════════════════
+               3. TOOLBAR NHANH
+               ══════════════════════════════════════ */
+            document.getElementById('tuanToolbar').addEventListener('click', function(e) {
+                const btn = e.target.closest('[data-action]');
+                if (!btn || !totalWeeks) return;
+
+                const action = btn.dataset.action;
+
+                if (action === 'all') {
+                    selectedWeeks = new Set(Array.from({length: totalWeeks}, (_, i) => i + 1));
+                } else if (action === 'none') {
+                    selectedWeeks.clear();
+                } else if (action === 'odd') {
+                    selectedWeeks = new Set(Array.from({length: totalWeeks}, (_, i) => i+1).filter(w => w % 2 === 1));
+                } else if (action === 'even') {
+                    selectedWeeks = new Set(Array.from({length: totalWeeks}, (_, i) => i+1).filter(w => w % 2 === 0));
+                } else if (action === 'auto') {
+                    // Tự động: lấy đúng suggestCount tuần đầu tiên
+                    if (!suggestCount) { alert('Vui lòng chọn lớp học phần trước'); return; }
+                    const n = Math.min(suggestCount, totalWeeks);
+                    selectedWeeks = new Set(Array.from({length: n}, (_, i) => i + 1));
+                }
+
+                renderGrid(totalWeeks);
+                syncHiddenInput();
             });
 
-            // ── Tìm phòng trống ──
+            /* ══════════════════════════════════════
+               4. TÌM PHÒNG TRỐNG
+               ══════════════════════════════════════ */
             btnTim.addEventListener('click', async function () {
                 const opt    = lhpSelect.selectedOptions[0];
                 const hocKy  = opt?.dataset?.hocky || '';
@@ -324,7 +553,7 @@
                     if (data.length === 0) { emptyEl.style.display = ''; return; }
 
                     countEl.textContent = data.length + ' phòng';
-                    itemsEl.innerHTML = '';
+                    itemsEl.innerHTML   = '';
                     data.forEach(p => {
                         const btn = document.createElement('button');
                         btn.type = 'button';
@@ -339,8 +568,8 @@
                         itemsEl.appendChild(btn);
                     });
                     resultEl.style.display = '';
-                } catch (e) {
-                    alert('Lỗi khi tìm phòng: ' + e.message);
+                } catch (err) {
+                    alert('Lỗi khi tìm phòng: ' + err.message);
                 } finally {
                     btnTim.disabled = false;
                     btnTim.innerHTML = '<i class="fas fa-search me-1"></i>Tìm phòng trống';
@@ -354,6 +583,11 @@
                     document.getElementById('phongTrongEmpty').style.display  = 'none';
                 })
             );
+
+            /* ── Trigger nếu form đang edit (có giá trị sẵn) ── */
+            if (lhpSelect.value) onLhpChange();
+            if (tuanBatDau.value && tuanKetThuc.value) onDateChange();
+
         })();
     </script>
 

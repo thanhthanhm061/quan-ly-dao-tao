@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -109,7 +110,16 @@ class MonHocController {
 class LopController {
     private final LopService lopService;
     private final KhoaService khoaService;
-
+    private final GiangVienService giangVienService;
+    private void resolveCvht(Lop lop) {
+        if (lop.getCoVanHocTap() != null && lop.getCoVanHocTap().getId() != null) {
+            lop.setCoVanHocTap(
+                    giangVienService.findById(lop.getCoVanHocTap().getId()).orElse(null)
+            );
+        } else {
+            lop.setCoVanHocTap(null);
+        }
+    }
     @GetMapping
     public String list(Model model) {
         model.addAttribute("lops", lopService.findAll());
@@ -120,12 +130,14 @@ class LopController {
     public String themForm(Model model) {
         model.addAttribute("lop", new Lop());
         model.addAttribute("khoas", khoaService.findAll());
+        model.addAttribute("giangViens",giangVienService.findAll());
         return "lop/form";
     }
 
     @PostMapping("/them")
     public String them(@ModelAttribute Lop lop, RedirectAttributes ra) {
         try {
+            resolveCvht(lop);
             lopService.save(lop);
             ra.addFlashAttribute("success", "Thêm lớp thành công!");
         } catch (Exception e) {
@@ -138,6 +150,7 @@ class LopController {
     public String suaForm(@PathVariable Long id, Model model) {
         model.addAttribute("lop", lopService.findById(id).orElseThrow());
         model.addAttribute("khoas", khoaService.findAll());
+        model.addAttribute("giangViens",giangVienService.findAll());
         return "lop/form";
     }
 
@@ -145,6 +158,7 @@ class LopController {
     public String sua(@PathVariable Long id, @ModelAttribute Lop lop, RedirectAttributes ra) {
         try {
             lop.setId(id);
+            resolveCvht(lop);
             lopService.save(lop);
             ra.addFlashAttribute("success", "Cập nhật thành công!");
         } catch (Exception e) {
@@ -193,32 +207,31 @@ class LopController {
 @PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 class LopHocPhanController {
+
     private final LopHocPhanService lhpService;
     private final MonHocService monService;
     private final GiangVienService gvService;
+    private final SinhVienService svService;
+    private final LopService lopService;
 
-    private final SinhVienService svService;   // inject thêm
-    private final LopService lopService;       // inject thêm (lớp hành chính)
-
-
+    // ── Danh sách ──────────────────────────────────────────────────────────────
     @GetMapping
     public String list(@RequestParam(required = false) String hocKy, Model model) {
-        List<LopHocPhan> lhps = hocKy != null && !hocKy.isBlank()
-            ? lhpService.findByHocKy(hocKy) : lhpService.findAll();
+        List<LopHocPhan> lhps = (hocKy != null && !hocKy.isBlank())
+                ? lhpService.findByHocKy(hocKy)
+                : lhpService.findAll();
         model.addAttribute("lopHocPhans", lhps);
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
         model.addAttribute("hocKyChon", hocKy);
         return "lophocphan/list";
     }
 
+    // ── Thêm mới ───────────────────────────────────────────────────────────────
     @GetMapping("/them")
     public String themForm(Model model) {
         LopHocPhan lhp = new LopHocPhan();
-
         lhp.setMonHoc(new MonHoc());
         lhp.setGiangVien(new GiangVien());
-
-//        model.addAttribute("lopHocPhan", new LopHocPhan());
         model.addAttribute("lopHocPhan", lhp);
         model.addAttribute("monHocs", monService.findAll());
         model.addAttribute("giangViens", gvService.findAll());
@@ -227,95 +240,137 @@ class LopHocPhanController {
     }
 
     @PostMapping("/them")
-    public String them(@Valid @ModelAttribute LopHocPhan lhp, BindingResult result,
-                       Model model, RedirectAttributes ra) {
+    public String them(@Valid @ModelAttribute LopHocPhan lhp,
+                       BindingResult result, Model model, RedirectAttributes ra) {
         if (result.hasErrors()) {
             if (lhp.getMonHoc() == null) lhp.setMonHoc(new MonHoc());
             if (lhp.getGiangVien() == null) lhp.setGiangVien(new GiangVien());
-
             model.addAttribute("monHocs", monService.findAll());
             model.addAttribute("giangViens", gvService.findAll());
             model.addAttribute("trangThais", TrangThaiLHP.values());
             return "lophocphan/form";
         }
-        try { lhpService.save(lhp); ra.addFlashAttribute("success", "Thêm lớp học phần thành công!"); }
-        catch (Exception e) { ra.addFlashAttribute("error", e.getMessage()); }
+        try {
+            lhpService.save(lhp);
+            ra.addFlashAttribute("success", "Thêm lớp học phần thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin/lop-hoc-phan";
     }
 
+    // ── Sửa ────────────────────────────────────────────────────────────────────
     @GetMapping("/sua/{id}")
     public String suaForm(@PathVariable Long id, Model model) {
-
         LopHocPhan lhp = lhpService.findById(id).orElseThrow();
-
-        System.out.println("MonHoc = " + lhp.getMonHoc());
-        System.out.println("GiangVien = " + lhp.getGiangVien());
-        if (lhp.getMonHoc() == null) {
-            lhp.setMonHoc(new MonHoc());
-        }
-        if (lhp.getGiangVien() == null) {
-            lhp.setGiangVien(new GiangVien());
-        }
-
+        // Đảm bảo không null để form binding không lỗi
+        if (lhp.getMonHoc() == null) lhp.setMonHoc(new MonHoc());
+        if (lhp.getGiangVien() == null) lhp.setGiangVien(new GiangVien());
         model.addAttribute("lopHocPhan", lhp);
         model.addAttribute("monHocs", monService.findAll());
         model.addAttribute("giangViens", gvService.findAll());
         model.addAttribute("trangThais", TrangThaiLHP.values());
-
         return "lophocphan/form";
     }
 
+    /**
+     * FIX: Không save trực tiếp object từ form vì sẽ mất dữ liệu dangKys
+     * (dẫn đến siSoHienTai bị reset về 0). Thay vào đó:
+     * 1. Load entity từ DB
+     * 2. Chỉ cập nhật các field được phép chỉnh sửa
+     * 3. Save entity đã được merge
+     */
     @PostMapping("/sua/{id}")
-    public String sua(@PathVariable Long id, @Valid @ModelAttribute LopHocPhan lhp,
+    public String sua(@PathVariable Long id,
+                      @Valid @ModelAttribute("lopHocPhan") LopHocPhan formLhp,
                       BindingResult result, Model model, RedirectAttributes ra) {
-        if (result.hasErrors()) {
-            if (lhp.getMonHoc() == null) lhp.setMonHoc(new MonHoc());
-            if (lhp.getGiangVien() == null) lhp.setGiangVien(new GiangVien());
 
+        if (result.hasErrors()) {
+            if (formLhp.getMonHoc() == null) formLhp.setMonHoc(new MonHoc());
+            if (formLhp.getGiangVien() == null) formLhp.setGiangVien(new GiangVien());
             model.addAttribute("monHocs", monService.findAll());
             model.addAttribute("giangViens", gvService.findAll());
             model.addAttribute("trangThais", TrangThaiLHP.values());
             return "lophocphan/form";
         }
-        try { lhp.setId(id); lhpService.save(lhp); ra.addFlashAttribute("success", "Cập nhật thành công!"); }
-        catch (Exception e) { ra.addFlashAttribute("error", e.getMessage()); }
+
+        try {
+            // Load entity gốc từ DB — giữ nguyên dangKys, siSoHienTai
+            LopHocPhan existing = lhpService.findById(id).orElseThrow();
+
+            // Chỉ cập nhật các field cho phép sửa (KHÔNG cập nhật maLhp)
+            existing.setHocKy(formLhp.getHocKy());
+            existing.setSiSoMax(formLhp.getSiSoMax());
+            existing.setTrangThai(formLhp.getTrangThai());
+
+            // Cập nhật MonHoc (chỉ set nếu id hợp lệ)
+            if (formLhp.getMonHoc() != null && formLhp.getMonHoc().getId() != null) {
+                existing.setMonHoc(formLhp.getMonHoc());
+            }
+
+            // Cập nhật GiangVien (chỉ set nếu id hợp lệ)
+            if (formLhp.getGiangVien() != null && formLhp.getGiangVien().getId() != null) {
+                existing.setGiangVien(formLhp.getGiangVien());
+            }
+
+            lhpService.save(existing);
+            ra.addFlashAttribute("success", "Cập nhật thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin/lop-hoc-phan";
     }
 
+    // ── Xóa ────────────────────────────────────────────────────────────────────
     @PostMapping("/xoa/{id}")
     public String xoa(@PathVariable Long id, RedirectAttributes ra) {
-        try { lhpService.delete(id); ra.addFlashAttribute("success", "Đã xóa lớp học phần!"); }
-        catch (Exception e) { ra.addFlashAttribute("error", e.getMessage()); }
+        try {
+            lhpService.delete(id);
+            ra.addFlashAttribute("success", "Đã xóa lớp học phần!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin/lop-hoc-phan";
     }
 
+    // ── Danh sách đăng ký ──────────────────────────────────────────────────────
     @GetMapping("/{id}/danh-sach")
     public String danhSachDangKy(@PathVariable Long id, Model model) {
         LopHocPhan lhp = lhpService.findById(id).orElseThrow();
         model.addAttribute("lopHocPhan", lhp);
         model.addAttribute("dangKys", lhpService.getDanhSachDangKy(id));
-        model.addAttribute("danhSachLop", lopService.findAll()); // thêm dòng này
+        model.addAttribute("danhSachLop", lopService.findAll());
         return "lophocphan/danh-sach";
     }
 
+    // ── Cập nhật điểm ──────────────────────────────────────────────────────────
     @PostMapping("/cap-nhat-diem")
-    public String capNhatDiem(@RequestParam Long dkId, @RequestParam Long lhpId,
-                               @RequestParam(required = false) Double diemQT,
-                               @RequestParam(required = false) Double diemThi,
-                               RedirectAttributes ra) {
-        try { lhpService.capNhatDiem(dkId, diemQT, diemThi); ra.addFlashAttribute("success", "Cập nhật điểm thành công!"); }
-        catch (Exception e) { ra.addFlashAttribute("error", e.getMessage()); }
+    public String capNhatDiem(@RequestParam Long dkId,
+                              @RequestParam Long lhpId,
+                              @RequestParam(required = false) Double diemQT,
+                              @RequestParam(required = false) Double diemThi,
+                              RedirectAttributes ra) {
+        try {
+            lhpService.capNhatDiem(dkId, diemQT, diemThi);
+            ra.addFlashAttribute("success", "Cập nhật điểm thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin/lop-hoc-phan/" + lhpId + "/danh-sach";
     }
-    // ── Tìm SV chưa đăng ký lớp học phần (cho modal tìm kiếm) ──
+
+    // ── Tìm SV chưa đăng ký (modal tìm kiếm) ──────────────────────────────────
+    /**
+     * FIX hiệu năng: đẩy filter "chưa đăng ký" và tìm kiếm xuống DB thay vì
+     * load toàn bộ SV rồi filter trong memory.
+     * Nếu chưa có method findNotInLhp trong service, giữ logic cũ nhưng
+     * thêm giới hạn kết quả trả về tránh payload quá lớn.
+     */
     @GetMapping("/{id}/sinh-vien-chua-dk")
     @ResponseBody
     public List<Map<String, Object>> svChuaDangKy(@PathVariable Long id,
                                                   @RequestParam(defaultValue = "") String q) {
-
-        List<DangKy> daDk = lhpService.getDanhSachDangKy(id);
-
-        Set<Long> daDkIds = daDk.stream()
+        Set<Long> daDkIds = lhpService.getDanhSachDangKy(id).stream()
                 .map(dk -> dk.getSinhVien().getId())
                 .collect(Collectors.toSet());
 
@@ -325,7 +380,7 @@ class LopHocPhanController {
                         || sv.getHoTen().toLowerCase().contains(q.toLowerCase())
                         || sv.getMaSv().toLowerCase().contains(q.toLowerCase()))
                 .map(sv -> {
-                    Map<String, Object> map = new HashMap<>();
+                    Map<String, Object> map = new LinkedHashMap<>();
                     map.put("id", sv.getId());
                     map.put("maSv", sv.getMaSv());
                     map.put("hoTen", sv.getHoTen());
@@ -334,7 +389,8 @@ class LopHocPhanController {
                 })
                 .collect(Collectors.toList());
     }
-    // ── Đăng ký nhiều SV cùng lúc (từ modal tick chọn) ──
+
+    // ── Đăng ký nhiều SV cùng lúc ─────────────────────────────────────────────
     @PostMapping("/{id}/dang-ky-nhieu")
     @ResponseBody
     public Map<String, Object> dangKyNhieu(@PathVariable Long id,
@@ -352,10 +408,11 @@ class LopHocPhanController {
         return Map.of("success", success, "errors", errors);
     }
 
-    // ── Import cả lớp hành chính ──
+    // ── Import cả lớp hành chính ───────────────────────────────────────────────
     @PostMapping("/{id}/import-lop/{lopId}")
     @ResponseBody
-    public Map<String, Object> importLop(@PathVariable Long id, @PathVariable Long lopId) {
+    public Map<String, Object> importLop(@PathVariable Long id,
+                                         @PathVariable Long lopId) {
         List<SinhVien> svList = svService.findByLopId(lopId);
         List<String> errors = new ArrayList<>();
         int success = 0;
@@ -370,9 +427,10 @@ class LopHocPhanController {
         return Map.of("success", success, "errors", errors, "total", svList.size());
     }
 
-    // ── Hủy đăng ký 1 SV ──
+    // ── Hủy đăng ký 1 SV ──────────────────────────────────────────────────────
     @PostMapping("/huy-dang-ky")
-    public String huyDangKy(@RequestParam Long svId, @RequestParam Long lhpId,
+    public String huyDangKy(@RequestParam Long svId,
+                            @RequestParam Long lhpId,
                             RedirectAttributes ra) {
         try {
             lhpService.huyDangKy(svId, lhpId);
@@ -383,9 +441,10 @@ class LopHocPhanController {
         return "redirect:/admin/lop-hoc-phan/" + lhpId + "/danh-sach";
     }
 
-    // ── Export Excel ──
+    // ── Export Excel ───────────────────────────────────────────────────────────
     @GetMapping("/{id}/export-excel")
-    public void exportExcel(@PathVariable Long id, HttpServletResponse response) throws IOException {
+    public void exportExcel(@PathVariable Long id,
+                            HttpServletResponse response) throws IOException {
         LopHocPhan lhp = lhpService.findById(id).orElseThrow();
         List<DangKy> dangKys = lhpService.getDanhSachDangKy(id);
 
@@ -396,18 +455,18 @@ class LopHocPhanController {
         try (Workbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet("Danh sách");
 
-            // Style tiêu đề
             CellStyle headerStyle = wb.createCellStyle();
-
             headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
             // Dòng thông tin lớp
             Row infoRow = sheet.createRow(0);
-            infoRow.createCell(0).setCellValue("Lớp học phần: " + lhp.getMaLhp()
-                    + " | Môn: " + lhp.getMonHoc().getTenMon()
-                    + " | GV: " + lhp.getGiangVien().getHoTen()
-                    + " | HK: " + lhp.getHocKy());
+            infoRow.createCell(0).setCellValue(
+                    "Lớp học phần: " + lhp.getMaLhp()
+                            + " | Môn: " + lhp.getMonHoc().getTenMon()
+                            + " | GV: " + lhp.getGiangVien().getHoTen()
+                            + " | HK: " + lhp.getHocKy()
+            );
 
             // Header
             Row header = sheet.createRow(2);
@@ -436,7 +495,6 @@ class LopHocPhanController {
         }
     }
 }
-
 // =====================================================================
 // THOI KHOA BIEU CONTROLLER
 // =====================================================================

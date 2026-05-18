@@ -15,6 +15,6 @@ public interface GiangVienRepository extends JpaRepository<GiangVien, Long> {
     List<GiangVien> findByHoTenContainingIgnoreCase(String hoTen);
 
     List<GiangVien> findByKhoaId(Long khoaId);
-
+    List<GiangVien> findAllByOrderByHoTenAsc();
     Optional<GiangVien> findByNguoiDungId(Long nguoiDungId);
 }

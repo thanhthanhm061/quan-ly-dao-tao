@@ -331,6 +331,17 @@
                     </div>
 
                 </div>
+                <!-- CỐ VẤN HỌC TẬP  -->
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-chalkboard-teacher me-1"></i>Cố vấn học tập
+                        </div>
+                        <div class="info-value"
+                             th:text="${sv.lop?.coVanHocTap != null ? sv.lop.coVanHocTap.hoTenVaHocVi : '-'}">
+                        </div>
+                    </div>
+                </div>
 
                 <!-- TRẠNG THÁI -->
                 <div class="col-md-6">

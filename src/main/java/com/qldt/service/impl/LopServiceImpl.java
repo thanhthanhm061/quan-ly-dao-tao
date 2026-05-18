@@ -1,5 +1,7 @@
 package com.qldt.service.impl;
 import com.qldt.model.Lop;
+import com.qldt.repository.GiangVienRepository;
+import com.qldt.repository.KhoaRepository;
 import com.qldt.repository.LopRepository;
 import com.qldt.service.LopService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,8 @@ import java.util.*;
 @Service @RequiredArgsConstructor @Transactional
 public class LopServiceImpl implements LopService {
     private final LopRepository repo;
+    private final KhoaRepository khoaRepo;
+    private final GiangVienRepository giangVienRepo;
 
     @Override
     @Transactional(readOnly = true)
@@ -26,8 +30,24 @@ public class LopServiceImpl implements LopService {
     public Lop save(Lop lop) {
         if (lop.getId() == null && repo.existsByMaLop(lop.getMaLop()))
             throw new IllegalArgumentException("Mã lớp '" + lop.getMaLop() + "' đã tồn tại");
+
+        // Resolve Khoa
+        if (lop.getKhoa() != null && lop.getKhoa().getId() != null) {
+            lop.setKhoa(khoaRepo.findById(lop.getKhoa().getId()).orElse(null));
+        } else {
+            lop.setKhoa(null);
+        }
+
+        // Resolve CoVanHocTap
+        if (lop.getCoVanHocTap() != null && lop.getCoVanHocTap().getId() != null) {
+            lop.setCoVanHocTap(giangVienRepo.findById(lop.getCoVanHocTap().getId()).orElse(null));
+        } else {
+            lop.setCoVanHocTap(null);
+        }
+
         return repo.save(lop);
     }
+
 
 
     @Override

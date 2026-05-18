@@ -17,7 +17,9 @@ public class GiangVienServiceImpl implements GiangVienService {
     private final PasswordEncoder passwordEncoder;
 
     @Override @Transactional(readOnly = true)
-    public List<GiangVien> findAll() { return repo.findAll(); }
+    public List<GiangVien> findAll() {
+        return repo.findAllByOrderByHoTenAsc();
+    }
 
     @Override @Transactional(readOnly = true)
     public List<GiangVien> search(String kw) {

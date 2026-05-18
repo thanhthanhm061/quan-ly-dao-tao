@@ -31,4 +31,11 @@ public class Lop {
 
     @Override
     public String toString() { return maLop + " - " + tenLop; }
+    // Thêm vào class Lop
+    @ManyToOne
+    @JoinColumn(name = "co_van_ht_id")
+    private GiangVien coVanHocTap;
+
+    public GiangVien getCoVanHocTap() { return coVanHocTap; }
+    public void setCoVanHocTap(GiangVien coVanHocTap) { this.coVanHocTap = coVanHocTap; }
 }

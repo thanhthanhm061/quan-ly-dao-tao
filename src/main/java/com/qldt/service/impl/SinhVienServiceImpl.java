@@ -149,6 +149,15 @@ public class SinhVienServiceImpl implements SinhVienService {
     }
 
     // =========================
+    // LẤY CHI TIẾT SINH VIÊN KÈM LỚP VÀ CỐ VẤN HỌC TẬP
+    // =========================
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<SinhVien> findByIdWithLopAndCvht(Long id) {
+        return sinhVienRepo.findByIdWithLopAndCvht(id);
+    }
+
+    // =========================
     // LẤY DS SINH VIÊN THEO LỚP
     // =========================
     @Override

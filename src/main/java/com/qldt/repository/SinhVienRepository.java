@@ -3,6 +3,7 @@ package com.qldt.repository;
 import com.qldt.model.SinhVien;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +32,16 @@ public interface SinhVienRepository extends JpaRepository<SinhVien, Long> {
 
     Optional<SinhVien> findById(Long id);
 
+    // =========================
+    // XEM CHI TIẾT SINH VIÊN KÈM LỚP VÀ CỐ VẤN HỌC TẬP
+    // =========================
+    @Query("""
+    SELECT sv FROM SinhVien sv
+    LEFT JOIN FETCH sv.lop l
+    LEFT JOIN FETCH l.coVanHocTap
+    WHERE sv.id = :id
+""")
+    Optional<SinhVien> findByIdWithLopAndCvht(@Param("id") Long id);
     // =========================
     // THỐNG KÊ SINH VIÊN THEO KHOA
     // =========================
