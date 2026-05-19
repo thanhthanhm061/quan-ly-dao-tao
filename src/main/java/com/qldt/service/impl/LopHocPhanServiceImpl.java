@@ -35,7 +35,7 @@ public class LopHocPhanServiceImpl implements LopHocPhanService {
         private final LopHocPhanRepository lhpRepo;
 
         /** Chạy mỗi phút, tự chuyển trạng thái dựa vào thoi_gian_mo / thoi_gian_dong */
-        @Scheduled(fixedRate = 30_000)
+        @Scheduled(fixedRate = 60_000) // 60 giây
         @Transactional
         public void tuDongCapNhatTrangThai() {
             LocalDateTime now = LocalDateTime.now();
