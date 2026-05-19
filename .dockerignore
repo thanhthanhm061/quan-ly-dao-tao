@@ -1,20 +1,14 @@
-# Maven
-!.mvn/wrapper/maven-wrapper.jar
+target/
 
-# Git
 .git
 .gitignore
 
-# IntelliJ
 .idea/
 *.iml
 
-# Logs
 *.log
 
-# OS
 .DS_Store
 Thumbs.db
 
-# Env
 .env
