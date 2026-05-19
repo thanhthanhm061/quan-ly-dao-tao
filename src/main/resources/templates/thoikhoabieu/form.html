@@ -507,7 +507,133 @@
             const tuanHocInput = document.getElementById('tuanHocInput');
             const tuanGrid     = document.getElementById('tuanGrid');
             const tuanSummary  = document.getElementById('tuanSummary');
+            /* ══════════════════════════════════════
+   TOOLBAR TUẦN HỌC
+══════════════════════════════════════ */
+            document.getElementById('tuanToolbar')
+                .addEventListener('click', function (e) {
 
+                    const btn = e.target.closest('.tuan-toolbar-btn');
+                    if (!btn) return;
+
+                    const action = btn.dataset.action;
+
+                    if (totalWeeks === 0) {
+                        alert('Vui lòng chọn tuần bắt đầu & kết thúc trước!');
+                        return;
+                    }
+
+                    switch (action) {
+                        case 'all':
+                            selectedWeeks = new Set(
+                                Array.from({length: totalWeeks}, (_, i) => i + 1)
+                            );
+                            break;
+
+                        case 'none':
+                            selectedWeeks = new Set();
+                            break;
+
+                        case 'odd':
+                            selectedWeeks = new Set(
+                                Array.from({length: totalWeeks}, (_, i) => i + 1)
+                                    .filter(w => w % 2 !== 0)
+                            );
+                            break;
+
+                        case 'even':
+                            selectedWeeks = new Set(
+                                Array.from({length: totalWeeks}, (_, i) => i + 1)
+                                    .filter(w => w % 2 === 0)
+                            );
+                            break;
+
+                        case 'auto':
+                            if (suggestCount === 0) {
+                                alert('Vui lòng chọn lớp học phần trước!');
+                                return;
+                            }
+                            // Chọn suggestCount tuần đầu tiên
+                            selectedWeeks = new Set(
+                                Array.from({length: totalWeeks}, (_, i) => i + 1)
+                                    .slice(0, suggestCount)
+                            );
+                            break;
+                    }
+
+                    // Re-render lại grid với selectedWeeks mới
+                    const cells = tuanGrid.querySelectorAll('.tuan-cell');
+                    cells.forEach((cell, idx) => {
+                        const w = idx + 1;
+                        if (selectedWeeks.has(w)) {
+                            cell.classList.add('on');
+                        } else {
+                            cell.classList.remove('on');
+                        }
+                    });
+
+                    renderSummary();
+                    syncHiddenInput();
+                });
+            /* ══════════════════════════════════════
+               3. TÌM PHÒNG TRỐNG
+            ══════════════════════════════════════ */
+            btnTim.addEventListener('click', function () {
+                const hocKy     = lhpSelect.selectedOptions[0]?.dataset?.hocky || '';
+                const thu       = thuSelect.value;
+                const tietBatDau = tietSelect.value;
+                const soTiet    = soTietSelect.value;
+
+                if (!hocKy || !thu || !tietBatDau || !soTiet) {
+                    alert('Vui lòng chọn đủ: Lớp học phần, thứ, tiết bắt đầu, số tiết!');
+                    return;
+                }
+
+                const url = `/tkb/phong-trong?hocKy=${encodeURIComponent(hocKy)}&thu=${thu}&tietBatDau=${tietBatDau}&soTiet=${soTiet}`;
+
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        const resultDiv = document.getElementById('phongTrongResult');
+                        const emptyDiv  = document.getElementById('phongTrongEmpty');
+                        const itemsDiv  = document.getElementById('phongTrongItems');
+                        const countEl   = document.getElementById('phongTrongCount');
+
+                        if (!data || data.length === 0) {
+                            resultDiv.style.display = 'none';
+                            emptyDiv.style.display  = 'block';
+                            return;
+                        }
+
+                        emptyDiv.style.display  = 'none';
+                        resultDiv.style.display = 'block';
+                        countEl.textContent     = data.length + ' phòng';
+
+                        itemsDiv.innerHTML = '';
+
+                        data.forEach(p => {
+                            const btn = document.createElement('span');
+                            btn.className   = 'room-btn';
+                            btn.innerHTML   = `${p.maPhong} <span class="cap">(${p.sucChua} chỗ)</span>`;
+
+                            btn.addEventListener('click', () => {
+                                // Gán vào select phòng
+                                phongSelect.value = p.maPhong;
+
+                                // Đánh dấu selected
+                                document.querySelectorAll('.room-btn')
+                                    .forEach(b => b.classList.remove('selected'));
+                                btn.classList.add('selected');
+                            });
+
+                            itemsDiv.appendChild(btn);
+                        });
+                    })
+                    .catch(err => {
+                        console.error('Lỗi tìm phòng trống:', err);
+                        alert('Có lỗi khi tìm phòng trống, vui lòng thử lại!');
+                    });
+            });
             /* ─────────────────────────────────────────
                STATE
             ───────────────────────────────────────── */

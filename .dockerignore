@@ -1,6 +1,20 @@
+# Maven
+!.mvn/wrapper/maven-wrapper.jar
 
-.idea
+# Git
 .git
-.mvn
-Dockerfile
-docker-compose.yml
+.gitignore
+
+# IntelliJ
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env

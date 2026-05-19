@@ -6,8 +6,14 @@ import com.qldt.repository.*;
 import com.qldt.service.LopHocPhanService;
 import com.qldt.service.ThoiKhoaBieuService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +27,28 @@ public class LopHocPhanServiceImpl implements LopHocPhanService {
     private final SinhVienRepository svRepo;
     private final ThoiKhoaBieuRepository tkbRepo;
 
+    @Component
+    @RequiredArgsConstructor
+    @EnableScheduling
+    public class LopHocPhanScheduler {
+
+        private final LopHocPhanRepository lhpRepo;
+
+        /** Chạy mỗi phút, tự chuyển trạng thái dựa vào thoi_gian_mo / thoi_gian_dong */
+        @Scheduled(fixedRate = 30_000)
+        @Transactional
+        public void tuDongCapNhatTrangThai() {
+            LocalDateTime now = LocalDateTime.now();
+
+            // Mở các lớp đã đến giờ mở
+            lhpRepo.findByTrangThaiAndThoiGianMoBefore(TrangThaiLHP.DONG, now)
+                    .forEach(lhp -> lhp.setTrangThai(TrangThaiLHP.MO));
+
+            // Đóng các lớp đã qua giờ đóng
+            lhpRepo.findByTrangThaiAndThoiGianDongBefore(TrangThaiLHP.MO, now)
+                    .forEach(lhp -> lhp.setTrangThai(TrangThaiLHP.DONG));
+        }
+    }
     @Override @Transactional(readOnly = true)
     public List<LopHocPhan> findAll() { return lhpRepo.findAll(); }
 
@@ -58,9 +86,22 @@ public class LopHocPhanServiceImpl implements LopHocPhanService {
     public void dangKy(Long svId, Long lhpId) {
         SinhVien sv = svRepo.findById(svId)
             .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sinh viên"));
-        LopHocPhan lhp = lhpRepo.findById(lhpId)
-            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học phần"));
+//        LopHocPhan lhp = lhpRepo.findById(lhpId)
+//            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học phần"));
+        // Trong dangKy() của LopHocPhanServiceImpl — thay findById bằng:
+        LopHocPhan lhp = lhpRepo.findByIdForUpdate(lhpId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học phần"));
 
+        if (!lhp.isDangTrongThoiGianDangKy()) {
+            String msg = "Lớp học phần chưa mở hoặc đã hết thời gian đăng ký";
+            if (lhp.getThoiGianMo() != null && LocalDateTime.now().isBefore(lhp.getThoiGianMo()))
+                msg = "Chưa đến thời gian đăng ký. Mở lúc: "
+                        + lhp.getThoiGianMo().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            if (lhp.getThoiGianDong() != null && LocalDateTime.now().isAfter(lhp.getThoiGianDong()))
+                msg = "Đã hết thời gian đăng ký lúc: "
+                        + lhp.getThoiGianDong().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            throw new IllegalStateException(msg);
+        }
         // Kiểm tra trạng thái lớp
         if (lhp.getTrangThai() != TrangThaiLHP.MO)
             throw new IllegalStateException("Lớp học phần đã đóng đăng ký");
@@ -94,8 +135,33 @@ public class LopHocPhanServiceImpl implements LopHocPhanService {
 
     @Override
     public void huyDangKy(Long svId, Long lhpId) {
+        // FIX: validate trang thai lop truoc khi huy
+        LopHocPhan lhp = lhpRepo.findById(lhpId)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay lop hoc phan"));
+
+        if (!lhp.isDangTrongThoiGianDangKy()) {
+            String msg = "Lop hoc phan da dong dang ky, khong the huy";
+            if (lhp.getThoiGianDong() != null && LocalDateTime.now().isAfter(lhp.getThoiGianDong()))
+                msg = "Da het thoi gian dang ky luc: "
+                        + lhp.getThoiGianDong().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            throw new IllegalStateException(msg);
+        }
+
         DangKy dk = dangKyRepo.findBySinhVienIdAndLopHocPhanId(svId, lhpId)
-            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin đăng ký"));
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay thong tin dang ky"));
+
+        if (dk.getDiemTongKet() != null)
+            throw new IllegalStateException("Khong the huy dang ky khi da co diem tong ket");
+
+        dangKyRepo.deleteById(dk.getId());
+        lhp.setSiSoHienTai(Math.max(0, lhp.getSiSoHienTai() - 1));
+        lhpRepo.save(lhp);
+    }
+
+    // THEM MOI: admin huy khong bi gioi han trang thai
+    public void huyDangKyAdmin(Long svId, Long lhpId) {
+        DangKy dk = dangKyRepo.findBySinhVienIdAndLopHocPhanId(svId, lhpId)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay thong tin dang ky"));
         dangKyRepo.deleteById(dk.getId());
         LopHocPhan lhp = lhpRepo.findById(lhpId).orElse(null);
         if (lhp != null) {

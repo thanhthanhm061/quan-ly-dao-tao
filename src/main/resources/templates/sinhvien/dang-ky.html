@@ -47,9 +47,15 @@
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <input type="hidden" name="lhpId" th:value="${lhp.id}"/>
                   <input type="hidden" name="hocKy" th:value="${hocKyChon}"/>
-                  <button class="btn btn-sm btn-primary" th:disabled="${!lhp.conCho or lhp.trangThai.name()!='MO'}">
-                    <i class="fas fa-plus me-1"></i>Đăng ký
-                  </button>
+                    <button class="btn btn-sm btn-primary"
+                            th:disabled="${!lhp.conCho or !lhp.isDangTrongThoiGianDangKy()}"
+                            th:title="${!lhp.isDangTrongThoiGianDangKy() ?
+                   (lhp.thoiGianMo != null and lhp.thoiGianMo.isAfter(T(java.time.LocalDateTime).now()))
+                   ? 'Chưa đến thời gian đăng ký'
+                   : 'Đã hết thời gian đăng ký'
+                   : ''}">
+                        <i class="fas fa-plus me-1"></i>Đăng ký
+                    </button>
                 </form>
               </td>
             </tr>

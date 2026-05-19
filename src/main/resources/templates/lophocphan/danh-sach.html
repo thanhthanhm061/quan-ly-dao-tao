@@ -4,40 +4,13 @@
 <body>
 <th:block th:fragment="content">
 
-    <!-- Toast Container -->
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999">
-        <div id="appToast"
-             class="toast border-0 shadow-lg"
-             role="alert"
-             aria-live="assertive"
-             aria-atomic="true">
-
-            <div class="toast-header border-0">
-                <div id="toastIcon"
-                     class="rounded-circle d-flex align-items-center justify-content-center me-2"
-                     style="width:28px;height:28px;background:#22c55e;color:white">
-                    <i class="fas fa-check"></i>
-                </div>
-
-                <strong class="me-auto" id="toastTitle">Thông báo</strong>
-
-                <small class="text-muted">vừa xong</small>
-
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="toast"></button>
-            </div>
-
-            <div class="toast-body fw-semibold" id="toastMessage">
-                Thành công
-            </div>
-        </div>
-    </div>
-
-    <!-- Thông tin lớp học phần -->
+    <!-- ═══════════════════════════════════════════════════════════
+         THÔNG TIN LỚP HỌC PHẦN
+    ═══════════════════════════════════════════════════════════ -->
     <div class="card mb-4 border-start border-danger border-4">
         <div class="card-body p-3">
             <div class="row align-items-center">
+
                 <div class="col-md-2">
                     <span class="text-muted small">Mã LHP</span><br>
                     <strong th:text="${lopHocPhan.maLhp}"></strong>
@@ -61,13 +34,10 @@
 
                 <div class="col-md-2">
                     <span class="text-muted small">Sĩ số</span><br>
-
                     <strong th:text="${lopHocPhan.siSoHienTai}"></strong>
-
                     <span class="text-muted"
                           th:text="${lopHocPhan.siSoMax > 0 ? '/' + lopHocPhan.siSoMax : '/∞'}">
                     </span>
-
                     <div class="progress mt-1" style="height:4px">
                         <div class="progress-bar"
                              th:classappend="${lopHocPhan.conCho ? 'bg-success' : 'bg-danger'}"
@@ -86,19 +56,20 @@
                           th:text="${lopHocPhan.trangThai}">
                     </span>
                 </div>
+
             </div>
         </div>
     </div>
 
-    <!-- Bảng danh sách -->
+    <!-- ═══════════════════════════════════════════════════════════
+         BẢNG DANH SÁCH
+    ═══════════════════════════════════════════════════════════ -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
 
             <div class="d-flex align-items-center gap-2">
                 <i class="fas fa-users me-1"></i>
-
                 <span>Danh sách sinh viên đăng ký</span>
-
                 <span class="badge bg-danger"
                       th:text="${#lists.size(dangKys)} + ' SV'"></span>
             </div>
@@ -112,23 +83,21 @@
 
                 <button class="btn btn-sm btn-outline-primary"
                         data-bs-toggle="modal"
-                        data-bs-target="#modalImportLop"
-                        th:data-lhp-id="${lopHocPhan.id}">
+                        data-bs-target="#modalImportLop">
                     <i class="fas fa-layer-group me-1"></i>Import lớp HC
                 </button>
 
                 <button class="btn btn-sm btn-primary"
                         data-bs-toggle="modal"
-                        data-bs-target="#modalThemSV"
-                        th:data-lhp-id="${lopHocPhan.id}">
+                        data-bs-target="#modalThemSV">
                     <i class="fas fa-user-plus me-1"></i>Thêm sinh viên
                 </button>
+
             </div>
         </div>
 
         <div class="card-body p-0">
             <table class="table table-hover mb-0 align-middle">
-
                 <thead>
                 <tr>
                     <th>#</th>
@@ -145,8 +114,7 @@
                 <tbody>
 
                 <tr th:if="${#lists.isEmpty(dangKys)}">
-                    <td colspan="8"
-                        class="text-center py-5 text-muted">
+                    <td colspan="8" class="text-center py-5 text-muted">
                         <i class="fas fa-user-slash fa-2x d-block mb-2 opacity-25"></i>
                         Chưa có sinh viên đăng ký
                     </td>
@@ -154,15 +122,11 @@
 
                 <tr th:each="dk,i : ${dangKys}">
 
-                    <td class="text-muted"
-                        th:text="${i.count}"></td>
+                    <td class="text-muted" th:text="${i.count}"></td>
 
-                    <td>
-                        <code th:text="${dk.sinhVien.maSv}"></code>
-                    </td>
+                    <td><code th:text="${dk.sinhVien.maSv}"></code></td>
 
-                    <td class="fw-semibold"
-                        th:text="${dk.sinhVien.hoTen}"></td>
+                    <td class="fw-semibold" th:text="${dk.sinhVien.hoTen}"></td>
 
                     <td class="text-center"
                         th:text="${dk.diemQuaTrinh != null
@@ -177,16 +141,11 @@
                     </td>
 
                     <td class="text-center fw-bold">
-
                         <span th:if="${dk.diemTongKet != null}"
                               th:classappend="${dk.dat ? 'text-success' : 'text-danger'}"
                               th:text="${#numbers.formatDecimal(dk.diemTongKet,1,2)}">
                         </span>
-
-                        <span th:unless="${dk.diemTongKet != null}"
-                              class="text-muted">
-                            -
-                        </span>
+                        <span th:unless="${dk.diemTongKet != null}" class="text-muted">-</span>
                     </td>
 
                     <td class="text-center">
@@ -201,49 +160,40 @@
                     </td>
 
                     <td class="text-center">
-
                         <div class="d-flex gap-1 justify-content-center">
 
+                            <!-- Nút cập nhật điểm -->
                             <button class="btn btn-sm btn-outline-primary"
                                     type="button"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalDiem"
-
                                     th:attr="
                                         data-dkid=${dk.id},
                                         data-lhpid=${lopHocPhan.id},
                                         data-qt=${dk.diemQuaTrinh ?: ''},
                                         data-thi=${dk.diemThi ?: ''},
                                         data-ten=${dk.sinhVien.hoTen}"
-
                                     title="Cập nhật điểm">
-
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
 
+                            <!-- Nút hủy đăng ký -->
                             <form th:action="@{/admin/lop-hoc-phan/huy-dang-ky}"
                                   method="post"
                                   class="d-inline"
                                   th:data-ten="${dk.sinhVien.hoTen}">
-
                                 <input type="hidden"
                                        th:name="${_csrf.parameterName}"
                                        th:value="${_csrf.token}"/>
-
-                                <input type="hidden"
-                                       name="svId"
-                                       th:value="${dk.sinhVien.id}"/>
-
-                                <input type="hidden"
-                                       name="lhpId"
-                                       th:value="${lopHocPhan.id}"/>
-
+                                <input type="hidden" name="svId" th:value="${dk.sinhVien.id}"/>
+                                <input type="hidden" name="lhpId" th:value="${lopHocPhan.id}"/>
                                 <button class="btn btn-sm btn-outline-danger"
                                         title="Hủy đăng ký"
                                         type="submit">
                                     <i class="fas fa-user-minus"></i>
                                 </button>
                             </form>
+
                         </div>
                     </td>
                 </tr>
@@ -253,18 +203,19 @@
         </div>
     </div>
 
+    <!-- Nút quay lại -->
     <div class="mt-3">
-        <a th:href="@{/admin/lop-hoc-phan}"
-           class="btn btn-secondary">
+        <a th:href="@{/admin/lop-hoc-phan}" class="btn btn-secondary">
             <i class="fas fa-arrow-left me-1"></i>Quay lại
         </a>
     </div>
 
-    <!-- MODAL THÊM SINH VIÊN -->
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MODAL: THÊM SINH VIÊN
+    ═══════════════════════════════════════════════════════════ -->
     <div class="modal fade" id="modalThemSV" tabindex="-1">
-
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
-
             <div class="modal-content border-0 shadow">
 
                 <div class="modal-header bg-primary text-white">
@@ -272,7 +223,6 @@
                         <i class="fas fa-user-plus me-2"></i>
                         Thêm sinh viên vào lớp học phần
                     </h5>
-
                     <button type="button"
                             class="btn-close btn-close-white"
                             data-bs-dismiss="modal"></button>
@@ -282,201 +232,290 @@
 
                     <!-- Search -->
                     <div class="p-3 border-bottom bg-light d-flex gap-2">
-
                         <div class="input-group input-group-sm">
-                            <span class="input-group-text">
-                                <i class="fas fa-search"></i>
-                            </span>
-
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
                             <input type="text"
                                    id="svSearchInput"
                                    class="form-control"
                                    placeholder="Tìm theo tên hoặc mã sinh viên..."
                                    oninput="searchSV()"/>
                         </div>
-
                         <span class="badge bg-primary align-self-center text-nowrap"
-                              id="svSelectedCount">
-                            0 đã chọn
-                        </span>
+                              id="svSelectedCount">0 đã chọn</span>
                     </div>
 
                     <!-- Loading -->
-                    <div id="svLoading"
-                         class="text-center py-4">
-
+                    <div id="svLoading" class="text-center py-4">
                         <div class="spinner-border spinner-border-sm text-primary me-2"></div>
                         Đang tải...
                     </div>
 
                     <!-- Table -->
                     <div style="max-height:380px;overflow-y:auto">
-
                         <table class="table table-hover align-middle mb-0"
                                id="svTable"
                                style="display:none;font-size:13px">
-
                             <thead class="table-light sticky-top">
-
                             <tr>
                                 <th style="width:40px">
-                                    <input type="checkbox"
-                                           id="checkAll"
-                                           onchange="toggleAll(this)"/>
+                                    <input type="checkbox" id="checkAll" onchange="toggleAll(this)"/>
                                 </th>
-
                                 <th>Mã SV</th>
                                 <th>Họ tên</th>
                                 <th>Lớp HC</th>
                             </tr>
                             </thead>
-
                             <tbody id="svTableBody"></tbody>
                         </table>
                     </div>
 
-                    <div id="svEmpty"
-                         class="text-center text-muted py-4"
-                         style="display:none">
-
+                    <div id="svEmpty" class="text-center text-muted py-4" style="display:none">
                         <i class="fas fa-inbox fa-2x d-block mb-2 opacity-25"></i>
                         Không tìm thấy sinh viên nào chưa đăng ký
                     </div>
                 </div>
 
                 <div class="modal-footer justify-content-between">
-
-                    <small class="text-muted"
-                           id="svTotalInfo"></small>
-
+                    <small class="text-muted" id="svTotalInfo"></small>
                     <div class="d-flex gap-2">
-
                         <button type="button"
                                 class="btn btn-outline-secondary"
-                                data-bs-dismiss="modal">
-                            Hủy
-                        </button>
-
+                                data-bs-dismiss="modal">Hủy</button>
                         <button type="button"
                                 class="btn btn-primary"
                                 onclick="dangKySelected()"
                                 id="btnDangKy"
                                 disabled>
-
-                            <i class="fas fa-user-plus me-1"></i>
-                            Đăng ký đã chọn
+                            <i class="fas fa-user-plus me-1"></i>Đăng ký đã chọn
                         </button>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
 
 
+    <!-- ═══════════════════════════════════════════════════════════
+         MODAL: IMPORT LỚP HÀNH CHÍNH
+    ═══════════════════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalImportLop" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-layer-group me-2"></i>
+                        Import cả lớp hành chính
+                    </h5>
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <label class="form-label fw-semibold">Chọn lớp hành chính</label>
+                    <select id="selectLopImport" class="form-select" onchange="previewLop(this)">
+                        <option value="">-- Chọn lớp --</option>
+                        <option th:each="lop : ${danhSachLop}"
+                                th:value="${lop.id}"
+                                th:attr="data-siso=${lop.sinhViens != null ? #lists.size(lop.sinhViens) : 0}"
+                                th:text="${lop.tenLop + ' (' + (lop.sinhViens != null ? #lists.size(lop.sinhViens) : 0) + ' SV)'}">
+                        </option>
+                    </select>
+
+                    <!-- Preview info khi chọn lớp -->
+                    <div id="lopPreview" class="mt-3" style="display:none">
+                        <div class="alert alert-info mb-0 d-flex align-items-center gap-2 py-2">
+                            <i class="fas fa-info-circle"></i>
+                            <span>
+                                Lớp đã chọn có
+                                <strong id="previewSiSo">0</strong> sinh viên.
+                                Nhấn <strong>Import</strong> để thêm tất cả vào lớp học phần.
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="importResult" class="mt-3"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">Hủy</button>
+                    <button type="button"
+                            class="btn btn-primary"
+                            id="btnImportLop"
+                            onclick="importLop()">
+                        <i class="fas fa-file-import me-1"></i>Import
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MODAL: CẬP NHẬT ĐIỂM
+    ═══════════════════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalDiem" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-pencil-alt me-2"></i>
+                        Cập nhật điểm
+                    </h5>
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <form th:action="@{/admin/lop-hoc-phan/cap-nhat-diem}" method="post">
+                    <div class="modal-body">
+
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" id="dkId"  name="dkId"/>
+                        <input type="hidden" id="lhpId" name="lhpId"/>
+
+                        <p class="mb-3">
+                            Sinh viên: <strong id="tenSV"></strong>
+                        </p>
+
+                        <div class="mb-3">
+                            <label class="form-label">Điểm quá trình</label>
+                            <input type="number"
+                                   id="diemQT"
+                                   name="diemQT"
+                                   class="form-control"
+                                   step="0.1" min="0" max="10"
+                                   placeholder="0.0 – 10.0"/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Điểm thi</label>
+                            <input type="number"
+                                   id="diemThi"
+                                   name="diemThi"
+                                   class="form-control"
+                                   step="0.1" min="0" max="10"
+                                   placeholder="0.0 – 10.0"/>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Lưu điểm
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════
+         STYLES
+    ═══════════════════════════════════════════════════════════ -->
     <style>
-        .custom-toast-container{
-            position:fixed;
-            top:25px;
-            left:50%;
-            transform:translateX(-50%);
-            z-index:99999;
+        .custom-toast-container {
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
         }
 
-        .custom-toast{
-            width:360px;
-            background:#fff;
-            border-radius:16px;
-            box-shadow:0 10px 30px rgba(0,0,0,.15);
-            overflow:hidden;
-            animation:slideIn .25s ease;
-            border:1px solid #e2e8f0;
+        .custom-toast {
+            width: 360px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+            overflow: hidden;
+            animation: slideIn .25s ease;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 10px;
         }
 
-        @keyframes slideIn{
-            from{
-                opacity:0;
-                transform:translateX(30px);
-            }
-            to{
-                opacity:1;
-                transform:translateX(0);
-            }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to   { opacity: 1; transform: translateX(0); }
         }
 
-        .toast-confirm{
-            border-left:5px solid #ef4444;
+        .toast-confirm    { border-left: 5px solid #ef4444; }
+        .toast-success    { border-left: 5px solid #22c55e; }
+        .toast-error      { border-left: 5px solid #ef4444; }
+
+        .toast-header-custom {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px 10px;
         }
 
-        .toast-header-custom{
-            display:flex;
-            align-items:center;
-            gap:12px;
-            padding:14px 16px 10px;
+        .toast-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 16px;
+            flex-shrink: 0;
         }
 
-        .toast-icon{
-            width:38px;
-            height:38px;
-            border-radius:50%;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            background:#fee2e2;
-            color:#dc2626;
-            font-size:16px;
-            flex-shrink:0;
+        .toast-content { flex: 1; }
+
+        .toast-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 2px;
+            color: #0f172a;
         }
 
-        .toast-content{
-            flex:1;
+        .toast-message {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.4;
         }
 
-        .toast-title{
-            font-size:15px;
-            font-weight:700;
-            margin-bottom:2px;
-            color:#0f172a;
+        .toast-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 12px 16px 16px;
         }
 
-        .toast-message{
-            font-size:13px;
-            color:#64748b;
-            line-height:1.4;
+        .toast-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 7px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
         }
 
-        .toast-actions{
-            display:flex;
-            justify-content:flex-end;
-            gap:8px;
-            padding:12px 16px 16px;
-        }
-
-        .toast-btn{
-            border:none;
-            border-radius:10px;
-            padding:7px 14px;
-            font-size:13px;
-            font-weight:600;
-            cursor:pointer;
-        }
-
-        .toast-btn-cancel{
-            background:#f1f5f9;
-            color:#334155;
-        }
-
-        .toast-btn-confirm{
-            background:#dc2626;
-            color:#fff;
-        }
-
-        .toast-btn-confirm:hover{
-            background:#b91c1c;
-        }
+        .toast-btn-cancel  { background: #f1f5f9; color: #334155; }
+        .toast-btn-confirm { background: #dc2626; color: #fff; }
+        .toast-btn-confirm:hover { background: #b91c1c; }
     </style>
 
+    <!-- Toast container -->
     <div class="custom-toast-container"></div>
 
+
+    <!-- ═══════════════════════════════════════════════════════════
+         JAVASCRIPT
+    ═══════════════════════════════════════════════════════════ -->
     <script th:inline="javascript">
 
         const LHP_ID   = [[${lopHocPhan.id}]];
@@ -484,138 +523,98 @@
         const CSRF_TOK = [[${_csrf.token}]];
 
         let _allSvs = [];
-        let _importedSuccess = false;
 
-        // ═════════════════════════════════════════════════════════════
-        // TOAST FUNCTIONS
-        // ═════════════════════════════════════════════════════════════
+        // ─────────────────────────────────────────────────────────
+        // TOAST
+        // ─────────────────────────────────────────────────────────
 
         function showToast(type, title, message, autoHide = true) {
-
             const container = document.querySelector('.custom-toast-container');
-
             const icons = {
                 success: 'fa-circle-check',
-                error: 'fa-circle-xmark',
-                confirm: 'fa-triangle-exclamation'
+                error:   'fa-circle-xmark',
+                info:    'fa-circle-info'
             };
 
             const toast = document.createElement('div');
-
             toast.className = `custom-toast toast-${type}`;
-
             toast.innerHTML = `
                 <div class="p-4">
                     <div class="d-flex gap-3">
                         <div class="toast-icon">
-                            <i class="fas ${icons[type]}"></i>
+                            <i class="fas ${icons[type] ?? 'fa-circle-info'}"></i>
                         </div>
-
                         <div class="flex-grow-1">
                             <div class="toast-title">${title}</div>
                             <div class="toast-message">${message}</div>
                         </div>
-
                         <button class="btn-close"></button>
                     </div>
-                </div>
-            `;
+                </div>`;
 
             container.appendChild(toast);
-
-            toast.querySelector('.btn-close').onclick = () => {
-                toast.remove();
-            };
+            toast.querySelector('.btn-close').onclick = () => toast.remove();
 
             if (autoHide) {
-                setTimeout(() => {
-                    toast.remove();
-                }, 3500);
+                setTimeout(() => toast.remove(), 3500);
             }
         }
 
         function showConfirmToast(title, message, onConfirm) {
+            const container = document.querySelector('.custom-toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'custom-toast toast-confirm';
+            toast.innerHTML = `
+                <div class="toast-header-custom">
+                    <div class="toast-icon">
+                        <i class="fas fa-user-minus"></i>
+                    </div>
+                    <div class="toast-content">
+                        <div class="toast-title">${title}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+                </div>
+                <div class="toast-actions">
+                    <button class="toast-btn toast-btn-cancel">Hủy</button>
+                    <button class="toast-btn toast-btn-confirm">Xác nhận</button>
+                </div>`;
 
-    const container = document.querySelector('.custom-toast-container');
+            container.appendChild(toast);
+            toast.querySelector('.toast-btn-cancel').onclick  = () => toast.remove();
+            toast.querySelector('.toast-btn-confirm').onclick = () => { toast.remove(); onConfirm(); };
 
-    const toast = document.createElement('div');
-    toast.className = 'custom-toast toast-confirm';
+            setTimeout(() => { if (toast.parentNode) toast.remove(); }, 10000);
+        }
 
-    toast.innerHTML = `
-        <div class="toast-header-custom">
-            <div class="toast-icon">
-                <i class="fas fa-user-minus"></i>
-            </div>
-
-            <div class="toast-content">
-                <div class="toast-title">${title}</div>
-                <div class="toast-message">${message}</div>
-            </div>
-        </div>
-
-        <div class="toast-actions">
-            <button class="toast-btn toast-btn-cancel">Hủy</button>
-            <button class="toast-btn toast-btn-confirm">Xác nhận</button>
-        </div>
-    `;
-
-    container.appendChild(toast);
-
-    toast.querySelector('.toast-btn-cancel').onclick = () => {
-        toast.remove();
-    };
-
-    toast.querySelector('.toast-btn-confirm').onclick = () => {
-        toast.remove();
-        onConfirm();
-    };
-
-    setTimeout(() => {
-        if (toast.parentNode) toast.remove();
-    }, 10000);
-}
-
-        // ═════════════════════════════════════════════════════════════
-        // MODAL THÊM SV
-        // ═════════════════════════════════════════════════════════════
+        // ─────────────────────────────────────────────────────────
+        // MODAL THÊM SINH VIÊN
+        // ─────────────────────────────────────────────────────────
 
         document.getElementById('modalThemSV').addEventListener('show.bs.modal', function () {
-
             _allSvs = [];
-
-            document.getElementById('svLoading').style.display   = 'block';
-            document.getElementById('svTable').style.display     = 'none';
-            document.getElementById('svEmpty').style.display     = 'none';
-            document.getElementById('svSearchInput').value       = '';
+            document.getElementById('svLoading').style.display     = 'block';
+            document.getElementById('svTable').style.display       = 'none';
+            document.getElementById('svEmpty').style.display       = 'none';
+            document.getElementById('svSearchInput').value         = '';
             document.getElementById('svSelectedCount').textContent = '0 đã chọn';
-            document.getElementById('btnDangKy').disabled        = true;
-            document.getElementById('checkAll').checked          = false;
+            document.getElementById('btnDangKy').disabled          = true;
+            document.getElementById('checkAll').checked            = false;
 
             fetch(`/admin/lop-hoc-phan/${LHP_ID}/sinh-vien-chua-dk`)
                 .then(r => r.json())
                 .then(svs => {
-
                     _allSvs = svs;
-
                     document.getElementById('svLoading').style.display = 'none';
-
                     renderSVTable(svs);
                 })
                 .catch(() => {
-
                     document.getElementById('svLoading').style.display = 'none';
                     document.getElementById('svEmpty').style.display   = 'block';
-
-                    showToast(
-                        'error',
-                        'Lỗi tải dữ liệu',
-                        'Không thể tải danh sách sinh viên.'
-                    );
+                    showToast('error', 'Lỗi tải dữ liệu', 'Không thể tải danh sách sinh viên.');
                 });
         });
 
         function renderSVTable(list) {
-
             const checkedIds = new Set(
                 [...document.querySelectorAll('.sv-check:checked')].map(c => c.value)
             );
@@ -630,7 +629,6 @@
             }
 
             document.getElementById('svEmpty').style.display = 'none';
-
             document.getElementById('svTableBody').innerHTML = list.map(sv => `
                 <tr>
                     <td>
@@ -640,161 +638,163 @@
                                ${checkedIds.has(String(sv.id)) ? 'checked' : ''}
                                onchange="updateSelected()"/>
                     </td>
-
-                    <td>
-                        <code style="font-size:11px">${sv.maSv}</code>
-                    </td>
-
-                    <td class="fw-semibold">
-                        ${sv.hoTen}
-                    </td>
-
-                    <td class="text-muted small">
-                        ${sv.lop}
-                    </td>
+                    <td><code style="font-size:11px">${sv.maSv}</code></td>
+                    <td class="fw-semibold">${sv.hoTen}</td>
+                    <td class="text-muted small">${sv.lop}</td>
                 </tr>
             `).join('');
 
             document.getElementById('svTable').style.display = 'table';
-
             updateSelected();
         }
 
         function searchSV() {
-
-            const q = document.getElementById('svSearchInput')
-                .value
-                .toLowerCase();
-
+            const q = document.getElementById('svSearchInput').value.toLowerCase();
             renderSVTable(
                 _allSvs.filter(sv =>
-                    sv.hoTen.toLowerCase().includes(q)
-                    || sv.maSv.toLowerCase().includes(q)
+                    sv.hoTen.toLowerCase().includes(q) ||
+                    sv.maSv.toLowerCase().includes(q)
                 )
             );
         }
 
         function toggleAll(cb) {
-
-            document.querySelectorAll('.sv-check')
-                .forEach(c => c.checked = cb.checked);
-
+            document.querySelectorAll('.sv-check').forEach(c => c.checked = cb.checked);
             updateSelected();
         }
 
         function updateSelected() {
-
             const checked = document.querySelectorAll('.sv-check:checked').length;
+            const all     = document.querySelectorAll('.sv-check').length;
 
-            const all = document.querySelectorAll('.sv-check').length;
-
-            document.getElementById('svSelectedCount').textContent =
-                checked + ' đã chọn';
-
-            document.getElementById('btnDangKy').disabled =
-                checked === 0;
-
-            document.getElementById('checkAll').checked =
-                checked > 0 && checked === all;
-
-            document.getElementById('checkAll').indeterminate =
-                checked > 0 && checked < all;
+            document.getElementById('svSelectedCount').textContent = checked + ' đã chọn';
+            document.getElementById('btnDangKy').disabled          = checked === 0;
+            document.getElementById('checkAll').checked            = checked > 0 && checked === all;
+            document.getElementById('checkAll').indeterminate      = checked > 0 && checked < all;
         }
 
         function dangKySelected() {
-
-            const ids = [...document.querySelectorAll('.sv-check:checked')]
-                .map(c => +c.value);
-
+            const ids = [...document.querySelectorAll('.sv-check:checked')].map(c => +c.value);
             if (!ids.length) return;
 
             const btn = document.getElementById('btnDangKy');
-
-            btn.disabled = true;
-
-            btn.innerHTML =
-                '<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý...';
+            btn.disabled  = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý...';
 
             fetch(`/admin/lop-hoc-phan/${LHP_ID}/dang-ky-nhieu`, {
-
                 method: 'POST',
-
                 headers: {
                     'Content-Type': 'application/json',
                     [CSRF_HDR]: CSRF_TOK
                 },
-
                 body: JSON.stringify(ids)
-
             })
-            .then(r => r.json())
-            .then(res => {
-
-                showToast(
-                    'success',
-                    'Đăng ký thành công',
-                    `Đã thêm ${res.success} sinh viên vào lớp học phần`
-                );
-
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-            })
-            .catch(() => {
-
-                showToast(
-                    'error',
-                    'Có lỗi xảy ra',
-                    'Không thể đăng ký sinh viên.'
-                );
-
-                btn.disabled = false;
-
-                btn.innerHTML =
-                    '<i class="fas fa-user-plus me-1"></i>Đăng ký đã chọn';
-            });
+                .then(r => r.json())
+                .then(res => {
+                    showToast('success', 'Đăng ký thành công',
+                        `Đã thêm ${res.success} sinh viên vào lớp học phần`);
+                    setTimeout(() => location.reload(), 1500);
+                })
+                .catch(() => {
+                    showToast('error', 'Có lỗi xảy ra', 'Không thể đăng ký sinh viên.');
+                    btn.disabled  = false;
+                    btn.innerHTML = '<i class="fas fa-user-plus me-1"></i>Đăng ký đã chọn';
+                });
         }
 
-        // ═════════════════════════════════════════════════════════════
-        // XÓA ĐĂNG KÝ -> TOAST CONFIRM
-        // ═════════════════════════════════════════════════════════════
+        // ─────────────────────────────────────────────────────────
+        // MODAL IMPORT LỚP HÀNH CHÍNH
+        // ─────────────────────────────────────────────────────────
 
-        document.querySelectorAll('form[action*="huy-dang-ky"]')
-            .forEach(form => {
+        // Reset modal mỗi lần mở
+        document.getElementById('modalImportLop').addEventListener('show.bs.modal', function () {
+            document.getElementById('selectLopImport').value    = '';
+            document.getElementById('importResult').innerHTML   = '';
+            document.getElementById('lopPreview').style.display = 'none';
+            const btn = document.getElementById('btnImportLop');
+            btn.disabled  = false;
+            btn.innerHTML = '<i class="fas fa-file-import me-1"></i>Import';
+        });
 
-                form.addEventListener('submit', function(e) {
+        function previewLop(sel) {
+            const preview = document.getElementById('lopPreview');
+            if (!sel.value) {
+                preview.style.display = 'none';
+                return;
+            }
+            const siSo = sel.options[sel.selectedIndex].dataset.siso ?? '?';
+            document.getElementById('previewSiSo').textContent = siSo;
+            preview.style.display = 'block';
+            document.getElementById('importResult').innerHTML = '';
+        }
 
-                    e.preventDefault();
+        function importLop() {
+            const lopId = document.getElementById('selectLopImport').value;
+            if (!lopId) {
+                showToast('error', 'Chưa chọn lớp', 'Vui lòng chọn lớp hành chính.');
+                return;
+            }
 
-                    const ten = this.dataset.ten;
+            const btn = document.getElementById('btnImportLop');
+            btn.disabled  = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang import...';
+            document.getElementById('importResult').innerHTML = '';
 
-                    showConfirmToast(
-                        'Xác nhận hủy đăng ký',
-                        `Bạn có chắc muốn hủy đăng ký của sinh viên "${ten}" ?`,
-                        () => this.submit()
-                    );
+            fetch(`/admin/lop-hoc-phan/${LHP_ID}/import-lop/${lopId}`, {
+                method: 'POST',
+                headers: { [CSRF_HDR]: CSRF_TOK }
+            })
+                .then(r => r.json())
+                .then(res => {
+                    const errHtml = res.errors && res.errors.length
+                        ? `<br><small class="text-danger">${res.errors.join('<br>')}</small>`
+                        : '';
+                    document.getElementById('importResult').innerHTML = `
+                    <div class="alert alert-success mb-0">
+                        <i class="fas fa-check-circle me-1"></i>
+                        Import thành công <strong>${res.success}/${res.total}</strong> sinh viên.
+                        ${errHtml}
+                    </div>`;
+                    setTimeout(() => location.reload(), 1800);
+                })
+                .catch(() => {
+                    showToast('error', 'Lỗi', 'Không thể import lớp hành chính.');
+                    btn.disabled  = false;
+                    btn.innerHTML = '<i class="fas fa-file-import me-1"></i>Import';
                 });
-            });
+        }
 
-        // ═════════════════════════════════════════════════════════════
+        // ─────────────────────────────────────────────────────────
+        // HỦY ĐĂNG KÝ → CONFIRM TOAST
+        // ─────────────────────────────────────────────────────────
+
+        document.querySelectorAll('form[action*="huy-dang-ky"]').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const ten = this.dataset.ten;
+                showConfirmToast(
+                    'Xác nhận hủy đăng ký',
+                    `Bạn có chắc muốn hủy đăng ký của sinh viên "<strong>${ten}</strong>"?`,
+                    () => this.submit()
+                );
+            });
+        });
+
+        // ─────────────────────────────────────────────────────────
         // MODAL ĐIỂM
-        // ═════════════════════════════════════════════════════════════
+        // ─────────────────────────────────────────────────────────
 
-        document.getElementById('modalDiem')
-            .addEventListener('show.bs.modal', function (e) {
-
-                const b = e.relatedTarget;
-
-                document.getElementById('dkId').value    = b.dataset.dkid;
-                document.getElementById('lhpId').value   = b.dataset.lhpid;
-                document.getElementById('diemQT').value  = b.dataset.qt;
-                document.getElementById('diemThi').value = b.dataset.thi;
-
-                document.getElementById('tenSV').textContent =
-                    b.dataset.ten;
-            });
+        document.getElementById('modalDiem').addEventListener('show.bs.modal', function (e) {
+            const b = e.relatedTarget;
+            document.getElementById('dkId').value              = b.dataset.dkid;
+            document.getElementById('lhpId').value             = b.dataset.lhpid;
+            document.getElementById('diemQT').value            = b.dataset.qt;
+            document.getElementById('diemThi').value           = b.dataset.thi;
+            document.getElementById('tenSV').textContent       = b.dataset.ten;
+        });
 
     </script>
+
 </th:block>
 </body>
 </html>

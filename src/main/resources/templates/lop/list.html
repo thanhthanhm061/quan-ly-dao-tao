@@ -6,7 +6,14 @@
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center class-header">
-            <span><i class="fas fa-door-open me-2"></i>Danh sách Lớp học</span>
+           <span class="d-flex align-items-center gap-2">
+    <i class="fas fa-door-open"></i>
+    Danh sách Lớp học
+    <span class="badge rounded-pill bg-white text-primary fw-bold"
+          id="lopCountBadge"
+          th:text="${#lists.size(lops)}"
+          style="font-size:13px; min-width:28px">0</span>
+</span>
 
             <a th:href="@{/admin/lop/them}" class="btn btn-light btn-sm add-btn">
                 <i class="fas fa-plus me-1"></i>Thêm mới
@@ -135,11 +142,12 @@
         </div>
     </div>
 
-    <!-- Modal sinh viên -->
+    <!-- ==================== MODAL SINH VIÊN ==================== -->
     <div class="modal fade" id="modalSinhVien" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content border-0 shadow-sm" style="border-radius:12px;overflow:hidden">
 
+                <!-- HEADER -->
                 <div class="modal-header border-bottom py-3 px-4">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-3 bg-primary bg-opacity-10 d-flex align-items-center justify-content-center"
@@ -148,25 +156,56 @@
                         </div>
 
                         <div>
+                            <!-- Tên lớp -->
                             <h6 class="modal-title mb-0 fw-semibold" id="modalLopTen"></h6>
-                            <small class="text-muted" id="modalLopMa"></small>
+                            <!-- Mã lớp -->
+                            <small class="text-muted d-block" id="modalLopMa"></small>
+                            <!-- Cố vấn học tập (ẩn mặc định, hiện khi có dữ liệu) -->
+                            <small class="text-muted d-block" id="modalLopCvht" style="display:none!important">
+                                <i class="fas fa-chalkboard-teacher me-1 opacity-50"></i>
+                                Cố vấn: <span id="modalLopCvhtTen" class="fw-semibold"></span>
+                            </small>
                         </div>
                     </div>
+
+                    <!-- Badge đếm tổng SV -->
+                    <span class="badge bg-primary rounded-pill ms-auto me-3 fs-6"
+                          id="modalBadgeCount"
+                          style="min-width:52px;text-align:center"></span>
 
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
+                <!-- SEARCH BAR TRONG MODAL -->
+                <div class="px-4 py-2 border-bottom bg-light">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text"
+                               id="modalSearch"
+                               class="form-control border-start-0"
+                               placeholder="Tìm mã SV hoặc họ tên..."
+                               oninput="filterModalSV()"
+                               style="border-radius:0 8px 8px 0">
+                    </div>
+                </div>
+
+                <!-- BODY -->
                 <div class="modal-body p-0">
+                    <!-- Loading -->
                     <div id="modalLoading" class="text-center py-5">
                         <div class="spinner-border spinner-border-sm text-secondary me-2"></div>
                         <span class="text-muted small">Đang tải...</span>
                     </div>
 
+                    <!-- Empty -->
                     <div id="modalEmpty" class="text-center text-muted py-5" style="display:none">
                         <i class="fas fa-inbox fa-2x d-block mb-2 opacity-25"></i>
                         <small>Lớp chưa có sinh viên nào</small>
                     </div>
 
+                    <!-- Table -->
                     <div style="max-height:360px;overflow-y:auto">
                         <table class="table table-hover mb-0 align-middle"
                                id="modalTable"
@@ -184,160 +223,141 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- FOOTER: đếm kết quả tìm kiếm -->
+                <div class="modal-footer py-2 px-4 bg-light border-top">
+                    <small class="text-muted" id="modalFooterCount"></small>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Toast -->
+    <!-- Toast container -->
     <div class="custom-toast-container"></div>
 
     <style>
-        .search-box{
-    position:relative;
-}
+        .search-box {
+            position: relative;
+        }
 
-.search-icon{
-    position:absolute;
-    left:14px;
-    top:50%;
-    transform:translateY(-50%);
-    color:#94a3b8;
-    font-size:14px;
-}
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 14px;
+        }
 
-.search-input{
-    padding-left:40px;
-    border-radius:12px;
-    border:1px solid #dbeafe;
-    height:42px;
-}
+        .search-input {
+            padding-left: 40px;
+            border-radius: 12px;
+            border: 1px solid #dbeafe;
+            height: 42px;
+        }
 
-.search-input:focus{
-    border-color:#2563eb;
-    box-shadow:0 0 0 3px rgba(37,99,235,.15);
-}
+        .search-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .15);
+        }
 
-.filter-select{
-    border-radius:12px;
-    border:1px solid #dbeafe;
-    height:42px;
-}
-        .class-header{
-            background: linear-gradient(135deg,#1e3a8a,#2563eb);
-            color:white;
-            padding:14px 18px;
-            border-bottom:none;
+        .filter-select {
+            border-radius: 12px;
+            border: 1px solid #dbeafe;
+            height: 42px;
+        }
+
+        .class-header {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: white;
+            padding: 14px 18px;
+            border-bottom: none;
         }
 
         .class-header span,
-        .class-header i{
-            color:white;
-            font-weight:600;
+        .class-header i {
+            color: white;
+            font-weight: 600;
         }
 
-        .add-btn{
-            background:white;
-            color:#2563eb !important;
-            font-weight:600;
-            border:none;
-            border-radius:10px;
-            padding:6px 14px;
+        .add-btn {
+            background: white;
+            color: #2563eb !important;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            padding: 6px 14px;
         }
 
-        .add-btn:hover{
-            background:#eff6ff;
-            color:#1d4ed8 !important;
+        .add-btn:hover {
+            background: #eff6ff;
+            color: #1d4ed8 !important;
         }
 
-        .search-box{
-            position:relative;
-            max-width:380px;
-            margin-left:auto;
+        .custom-toast-container {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
         }
 
-        .search-icon{
-            position:absolute;
-            left:14px;
-            top:50%;
-            transform:translateY(-50%);
-            color:#94a3b8;
+        .custom-toast {
+            width: 360px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+            border-left: 5px solid #ef4444;
+            overflow: hidden;
         }
 
-        .search-input{
-            padding-left:40px;
-            border-radius:12px;
-            border:1px solid #e2e8f0;
-            height:42px;
+        .toast-header-custom {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
         }
 
-        .search-input:focus{
-            border-color:#2563eb;
-            box-shadow:0 0 0 3px rgba(37,99,235,.12);
+        .toast-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #fee2e2;
+            color: #dc2626;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .custom-toast-container{
-            position:fixed;
-            top:24px;
-            left:50%;
-            transform:translateX(-50%);
-            z-index:99999;
+        .toast-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 0 16px 16px;
         }
 
-        .custom-toast{
-            width:360px;
-            background:#fff;
-            border-radius:16px;
-            box-shadow:0 10px 30px rgba(0,0,0,.15);
-            border-left:5px solid #ef4444;
-            overflow:hidden;
+        .toast-btn {
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
         }
 
-        .toast-header-custom{
-            display:flex;
-            gap:12px;
-            padding:16px;
+        .toast-btn-cancel {
+            background: #f1f5f9;
         }
 
-        .toast-icon{
-            width:38px;
-            height:38px;
-            border-radius:50%;
-            background:#fee2e2;
-            color:#dc2626;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-        }
-
-        .toast-actions{
-            display:flex;
-            justify-content:flex-end;
-            gap:8px;
-            padding:0 16px 16px;
-        }
-
-        .toast-btn{
-            border:none;
-            padding:8px 14px;
-            border-radius:10px;
-            font-size:13px;
-            font-weight:600;
-            cursor:pointer;
-        }
-
-        .toast-btn-cancel{
-            background:#f1f5f9;
-        }
-
-        .toast-btn-confirm{
-            background:#dc2626;
-            color:white;
+        .toast-btn-confirm {
+            background: #dc2626;
+            color: white;
         }
     </style>
 
     <script>
         let _allSvs = [];
 
+        /* ── Avatar chữ cái ── */
         function initials(name) {
             const parts = name.trim().split(' ');
             return parts.length >= 2
@@ -345,6 +365,7 @@
                 : name[0].toUpperCase();
         }
 
+        /* ── Render danh sách SV vào bảng modal ── */
         function renderModalRows(list) {
             document.getElementById('modalBody').innerHTML = list.map((sv, i) => `
                 <tr>
@@ -364,8 +385,8 @@
                             <span class="fw-semibold">${sv.hoTen}</span>
                         </div>
                     </td>
-                    <td class="text-muted">${sv.email ?? '-'}</td>
-                    <td class="text-muted">${sv.sdt ?? '-'}</td>
+                    <td class="text-muted">${sv.email || '-'}</td>
+                    <td class="text-muted">${sv.sdt  || '-'}</td>
                 </tr>
             `).join('');
 
@@ -373,9 +394,9 @@
                 `Hiển thị ${list.length} / ${_allSvs.length} sinh viên`;
         }
 
+        /* ── Tìm kiếm SV trong modal ── */
         function filterModalSV() {
             const q = document.getElementById('modalSearch').value.toLowerCase();
-
             renderModalRows(
                 _allSvs.filter(sv =>
                     sv.hoTen.toLowerCase().includes(q) ||
@@ -384,38 +405,43 @@
             );
         }
 
-        /* ================= MODAL SĨ SỐ ================= */
+        /* ── Mở modal sĩ số ── */
         document.querySelectorAll('.si-so-btn').forEach(btn => {
             btn.addEventListener('click', function () {
-                const lopId = this.dataset.lopId;
-                const maLop = this.dataset.maLop;
+                const lopId  = this.dataset.lopId;
+                const maLop  = this.dataset.maLop;
                 const tenLop = this.dataset.tenLop;
-                const cvht = this.dataset.cvht;
+                const cvht   = this.dataset.cvht;
 
-                document.getElementById('modalLopTen').textContent = tenLop;
-                document.getElementById('modalLopMa').textContent = 'Mã lớp: ' + maLop;
+                /* Reset nội dung modal */
+                document.getElementById('modalLopTen').textContent   = tenLop;
+                document.getElementById('modalLopMa').textContent    = 'Mã lớp: ' + maLop;
                 document.getElementById('modalBadgeCount').textContent = '';
-                document.getElementById('modalSearch').value = '';
-                document.getElementById('modalLoading').style.display = 'block';
-                document.getElementById('modalTable').style.display = 'none';
-                document.getElementById('modalEmpty').style.display = 'none';
+                document.getElementById('modalSearch').value         = '';
                 document.getElementById('modalFooterCount').textContent = '';
 
-                const cvhtEl = document.getElementById('modalLopCvht');
+                document.getElementById('modalLoading').style.display = 'block';
+                document.getElementById('modalTable').style.display   = 'none';
+                document.getElementById('modalEmpty').style.display   = 'none';
 
+                /* Cố vấn học tập */
+                const cvhtEl = document.getElementById('modalLopCvht');
                 if (cvht) {
                     document.getElementById('modalLopCvhtTen').textContent = cvht;
-                    cvhtEl.style.display = 'block';
+                    cvhtEl.style.setProperty('display', 'block', 'important');
                 } else {
-                    cvhtEl.style.display = 'none';
+                    cvhtEl.style.setProperty('display', 'none', 'important');
                 }
 
-                new bootstrap.Modal(
-                    document.getElementById('modalSinhVien')
-                ).show();
+                /* Mở modal */
+                new bootstrap.Modal(document.getElementById('modalSinhVien')).show();
 
+                /* Fetch danh sách SV */
                 fetch(`/admin/lop/${lopId}/sinh-vien`)
-                    .then(r => r.json())
+                    .then(r => {
+                        if (!r.ok) throw new Error('HTTP ' + r.status);
+                        return r.json();
+                    })
                     .then(svs => {
                         _allSvs = svs;
                         document.getElementById('modalLoading').style.display = 'none';
@@ -423,39 +449,36 @@
 
                         if (!svs.length) {
                             document.getElementById('modalEmpty').style.display = 'block';
+                            document.getElementById('modalFooterCount').textContent = '0 sinh viên';
                             return;
                         }
 
                         renderModalRows(svs);
                         document.getElementById('modalTable').style.display = 'table';
                     })
-                    .catch(() => {
+                    .catch(err => {
                         document.getElementById('modalLoading').innerHTML =
                             '<i class="fas fa-exclamation-circle text-danger me-2"></i>' +
-                            '<span class="text-danger small">Lỗi tải dữ liệu</span>';
+                            '<span class="text-danger small">Lỗi tải dữ liệu: ' + err.message + '</span>';
                     });
             });
         });
 
-        /* ================= TOAST XÓA ================= */
+        /* ── Toast xác nhận xóa ── */
         function showDeleteToast(title, message, onConfirm) {
             const container = document.querySelector('.custom-toast-container');
             container.innerHTML = '';
 
             const toast = document.createElement('div');
             toast.className = 'custom-toast';
-
             toast.innerHTML = `
                 <div class="toast-header-custom">
-                    <div class="toast-icon">
-                        <i class="fas fa-trash"></i>
-                    </div>
+                    <div class="toast-icon"><i class="fas fa-trash"></i></div>
                     <div>
                         <div class="fw-bold">${title}</div>
                         <div class="text-muted small">${message}</div>
                     </div>
                 </div>
-
                 <div class="toast-actions">
                     <button class="toast-btn toast-btn-cancel">Hủy</button>
                     <button class="toast-btn toast-btn-confirm">Xóa</button>
@@ -463,19 +486,13 @@
             `;
 
             container.appendChild(toast);
-
             toast.querySelector('.toast-btn-cancel').onclick = () => toast.remove();
-
-            toast.querySelector('.toast-btn-confirm').onclick = () => {
-                toast.remove();
-                onConfirm();
-            };
+            toast.querySelector('.toast-btn-confirm').onclick = () => { toast.remove(); onConfirm(); };
         }
 
         document.querySelectorAll('.delete-form').forEach(form => {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
-
                 showDeleteToast(
                     'Xác nhận xóa',
                     `Bạn có chắc muốn xóa lớp "${this.dataset.ten}"?`,
@@ -484,42 +501,45 @@
             });
         });
 
-        /* ================= FILTER ================= */
+        /* ── Populate filter dropdowns ── */
         function populateFilters() {
             const rows = document.querySelectorAll('tbody tr');
-
             const nienKhoas = new Set();
-            const khoas = new Set();
-            const cvhts = new Set();
+            const khoas     = new Set();
+            const cvhts     = new Set();
 
             rows.forEach(row => {
                 if (row.querySelector('td[colspan]')) return;
-
                 nienKhoas.add(row.dataset.nienkhoa);
                 khoas.add(row.dataset.khoa);
                 cvhts.add(row.dataset.cvht);
             });
 
             fillSelect('filterNienKhoa', nienKhoas);
-            fillSelect('filterKhoa', khoas);
-            fillSelect('filterCvht', cvhts);
+            fillSelect('filterKhoa',     khoas);
+            fillSelect('filterCvht',     cvhts);
         }
 
         function fillSelect(id, values) {
             const select = document.getElementById(id);
-
             [...values].sort().forEach(v => {
                 if (!v) return;
-                select.innerHTML += `<option value="${v}">${v}</option>`;
+                const opt = document.createElement('option');
+                opt.value       = v;
+                opt.textContent = v;
+                select.appendChild(opt);
             });
         }
 
+        /* ── Lọc bảng ── */
         function filterTable() {
             const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-            const nk = document.getElementById('filterNienKhoa').value;
-            const khoa = document.getElementById('filterKhoa').value;
-            const cvht = document.getElementById('filterCvht').value;
-
+            const nk      = document.getElementById('filterNienKhoa').value;
+            const khoa    = document.getElementById('filterKhoa').value;
+            const cvht    = document.getElementById('filterCvht').value;
+            const visible = [...document.querySelectorAll('tbody tr')]
+                .filter(r => !r.id && !r.querySelector('td[colspan]') && r.style.display !== 'none').length;
+            document.getElementById('lopCountBadge').textContent = visible;
             const rows = document.querySelectorAll('tbody tr');
             let hasResult = false;
 
@@ -527,12 +547,12 @@
                 if (row.id === 'noResultRow' || row.querySelector('td[colspan]')) return;
 
                 const matchSearch =
-                    row.dataset.ma.toLowerCase().includes(keyword) ||
-                    row.dataset.ten.toLowerCase().includes(keyword);
+                    (row.dataset.ma  || '').toLowerCase().includes(keyword) ||
+                    (row.dataset.ten || '').toLowerCase().includes(keyword);
 
-                const matchNk = !nk || row.dataset.nienkhoa === nk;
-                const matchKhoa = !khoa || row.dataset.khoa === khoa;
-                const matchCvht = !cvht || row.dataset.cvht === cvht;
+                const matchNk   = !nk   || row.dataset.nienkhoa === nk;
+                const matchKhoa = !khoa || row.dataset.khoa      === khoa;
+                const matchCvht = !cvht || row.dataset.cvht      === cvht;
 
                 if (matchSearch && matchNk && matchKhoa && matchCvht) {
                     row.style.display = '';
@@ -543,7 +563,6 @@
             });
 
             let emptyRow = document.getElementById('noResultRow');
-
             if (!hasResult) {
                 if (!emptyRow) {
                     emptyRow = document.createElement('tr');
@@ -561,17 +580,10 @@
             }
         }
 
-        document.getElementById('searchInput')
-            .addEventListener('keyup', filterTable);
-
-        document.getElementById('filterNienKhoa')
-            .addEventListener('change', filterTable);
-
-        document.getElementById('filterKhoa')
-            .addEventListener('change', filterTable);
-
-        document.getElementById('filterCvht')
-            .addEventListener('change', filterTable);
+        document.getElementById('searchInput').addEventListener('keyup', filterTable);
+        document.getElementById('filterNienKhoa').addEventListener('change', filterTable);
+        document.getElementById('filterKhoa').addEventListener('change', filterTable);
+        document.getElementById('filterCvht').addEventListener('change', filterTable);
 
         populateFilters();
     </script>

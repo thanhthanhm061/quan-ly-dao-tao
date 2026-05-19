@@ -4,311 +4,540 @@
 <body>
 <th:block th:fragment="content">
 
-    <div class="card custom-card">
-        <div class="card-header custom-header d-flex justify-content-between align-items-center">
-        <span class="fw-semibold fs-5">
-            <i class="fas fa-book me-2"></i>Danh sách Môn học
-        </span>
+    <!-- ── STATS ROW ── -->
+    <div class="stats-row mb-4">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue">
+                <i class="fas fa-book"></i>
+            </div>
+            <div>
+                <div class="stat-value" id="totalCount"
+                     th:text="${#lists.size(monHocs)}">0</div>
+                <div class="stat-label">Tổng môn học</div>
+            </div>
+        </div>
 
-            <a th:href="@{/admin/mon-hoc/them}" class="btn btn-light btn-sm add-btn">
-                <i class="fas fa-plus me-1"></i>Thêm mới
-            </a>
+        <div class="stat-card">
+            <div class="stat-icon bg-amber">
+                <i class="fas fa-layer-group"></i>
+            </div>
+            <div>
+                <div class="stat-value" th:text="${totalCredits}">0</div>
+                <div class="stat-label">Tổng tín chỉ</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon bg-primary">
+                <i class="fas fa-chalkboard"></i>
+            </div>
+            <div>
+                <div class="stat-value" th:text="${lyTHuyetCount}">0</div>
+                <div class="stat-label">Lý thuyết</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon bg-success">
+                <i class="fas fa-flask"></i>
+            </div>
+            <div>
+                <div class="stat-value" th:text="${thucHanhCount}">0</div>
+                <div class="stat-label">Thực hành</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MAIN CARD ── -->
+    <div class="card custom-card">
+
+        <!-- Header -->
+        <div class="card-header custom-header d-flex justify-content-between align-items-center">
+            <span class="fw-semibold fs-5 d-flex align-items-center gap-2">
+                <i class="fas fa-book"></i>
+                Danh sách Môn học
+                <span class="count-badge" id="headerBadge"
+                      th:text="${#lists.size(monHocs)}">0</span>
+            </span>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-light btn-sm export-btn" id="exportCsvBtn"
+                        title="Xuất file CSV">
+                    <i class="fas fa-file-csv me-1"></i>Xuất CSV
+                </button>
+                <a th:href="@{/admin/mon-hoc/them}" class="btn btn-light btn-sm add-btn">
+                    <i class="fas fa-plus me-1"></i>Thêm mới
+                </a>
+            </div>
         </div>
 
         <div class="card-body">
 
-            <!-- Search -->
-            <div class="d-flex justify-content-end mb-3">
+            <!-- Toolbar: Search + Filter -->
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+
+                <!-- Filter pills -->
+                <div class="filter-pills" id="filterPills">
+                    <button class="pill active" data-filter="ALL">Tất cả</button>
+                    <button class="pill" data-filter="LY_THUYET">
+                        <span class="dot dot-primary"></span>Lý thuyết
+                    </button>
+                    <button class="pill" data-filter="THUC_HANH">
+                        <span class="dot dot-success"></span>Thực hành
+                    </button>
+                    <button class="pill" data-filter="KHAC">
+                        <span class="dot dot-secondary"></span>Khác
+                    </button>
+                </div>
+
+                <!-- Search -->
                 <div class="search-box">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text"
                            id="searchInput"
                            class="form-control search-input"
                            placeholder="Tìm theo tên hoặc mã môn học...">
+                    <button class="search-clear d-none" id="clearSearch" title="Xóa tìm kiếm">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
 
+            <!-- Table -->
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="table table-hover align-middle" id="monHocTable">
                     <thead class="table-header">
                     <tr>
-                        <th>#</th>
+                        <th style="width:44px">#</th>
                         <th>Mã môn</th>
                         <th>Tên môn học</th>
-                        <th>Tín chỉ</th>
-                        <th>Loại</th>
+                        <th style="width:90px">Tín chỉ</th>
+                        <th style="width:120px">Loại</th>
                         <th>Khoa</th>
-                        <th>Thao tác</th>
+                        <th style="width:100px">Thao tác</th>
                     </tr>
                     </thead>
 
                     <tbody>
                     <tr th:if="${#lists.isEmpty(monHocs)}">
-                        <td colspan="7" class="text-center text-muted py-4">
-                            <i class="fas fa-inbox fa-2x d-block mb-2"></i>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="fas fa-inbox fa-2x d-block mb-2 opacity-50"></i>
                             Không có dữ liệu
                         </td>
                     </tr>
 
-                    <tr th:each="mon,i : ${monHocs}">
-                        <td th:text="${i.count}"></td>
-                        <td><code th:text="${mon.maMon}"></code></td>
+                    <tr th:each="mon,i : ${monHocs}"
+                        th:data-loai="${mon.loaiMon.name()}"
+                        th:data-ma="${mon.maMon}"
+                        th:data-ten="${mon.tenMon}">
+                        <td class="text-muted small" th:text="${i.count}"></td>
+
+                        <td>
+                            <code class="ma-mon" th:text="${mon.maMon}"></code>
+                        </td>
+
                         <td class="fw-semibold" th:text="${mon.tenMon}"></td>
+
                         <td>
-                        <span class="badge bg-warning text-dark"
-                              th:text="${mon.soTinChi}+' TC'"></span>
+                            <span class="badge bg-warning text-dark tc-badge"
+                                  th:text="${mon.soTinChi}+' TC'"></span>
                         </td>
 
                         <td>
-                        <span class="badge"
-                              th:classappend="${mon.loaiMon.name()=='LY_THUYET'
-                              ? 'bg-primary'
-                              : mon.loaiMon.name()=='THUC_HANH'
-                              ? 'bg-success'
-                              : 'bg-secondary'}"
-                              th:text="${mon.loaiMon}">
-                        </span>
+                            <span class="badge loai-badge"
+                                  th:classappend="${mon.loaiMon.name()=='LY_THUYET'
+                                    ? 'bg-primary'
+                                    : mon.loaiMon.name()=='THUC_HANH'
+                                    ? 'bg-success'
+                                    : 'bg-secondary'}"
+                                  th:text="${mon.loaiMon}">
+                            </span>
                         </td>
 
-                        <td class="small" th:text="${mon.khoa?.tenKhoa ?: '-'}"></td>
+                        <td class="small text-muted" th:text="${mon.khoa?.tenKhoa ?: '-'}"></td>
 
                         <td>
-                            <a th:href="@{/admin/mon-hoc/sua/{id}(id=${mon.id})}"
-                               class="btn btn-sm btn-outline-warning">
-                                <i class="fas fa-edit"></i>
-                            </a>
+                            <div class="d-flex gap-1">
+                                <a th:href="@{/admin/mon-hoc/sua/{id}(id=${mon.id})}"
+                                   class="btn btn-sm btn-outline-warning"
+                                   title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </a>
 
-                            <form th:action="@{/admin/mon-hoc/xoa/{id}(id=${mon.id})}"
-                                  method="post"
-                                  class="d-inline delete-form"
-                                  th:data-ten="${mon.tenMon}">
-                                <input type="hidden"
-                                       th:name="${_csrf.parameterName}"
-                                       th:value="${_csrf.token}"/>
-
-                                <button class="btn btn-sm btn-outline-danger ms-1">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                                <form th:action="@{/admin/mon-hoc/xoa/{id}(id=${mon.id})}"
+                                      method="post"
+                                      class="d-inline delete-form"
+                                      th:data-ten="${mon.tenMon}">
+                                    <input type="hidden"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}"/>
+                                    <button class="btn btn-sm btn-outline-danger" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     </tbody>
                 </table>
             </div>
+
+            <!-- Result count footer -->
+            <div class="result-footer" id="resultFooter">
+                Hiển thị <strong id="visibleCount">0</strong> môn học
+            </div>
         </div>
     </div>
 
+    <!-- ── STYLES ── -->
     <style>
-        .add-btn{
-            color:#1d4ed8 !important;
-            font-weight:600;
-            border-radius:10px;
-            padding:6px 14px;
-            border:none;
-            background:white;
+        /* Stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
         }
 
-        .add-btn:hover{
-            background:#eff6ff;
-            color:#1e40af !important;
-        }
-        .custom-card{
-            border:none;
-            border-radius:18px;
-            overflow:hidden;
-            box-shadow:0 8px 25px rgba(0,0,0,.08);
-        }
-
-        .custom-header{
-            background:linear-gradient(135deg,#1e3a8a,#2563eb);
-            color:white;
-            padding:16px 22px;
-            border:none;
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,.06);
+            border: 1px solid #f1f5f9;
         }
 
-        .table-header{
-            background:#eff6ff;
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            flex-shrink: 0;
         }
 
-        .table-header th{
-            color:#1e3a8a;
-            font-weight:700;
-            border-bottom:none;
+        .stat-icon.bg-blue    { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
+        .stat-icon.bg-amber   { background: linear-gradient(135deg,#f59e0b,#d97706); }
+        .stat-icon.bg-primary { background: linear-gradient(135deg,#6366f1,#4338ca); }
+        .stat-icon.bg-success { background: linear-gradient(135deg,#10b981,#059669); }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1;
         }
 
-        .search-box{
-            position:relative;
-            width:360px;
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 3px;
         }
 
-        .search-icon{
-            position:absolute;
-            left:14px;
-            top:50%;
-            transform:translateY(-50%);
-            color:#94a3b8;
-            font-size:14px;
+        /* Card */
+        .custom-card {
+            border: none;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,.08);
         }
 
-        .search-input{
-            padding-left:42px;
-            border-radius:14px;
-            border:1px solid #dbeafe;
-            height:44px;
-            background:#f8fafc;
+        .custom-header {
+            background: linear-gradient(135deg,#1e3a8a,#2563eb);
+            color: white;
+            padding: 16px 22px;
+            border: none;
         }
 
-        .search-input:focus{
-            border-color:#3b82f6;
-            box-shadow:0 0 0 4px rgba(59,130,246,.12);
-            background:white;
+        /* Count badge in header */
+        .count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 26px;
+            height: 26px;
+            padding: 0 8px;
+            background: white;
+            color: #1d4ed8;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 999px;
         }
 
-        /* toast */
-        .custom-toast-container{
-            position:fixed;
-            top:25px;
-            left:50%;
-            transform:translateX(-50%);
-            z-index:99999;
+        /* Add / Export buttons */
+        .add-btn, .export-btn {
+            color: #1d4ed8 !important;
+            font-weight: 600;
+            border-radius: 10px;
+            padding: 6px 14px;
+            border: none;
+            background: white;
+        }
+        .add-btn:hover, .export-btn:hover {
+            background: #eff6ff;
+            color: #1e40af !important;
         }
 
-        .custom-toast{
-            width:360px;
-            background:#fff;
-            border-radius:16px;
-            box-shadow:0 10px 30px rgba(0,0,0,.15);
-            border-left:5px solid #ef4444;
-            animation:slideDown .25s ease;
-            overflow:hidden;
+        /* Table header */
+        .table-header { background: #eff6ff; }
+        .table-header th {
+            color: #1e3a8a;
+            font-weight: 700;
+            border-bottom: none;
+            font-size: 13px;
         }
 
-        @keyframes slideDown{
-            from{
-                opacity:0;
-                transform:translateY(-20px);
-            }
-            to{
-                opacity:1;
-                transform:translateY(0);
-            }
+        /* Filter pills */
+        .filter-pills {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
         }
 
-        .toast-header-custom{
-            display:flex;
-            gap:12px;
-            padding:16px;
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .15s;
         }
 
-        .toast-icon{
-            width:40px;
-            height:40px;
-            border-radius:50%;
-            background:#fee2e2;
-            color:#dc2626;
-            display:flex;
-            align-items:center;
-            justify-content:center;
+        .pill:hover { border-color: #3b82f6; color: #1d4ed8; }
+
+        .pill.active {
+            background: #1d4ed8;
+            color: white;
+            border-color: #1d4ed8;
         }
 
-        .toast-title{
-            font-weight:700;
-            font-size:15px;
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-primary   { background: #6366f1; }
+        .dot-success   { background: #10b981; }
+        .dot-secondary { background: #94a3b8; }
+
+        /* Search */
+        .search-box {
+            position: relative;
+            width: 320px;
         }
 
-        .toast-message{
-            font-size:13px;
-            color:#64748b;
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 14px;
+            pointer-events: none;
         }
 
-        .toast-actions{
-            display:flex;
-            justify-content:flex-end;
-            gap:8px;
-            padding:0 16px 16px;
+        .search-input {
+            padding-left: 42px;
+            padding-right: 36px;
+            border-radius: 14px;
+            border: 1px solid #dbeafe;
+            height: 44px;
+            background: #f8fafc;
         }
 
-        .toast-btn{
-            border:none;
-            padding:8px 14px;
-            border-radius:10px;
-            font-size:13px;
-            font-weight:600;
-            cursor:pointer;
+        .search-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59,130,246,.12);
+            background: white;
         }
 
-        .toast-btn-cancel{
-            background:#f1f5f9;
+        .search-clear {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 2px 6px;
+            font-size: 12px;
         }
 
-        .toast-btn-confirm{
-            background:#dc2626;
-            color:#fff;
+        .search-clear:hover { color: #ef4444; }
+
+        /* ma-mon code style */
+        code.ma-mon {
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
         }
+
+        /* Result footer */
+        .result-footer {
+            font-size: 13px;
+            color: #94a3b8;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+            margin-top: 8px;
+        }
+
+        /* ── Delete toast ── */
+        .custom-toast-container {
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+        }
+
+        .custom-toast {
+            width: 360px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.15);
+            border-left: 5px solid #ef4444;
+            animation: slideDown .25s ease;
+            overflow: hidden;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .toast-header-custom {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .toast-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fee2e2;
+            color: #dc2626;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-title   { font-weight: 700; font-size: 15px; }
+        .toast-message { font-size: 13px; color: #64748b; }
+
+        .toast-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 0 16px 16px;
+        }
+
+        .toast-btn {
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .toast-btn-cancel  { background: #f1f5f9; }
+        .toast-btn-confirm { background: #dc2626; color: #fff; }
+
+        /* Flash messages */
+        .alert { border-radius: 12px; font-size: 14px; }
     </style>
+
+    <!-- Flash messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 
     <div class="custom-toast-container"></div>
 
+    <!-- ── SCRIPTS ── -->
     <script>
-        function showDeleteToast(title, message, onConfirm){
-            const container = document.querySelector('.custom-toast-container');
-            container.innerHTML = '';
+        /* ── helpers ── */
+        const allRows = () => [...document.querySelectorAll('#monHocTable tbody tr[data-ma]')];
 
-            const toast = document.createElement('div');
-            toast.className = 'custom-toast';
-
-            toast.innerHTML = `
-                <div class="toast-header-custom">
-                    <div class="toast-icon">
-                        <i class="fas fa-trash"></i>
-                    </div>
-                    <div>
-                        <div class="toast-title">${title}</div>
-                        <div class="toast-message">${message}</div>
-                    </div>
-                </div>
-
-                <div class="toast-actions">
-                    <button class="toast-btn toast-btn-cancel">Hủy</button>
-                    <button class="toast-btn toast-btn-confirm">Xóa</button>
-                </div>
-            `;
-
-            container.appendChild(toast);
-
-            toast.querySelector('.toast-btn-cancel').onclick = () => toast.remove();
-
-            toast.querySelector('.toast-btn-confirm').onclick = () => {
-                toast.remove();
-                onConfirm();
-            };
+        function updateVisibleCount() {
+            const n = allRows().filter(r => r.style.display !== 'none').length;
+            document.getElementById('visibleCount').textContent = n;
+            document.getElementById('headerBadge').textContent = n;
         }
 
-        document.querySelectorAll('.delete-form').forEach(form=>{
-            form.addEventListener('submit', function(e){
-                e.preventDefault();
+        /* ── Init count ── */
+        document.addEventListener('DOMContentLoaded', () => {
+            updateVisibleCount();
+        });
 
-                showDeleteToast(
-                    'Xác nhận xóa',
-                    `Bạn có chắc muốn xóa môn "${this.dataset.ten}"?`,
-                    ()=> this.submit()
-                );
+        /* ── Filter pills ── */
+        let activeFilter = 'ALL';
+
+        document.querySelectorAll('.pill').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                activeFilter = this.dataset.filter;
+                applyFilters();
             });
         });
 
-        document.getElementById('searchInput').addEventListener('keyup', function () {
-            const keyword = this.value.trim().toLowerCase();
-            const rows = document.querySelectorAll('tbody tr');
+        /* ── Search ── */
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn    = document.getElementById('clearSearch');
+
+        searchInput.addEventListener('input', function () {
+            clearBtn.classList.toggle('d-none', this.value.trim() === '');
+            applyFilters();
+        });
+
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            clearBtn.classList.add('d-none');
+            applyFilters();
+            searchInput.focus();
+        });
+
+        function applyFilters() {
+            const kw = searchInput.value.trim().toLowerCase();
+            const rows = allRows();
             let hasResult = false;
 
             rows.forEach(row => {
-                if (row.id === 'noResultRow' || row.querySelector('td[colspan]')) return;
+                const ma  = (row.dataset.ma  || '').toLowerCase();
+                const ten = (row.dataset.ten || '').toLowerCase();
+                const loai = row.dataset.loai || '';
 
-                const cells = row.querySelectorAll('td');
-                const maMon = cells[1]?.innerText.toLowerCase() || '';
-                const tenMon = cells[2]?.innerText.toLowerCase() || '';
+                const matchSearch = !kw || ma.includes(kw) || ten.includes(kw);
+                const matchFilter = activeFilter === 'ALL' || loai === activeFilter;
 
-                if (maMon.includes(keyword) || tenMon.includes(keyword)) {
+                if (matchSearch && matchFilter) {
                     row.style.display = '';
                     hasResult = true;
                 } else {
@@ -316,23 +545,83 @@
                 }
             });
 
+            /* empty state */
             let emptyRow = document.getElementById('noResultRow');
-
-            if (!hasResult && keyword !== '') {
+            if (!hasResult && rows.length > 0) {
                 if (!emptyRow) {
                     emptyRow = document.createElement('tr');
                     emptyRow.id = 'noResultRow';
                     emptyRow.innerHTML = `
-                        <td colspan="7" class="text-center text-muted py-4">
-                            <i class="fas fa-search-minus fa-2x d-block mb-2 opacity-50"></i>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="fas fa-search fa-2x d-block mb-2 opacity-40"></i>
                             Không tìm thấy môn học phù hợp
-                        </td>
-                    `;
-                    document.querySelector('tbody').appendChild(emptyRow);
+                        </td>`;
+                    document.querySelector('#monHocTable tbody').appendChild(emptyRow);
                 }
             } else {
                 if (emptyRow) emptyRow.remove();
             }
+
+            updateVisibleCount();
+        }
+
+        /* ── Delete toast ── */
+        function showDeleteToast(title, message, onConfirm) {
+            const container = document.querySelector('.custom-toast-container');
+            container.innerHTML = '';
+            const toast = document.createElement('div');
+            toast.className = 'custom-toast';
+            toast.innerHTML = `
+                <div class="toast-header-custom">
+                    <div class="toast-icon"><i class="fas fa-trash"></i></div>
+                    <div>
+                        <div class="toast-title">${title}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+                </div>
+                <div class="toast-actions">
+                    <button class="toast-btn toast-btn-cancel">Hủy</button>
+                    <button class="toast-btn toast-btn-confirm">Xóa</button>
+                </div>`;
+            container.appendChild(toast);
+            toast.querySelector('.toast-btn-cancel').onclick = () => toast.remove();
+            toast.querySelector('.toast-btn-confirm').onclick = () => { toast.remove(); onConfirm(); };
+        }
+
+        document.querySelectorAll('.delete-form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                showDeleteToast(
+                    'Xác nhận xóa',
+                    `Bạn có chắc muốn xóa môn "<b>${this.dataset.ten}</b>"?`,
+                    () => this.submit()
+                );
+            });
+        });
+
+        /* ── Export CSV ── */
+        document.getElementById('exportCsvBtn').addEventListener('click', () => {
+            const visibleRows = allRows().filter(r => r.style.display !== 'none');
+            const lines = [['STT','Mã môn','Tên môn học','Tín chỉ','Loại','Khoa'].join(',')];
+
+            visibleRows.forEach((row, idx) => {
+                const cells = row.querySelectorAll('td');
+                const ma    = cells[1]?.innerText.trim() || '';
+                const ten   = '"' + (cells[2]?.innerText.trim() || '').replace(/"/g,'""') + '"';
+                const tc    = (cells[3]?.innerText.trim() || '').replace(' TC','');
+                const loai  = cells[4]?.innerText.trim() || '';
+                const khoa  = '"' + (cells[5]?.innerText.trim() || '') + '"';
+                lines.push([idx + 1, ma, ten, tc, loai, khoa].join(','));
+            });
+
+            const bom  = '\uFEFF';
+            const blob = new Blob([bom + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = 'danh-sach-mon-hoc.csv';
+            a.click();
+            URL.revokeObjectURL(url);
         });
     </script>
 

@@ -12,7 +12,6 @@ services:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - mysql_data:/var/lib/mysql
 
   app:
@@ -23,6 +22,10 @@ services:
       - "8080:8080"
     depends_on:
       - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/qldt_db?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
 
 volumes:
   mysql_data:

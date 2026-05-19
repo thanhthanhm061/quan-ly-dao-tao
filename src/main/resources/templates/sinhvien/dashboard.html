@@ -30,14 +30,18 @@
                 <span class="badge" th:classappend="${dk.dat ? 'bg-success' : 'bg-danger'}"
                       th:text="${dk.xepLoai}"></span>
               </td>
-              <td>
-                <form th:action="@{/sinhvien/huy-dang-ky}" method="post" class="d-inline"
-                      onsubmit="return confirm('Hủy đăng ký học phần này?')">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                  <input type="hidden" name="lhpId" th:value="${dk.lopHocPhan.id}"/>
-                  <button class="btn btn-sm btn-outline-danger" th:if="${dk.diemTongKet == null}">Hủy</button>
-                </form>
-              </td>
+                <td>
+                    <form th:action="@{/sinhvien/huy-dang-ky}" method="post" class="d-inline"
+                          onsubmit="return confirm('Hủy đăng ký học phần này?')">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="lhpId" th:value="${dk.lopHocPhan.id}"/>
+                        <button class="btn btn-sm btn-outline-danger"
+                                th:if="${dk.diemTongKet == null
+                     and dk.lopHocPhan.isDangTrongThoiGianDangKy()}">
+                            Hủy
+                        </button>
+                    </form>
+                </td>
             </tr>
           </tbody>
         </table>

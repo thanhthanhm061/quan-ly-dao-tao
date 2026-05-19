@@ -82,9 +82,23 @@
             margin-bottom: 10px;
         }
 
-        .profile-class {
+        .profile-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .profile-meta-item {
             font-size: 14px;
-            color: rgba(255,255,255,.7);
+            color: rgba(255,255,255,.75);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .profile-meta-item strong {
+            color: #fff;
         }
 
         /* BODY */
@@ -105,7 +119,7 @@
             gap: 8px;
         }
 
-        /* INFO ITEM */
+        /* INFO GRID */
         .info-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -117,7 +131,7 @@
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 18px;
-            padding: 20px;
+            padding: 20px 20px 20px 24px;
             position: relative;
             overflow: hidden;
             transition: all .25s ease;
@@ -154,7 +168,7 @@
         }
 
         .info-icon {
-            font-size: 20px;
+            font-size: 22px;
             color: #bfdbfe;
             position: absolute;
             right: 18px;
@@ -177,8 +191,8 @@
             font-weight: 700;
         }
 
-        .status-active { background: #dcfce7; color: #15803d; }
-        .status-inactive { background: #e2e8f0; color: #475569; }
+        .status-active  { background: #dcfce7; color: #15803d; }
+        .status-inactive{ background: #e2e8f0; color: #475569; }
 
         /* STATS ROW */
         .stats-row {
@@ -194,6 +208,12 @@
             padding: 22px;
             text-align: center;
             border: 1px solid #bfdbfe;
+            transition: all .25s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(37,99,235,.12);
         }
 
         .stat-num {
@@ -231,21 +251,116 @@
             font-size: 14px;
         }
 
-        .btn-custom:hover { transform: translateY(-2px); }
-        .btn-back { background: #e2e8f0; color: #0f172a; }
-        .btn-back:hover { background: #cbd5e1; }
-        .btn-register { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; }
-        .btn-register:hover { opacity: .9; }
-        .btn-tkb { background: linear-gradient(135deg, #059669, #047857); color: white; }
-        .btn-tkb:hover { opacity: .9; }
+        .btn-custom:hover      { transform: translateY(-2px); }
+        .btn-back              { background: #e2e8f0; color: #0f172a; }
+        .btn-back:hover        { background: #cbd5e1; }
+        .btn-register          { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; }
+        .btn-register:hover    { opacity: .9; }
+        .btn-tkb               { background: linear-gradient(135deg, #059669, #047857); color: white; }
+        .btn-tkb:hover         { opacity: .9; }
+
+        /* ADVISOR CARD */
+        .advisor-card {
+            background: linear-gradient(135deg, #f0f7ff, #e8f2ff);
+            border: 1px solid #bfdbfe;
+            border-radius: 18px;
+            padding: 20px 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all .25s ease;
+            grid-column: 1 / -1;
+        }
+
+        .advisor-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0;
+            width: 4px; height: 100%;
+            background: linear-gradient(180deg, #7c3aed, #a78bfa);
+        }
+
+        .advisor-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(124,58,237,.12);
+            background: linear-gradient(135deg, #ede9fe, #e0d9ff);
+        }
+
+        .advisor-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .advisor-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c3aed, #a78bfa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .advisor-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .advisor-title-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #94a3b8;
+        }
+
+        .advisor-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .advisor-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,.7);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            border: 1px solid rgba(124,58,237,.15);
+        }
+
+        .advisor-detail-item i {
+            color: #7c3aed;
+            font-size: 14px;
+        }
+
+        .advisor-detail-item a {
+            color: #334155;
+            text-decoration: none;
+        }
+
+        .advisor-detail-item a:hover {
+            color: #7c3aed;
+        }
 
         @media (max-width: 768px) {
-            .profile-header { flex-direction: column; text-align: center; gap: 20px; padding: 30px 20px; }
-            .profile-body { padding: 22px; }
-            .info-grid { grid-template-columns: 1fr; }
-            .stats-row { grid-template-columns: 1fr; }
-            .action-wrapper { flex-direction: column; }
-            .btn-custom { justify-content: center; }
+            .profile-header    { flex-direction: column; text-align: center; gap: 20px; padding: 30px 20px; }
+            .profile-meta-item { justify-content: center; }
+            .profile-body      { padding: 22px; }
+            .info-grid         { grid-template-columns: 1fr; }
+            .stats-row         { grid-template-columns: 1fr; }
+            .action-wrapper    { flex-direction: column; }
+            .btn-custom        { justify-content: center; }
+            .ms-auto           { margin-top: 12px !important; }
         }
     </style>
 
@@ -264,7 +379,7 @@
                 <i class="fas fa-user-graduate"></i>
             </div>
 
-            <div style="position:relative;z-index:1">
+            <div style="position:relative;z-index:1;flex:1">
 
                 <div class="profile-name" th:text="${sinhVien.hoTen}"></div>
 
@@ -273,15 +388,32 @@
                     <span th:text="${sinhVien.maSv}"></span>
                 </div>
 
-                <div class="profile-class">
-                    <i class="fas fa-door-open me-1"></i>
-                    Lớp: <strong th:text="${sinhVien.lop?.tenLop ?: 'Chưa phân lớp'}"></strong>
+                <div class="profile-meta">
+                    <div class="profile-meta-item">
+                        <i class="fas fa-door-open"></i>
+                        Lớp: <strong th:text="${sinhVien.lop?.tenLop ?: 'Chưa phân lớp'}"></strong>
+                    </div>
+                    <div class="profile-meta-item">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        Cố vấn:
+                        <strong th:text="${sinhVien.lop?.coVanHocTap != null ? sinhVien.lop.coVanHocTap.hoTenVaHocVi : 'Chưa phân công'}"></strong>
+                    </div>
+                    <div class="profile-meta-item"
+                         th:if="${sinhVien.lop?.coVanHocTap?.email != null}">
+                        <i class="fas fa-envelope"></i>
+                        <span th:text="${sinhVien.lop.coVanHocTap.email}"></span>
+                    </div>
+                    <div class="profile-meta-item"
+                         th:if="${sinhVien.lop?.coVanHocTap?.soDienThoai != null}">
+                        <i class="fas fa-phone"></i>
+                        <span th:text="${sinhVien.lop.coVanHocTap.soDienThoai}"></span>
+                    </div>
                 </div>
 
             </div>
 
             <!-- Status badge góc phải -->
-            <div class="ms-auto" style="position:relative;z-index:1">
+            <div class="ms-auto" style="position:relative;z-index:1;align-self:flex-start">
                 <span class="status-badge"
                       th:classappend="${sinhVien.trangThai != null and sinhVien.trangThai.name()=='DANG_HOC' ? 'status-active' : 'status-inactive'}">
                     <i class="fas fa-circle" style="font-size:8px"></i>
@@ -301,25 +433,19 @@
             </div>
 
             <div class="stats-row">
-
                 <div class="stat-box">
                     <div class="stat-num" th:text="${soHocPhan}">0</div>
                     <div class="stat-label">Học phần đã đăng ký</div>
                 </div>
-
                 <div class="stat-box">
                     <div class="stat-num" th:text="${soHocPhanDat}">0</div>
                     <div class="stat-label">Học phần đã đạt</div>
                 </div>
-
                 <div class="stat-box">
                     <div class="stat-num"
-                         th:text="${diemTB != null ? #numbers.formatDecimal(diemTB,1,2) : '-'}">
-                        -
-                    </div>
+                         th:text="${diemTB != null ? #numbers.formatDecimal(diemTB,1,2) : '-'}">-</div>
                     <div class="stat-label">Điểm trung bình</div>
                 </div>
-
             </div>
 
             <!-- THÔNG TIN CÁ NHÂN -->
@@ -383,6 +509,41 @@
                     </div>
                 </div>
 
+                <!-- CỐ VẤN HỌC TẬP -->
+                <div class="advisor-card" th:if="${sinhVien.lop?.coVanHocTap != null}">
+                    <div class="advisor-header">
+                        <div class="advisor-avatar">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <div>
+                            <div class="advisor-title-label">Cố vấn học tập</div>
+                            <div class="advisor-name"
+                                 th:text="${sinhVien.lop.coVanHocTap.hoTenVaHocVi}"></div>
+                        </div>
+                    </div>
+                    <div class="advisor-details">
+                        <div class="advisor-detail-item"
+                             th:if="${sinhVien.lop.coVanHocTap.email != null}">
+                            <i class="fas fa-envelope"></i>
+                            <a th:href="'mailto:' + ${sinhVien.lop.coVanHocTap.email}"
+                               th:text="${sinhVien.lop.coVanHocTap.email}"></a>
+                        </div>
+                        <div class="advisor-detail-item"
+                             th:if="${sinhVien.lop.coVanHocTap.soDienThoai != null}">
+                            <i class="fas fa-phone"></i>
+                            <a th:href="'tel:' + ${sinhVien.lop.coVanHocTap.soDienThoai}"
+                               th:text="${sinhVien.lop.coVanHocTap.soDienThoai}"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Khi chưa có cố vấn -->
+                <div class="info-item full-width" th:if="${sinhVien.lop?.coVanHocTap == null}">
+                    <div class="info-label">Cố vấn học tập</div>
+                    <div class="info-value">Chưa phân công</div>
+                    <i class="fas fa-chalkboard-teacher info-icon"></i>
+                </div>
+
                 <div class="info-item full-width">
                     <div class="info-label">Địa chỉ</div>
                     <div class="info-value" th:text="${sinhVien.diaChi ?: '-'}"></div>
@@ -393,22 +554,18 @@
 
             <!-- ACTIONS -->
             <div class="action-wrapper">
-
                 <a th:href="@{/sinhvien/dashboard}" class="btn btn-custom btn-back">
                     <i class="fas fa-arrow-left"></i>
                     Quay lại
                 </a>
-
                 <a th:href="@{/sinhvien/dang-ky}" class="btn btn-custom btn-register">
                     <i class="fas fa-book-open"></i>
                     Đăng ký học phần
                 </a>
-
                 <a th:href="@{/tkb/cua-toi}" class="btn btn-custom btn-tkb">
                     <i class="fas fa-calendar-alt"></i>
                     Xem thời khóa biểu
                 </a>
-
             </div>
 
         </div>

@@ -110,7 +110,32 @@
                             SV đã đăng ký
                         </div>
                     </div>
+                    <!-- ── Thời gian mở đăng ký ──────────────────────────────────── -->
+                    <!-- THOI GIAN MO -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-door-open me-1 text-success"></i>Thời gian mở đăng ký
+                        </label>
+                        <!-- SUA: dung #temporals.format thay vi th:field thuan tuy -->
+                        <input type="datetime-local" class="form-control"
+                               name="thoiGianMo"
+                               th:value="${lopHocPhan.thoiGianMo != null ?
+                      #temporals.format(lopHocPhan.thoiGianMo, 'yyyy-MM-dd''T''HH:mm') : ''}"/>
+                        <div class="form-text text-muted">Để trống = mở ngay khi trạng thái là MO</div>
+                    </div>
 
+                    <!-- ── Thời gian đóng đăng ký ─────────────────────────────────── -->
+                    <!-- THOI GIAN DONG -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-door-closed me-1 text-danger"></i>Thời gian đóng đăng ký
+                        </label>
+                        <input type="datetime-local" class="form-control"
+                               name="thoiGianDong"
+                               th:value="${lopHocPhan.thoiGianDong != null ?
+                      #temporals.format(lopHocPhan.thoiGianDong, 'yyyy-MM-dd''T''HH:mm') : ''}"/>
+                        <div class="form-text text-muted">Để trống = không tự đóng</div>
+                    </div>
                     <!-- ── Trạng thái ─────────────────────────────────────────────── -->
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Trạng thái</label>

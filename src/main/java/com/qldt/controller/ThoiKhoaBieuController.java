@@ -43,8 +43,19 @@ class MonHocController {
 
     @GetMapping
     public String list(@RequestParam(required = false) String search, Model model) {
-        model.addAttribute("monHocs", search != null ? monService.search(search) : monService.findAll());
+        List<MonHoc> monHocs = search != null ? monService.search(search) : monService.findAll();
+
+        model.addAttribute("monHocs", monHocs);
         model.addAttribute("search", search);
+
+        // Thêm thống kê
+        model.addAttribute("totalCredits",
+                monHocs.stream().mapToInt(MonHoc::getSoTinChi).sum());
+        model.addAttribute("lyTHuyetCount",
+                monHocs.stream().filter(m -> m.getLoaiMon() == LoaiMon.LY_THUYET).count());
+        model.addAttribute("thucHanhCount",
+                monHocs.stream().filter(m -> m.getLoaiMon() == LoaiMon.THUC_HANH).count());
+
         return "monhoc/list";
     }
 
@@ -302,6 +313,9 @@ class LopHocPhanController {
             existing.setHocKy(formLhp.getHocKy());
             existing.setSiSoMax(formLhp.getSiSoMax());
             existing.setTrangThai(formLhp.getTrangThai());
+            existing.setThoiGianMo(formLhp.getThoiGianMo());
+            existing.setThoiGianDong(formLhp.getThoiGianDong());
+
 
             // Cập nhật MonHoc (chỉ set nếu id hợp lệ)
             if (formLhp.getMonHoc() != null && formLhp.getMonHoc().getId() != null) {
@@ -433,8 +447,9 @@ class LopHocPhanController {
                             @RequestParam Long lhpId,
                             RedirectAttributes ra) {
         try {
-            lhpService.huyDangKy(svId, lhpId);
-            ra.addFlashAttribute("success", "Đã hủy đăng ký thành công!");
+            // ADMIN: dung huyDangKyAdmin — khong check trang thai
+            lhpService.huyDangKyAdmin(svId, lhpId);
+            ra.addFlashAttribute("success", "Da huy dang ky thanh cong!");
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
@@ -494,6 +509,8 @@ class LopHocPhanController {
             wb.write(response.getOutputStream());
         }
     }
+
+    //
 }
 // =====================================================================
 // THOI KHOA BIEU CONTROLLER

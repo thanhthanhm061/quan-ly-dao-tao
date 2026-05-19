@@ -4,6 +4,9 @@ import com.qldt.model.enums.TrangThaiLHP;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,7 +100,10 @@ public class LopHocPhan {
     public void setThoiKhoaBieus(List<ThoiKhoaBieu> thoiKhoaBieus) {
         this.thoiKhoaBieus = thoiKhoaBieus;
     }
-
+    public LocalDateTime getThoiGianMo()   { return thoiGianMo; }
+    public void setThoiGianMo(LocalDateTime t) { this.thoiGianMo = t; }
+    public LocalDateTime getThoiGianDong() { return thoiGianDong; }
+    public void setThoiGianDong(LocalDateTime t) { this.thoiGianDong = t; }
     @Column(name = "ma_lhp", unique = true, nullable = false, length = 30)
     @NotBlank(message = "Mã lớp học phần không được trống")
     private String maLhp;
@@ -138,6 +144,20 @@ public class LopHocPhan {
             fetch = FetchType.LAZY)
     private List<ThoiKhoaBieu> thoiKhoaBieus = new ArrayList<>();
 
+
+    @Column(name = "thoi_gian_mo")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    private LocalDateTime thoiGianMo;
+
+    @Column(name = "thoi_gian_dong")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    private LocalDateTime thoiGianDong;
+    public boolean isDangTrongThoiGianDangKy() {
+        LocalDateTime now = LocalDateTime.now();
+        if (thoiGianMo != null && now.isBefore(thoiGianMo)) return false;
+        if (thoiGianDong != null && now.isAfter(thoiGianDong))  return false;
+        return trangThai == TrangThaiLHP.MO;
+    }
     public boolean isConCho() { return siSoHienTai < siSoMax; }
     public int getSoChoConLai() { return siSoMax - siSoHienTai; }
 }
