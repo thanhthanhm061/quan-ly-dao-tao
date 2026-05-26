@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::main}, 'Quản lý Nhân viên')}">
+
+<main>
+    <div class="container-fluid px-4">
+
+        <!-- Alert -->
+        <div th:if="${thanhCong}"
+             class="alert alert-success alert-dismissible fade show">
+
+            <i class="fas fa-check-circle me-2"></i>
+
+            <span th:text="${thanhCong}"></span>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+        <div th:if="${loiLam}"
+             class="alert alert-danger alert-dismissible fade show">
+
+            <i class="fas fa-exclamation-circle me-2"></i>
+
+            <span th:text="${loiLam}"></span>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+        <!-- Header -->
+        <div class="d-flex align-items-center justify-content-between py-3 mb-3 border-bottom">
+
+            <div>
+
+                <h4 class="mb-0 fw-bold">
+
+                    <i class="fas fa-user-tie me-2 text-success"></i>
+
+                    Quản Lý Nhân Viên / Giảng Viên
+
+                </h4>
+
+                <small class="text-muted">
+
+                    Tổng:
+                    <strong th:text="${tongSo}">
+                        0
+                    </strong>
+                    nhân viên
+
+                </small>
+
+            </div>
+
+            <a th:href="@{/admin/nhan-vien/them}"
+               class="btn btn-success">
+
+                <i class="fas fa-plus-circle me-1"></i>
+                Thêm Nhân Viên
+
+            </a>
+
+        </div>
+
+        <!-- Filter -->
+        <div class="row g-2 mb-3">
+
+            <!-- Search -->
+            <div class="col-md-4">
+
+                <form method="get"
+                      th:action="@{/admin/nhan-vien}"
+                      class="input-group">
+
+                    <input type="text"
+                           name="search"
+                           class="form-control"
+                           th:value="${timKiem}"
+                           placeholder="Tìm theo tên, mã, email..."/>
+
+                    <button class="btn btn-outline-secondary"
+                            type="submit">
+
+                        <i class="fas fa-search"></i>
+
+                    </button>
+
+                    <a th:if="${timKiem}"
+                       th:href="@{/admin/nhan-vien}"
+                       class="btn btn-outline-danger">
+
+                        <i class="fas fa-times"></i>
+
+                    </a>
+
+                </form>
+
+            </div>
+
+            <!-- Khoa -->
+            <div class="col-md-3">
+
+                <form method="get"
+                      th:action="@{/admin/nhan-vien}">
+
+                    <select name="khoaId"
+                            class="form-select"
+                            onchange="this.form.submit()">
+
+                        <option value="">
+                            -- Tất cả khoa --
+                        </option>
+
+                        <option th:each="k : ${dsKhoa}"
+                                th:value="${k.id}"
+                                th:text="${k.tenKhoa}"
+                                th:selected="${khoaId != null and khoaId == k.id}">
+                        </option>
+
+                    </select>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        <!-- Table -->
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-success">
+
+                        <tr>
+
+                            <th class="ps-3">#</th>
+                            <th>Mã NV</th>
+                            <th>Họ Tên</th>
+                            <th>Học Vị</th>
+                            <th>Chức Vụ</th>
+                            <th>Email</th>
+                            <th>Khoa</th>
+                            <th class="text-center">Loại HĐ</th>
+                            <th class="text-center">Trạng Thái</th>
+                            <th class="text-center">Thao Tác</th>
+
+                        </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                        <tr th:each="nv, stat : ${dsNhanVien}">
+
+                            <td class="ps-3 text-muted"
+                                th:text="${stat.count}">
+                            </td>
+
+                            <td>
+
+                                <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold"
+                                      th:text="${nv.maNhanVien}">
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <div class="fw-semibold"
+                                     th:text="${nv.hoTen}">
+                                </div>
+
+                                <small class="text-muted"
+                                       th:if="${nv.chuyenMon}"
+                                       th:text="${#strings.abbreviate(nv.chuyenMon,30)}">
+                                </small>
+
+                            </td>
+
+                            <td>
+
+                                <span th:if="${nv.hocHam}"
+                                      class="badge bg-dark-subtle text-dark border me-1"
+                                      th:text="${nv.hocHam}">
+                                </span>
+
+                                <span th:if="${nv.hocVi}"
+                                      class="badge bg-secondary-subtle text-secondary border"
+                                      th:text="${nv.hocVi}">
+                                </span>
+
+                                <span th:if="${nv.hocVi == null and nv.hocHam == null}"
+                                      class="text-muted small">
+
+                                    —
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <span th:if="${nv.chucVu}"
+                                      class="small"
+                                      th:text="${nv.chucVu.tenChucVu}">
+                                </span>
+
+                                <span th:unless="${nv.chucVu}"
+                                      class="text-muted small">
+
+                                    —
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <small th:text="${nv.email ?: '—'}"></small>
+
+                            </td>
+
+                            <td>
+
+                                <small th:if="${nv.khoa}"
+                                       th:text="${nv.khoa.tenKhoa}">
+                                </small>
+
+                                <small th:unless="${nv.khoa}"
+                                       class="text-muted">
+
+                                    —
+
+                                </small>
+
+                            </td>
+
+                            <td class="text-center">
+
+                                <span th:if="${nv.loaiHopDong}"
+                                      class="badge bg-info-subtle text-info border small"
+                                      th:text="${nv.loaiHopDong}">
+                                </span>
+
+                                <span th:unless="${nv.loaiHopDong}"
+                                      class="text-muted small">
+
+                                    —
+
+                                </span>
+
+                            </td>
+
+                            <td class="text-center">
+
+                                <span th:if="${nv.trangThai}"
+                                      class="badge bg-success">
+
+                                    Đang làm
+
+                                </span>
+
+                                <span th:unless="${nv.trangThai}"
+                                      class="badge bg-secondary">
+
+                                    Đã nghỉ
+
+                                </span>
+
+                            </td>
+
+                            <td class="text-center">
+
+                                <div class="btn-group btn-group-sm">
+
+                                    <a th:href="@{/admin/nhan-vien/chi-tiet/{id}(id=${nv.id})}"
+                                       class="btn btn-outline-success">
+
+                                        <i class="fas fa-eye"></i>
+
+                                    </a>
+
+                                    <a th:href="@{/admin/nhan-vien/sua/{id}(id=${nv.id})}"
+                                       class="btn btn-outline-warning">
+
+                                        <i class="fas fa-edit"></i>
+
+                                    </a>
+
+                                    <form th:action="@{/admin/nhan-vien/doi-trang-thai/{id}(id=${nv.id})}"
+                                          method="post"
+                                          class="d-inline">
+
+                                        <input type="hidden"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}"/>
+
+                                        <button type="submit"
+                                                class="btn btn-outline-secondary">
+
+                                            <i th:class="${nv.trangThai
+                                                ? 'fas fa-toggle-on'
+                                                : 'fas fa-toggle-off'}">
+                                            </i>
+
+                                        </button>
+
+                                    </form>
+
+                                    <form th:action="@{/admin/nhan-vien/xoa/{id}(id=${nv.id})}"
+                                          method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Xóa nhân viên này? Tài khoản đăng nhập cũng sẽ bị xóa!')">
+
+                                        <input type="hidden"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}"/>
+
+                                        <button type="submit"
+                                                class="btn btn-outline-danger">
+
+                                            <i class="fas fa-trash"></i>
+
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(dsNhanVien)}">
+
+                            <td colspan="10"
+                                class="text-center py-5 text-muted">
+
+                                <i class="fas fa-inbox fs-1 d-block mb-2"></i>
+
+                                Không tìm thấy nhân viên nào
+
+                            </td>
+
+                        </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</main>
+
+</html>

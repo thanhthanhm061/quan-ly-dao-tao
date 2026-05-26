@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::main}, 'Quản Lý Người Dùng')}">
+<head>
+    <title>Quản Lý Người Dùng</title>
+</head>
+<body>
+<main>
+    <div class="container-fluid px-4">
+
+        <!-- ── Thống kê nhanh ── -->
+        <div class="row g-3 my-2">
+            <div class="col-6 col-md-3 col-xl-2">
+                <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#1e3a5f,#2d6a9f)">
+                    <div class="card-body text-white py-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="fs-3 fw-bold" th:text="${thongKe.tongNguoiDung}">0</div>
+                                <div class="small opacity-75">Tổng tài khoản</div>
+                            </div>
+                            <i class="bi bi-people fs-1 opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-2">
+                <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#7b2d00,#c0392b)">
+                    <div class="card-body text-white py-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="fs-3 fw-bold" th:text="${thongKe.soAdmin}">0</div>
+                                <div class="small opacity-75">Quản trị viên</div>
+                            </div>
+                            <i class="bi bi-shield-fill-check fs-1 opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-2">
+                <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#0a3d62,#0c6ba8)">
+                    <div class="card-body text-white py-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="fs-3 fw-bold" th:text="${thongKe.soGiangVien}">0</div>
+                                <div class="small opacity-75">Giảng viên</div>
+                            </div>
+                            <i class="bi bi-person-workspace fs-1 opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-2">
+                <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#1a5276,#27ae60)">
+                    <div class="card-body text-white py-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="fs-3 fw-bold" th:text="${thongKe.soNhanVien}">0</div>
+                                <div class="small opacity-75">Nhân viên</div>
+                            </div>
+                            <i class="bi bi-person-badge fs-1 opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-2">
+                <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#0e6655,#1abc9c)">
+                    <div class="card-body text-white py-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="fs-3 fw-bold" th:text="${thongKe.soSinhVien}">0</div>
+                                <div class="small opacity-75">Sinh viên</div>
+                            </div>
+                            <i class="bi bi-mortarboard fs-1 opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-2">
+                <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#2e4057,#048a81)">
+                    <div class="card-body text-white py-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="fs-3 fw-bold" th:text="${thongKe.dangHoatDong}">0</div>
+                                <div class="small opacity-75">Đang hoạt động</div>
+                            </div>
+                            <i class="bi bi-check-circle fs-1 opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Thanh công cụ ── -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3 border-bottom mb-2">
+            <h5 class="mb-0 fw-bold text-dark">
+                <i class="bi bi-person-lines-fill me-2 text-primary"></i>Quản Lý Tài Khoản Người Dùng
+            </h5>
+            <a href="/admin/nguoi-dung/them" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i>Tạo Tài Khoản Mới
+            </a>
+        </div>
+
+        <!-- ── Bộ lọc ── -->
+        <div class="row g-2 mb-3">
+            <div class="col-md-5">
+                <form method="get" action="/admin/nguoi-dung" class="input-group shadow-sm">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text" name="search" class="form-control border-start-0 ps-0"
+                           th:value="${timKiem}" placeholder="Tìm tên, username, email..."/>
+                    <button class="btn btn-outline-primary" type="submit">Tìm</button>
+                    <a th:if="${timKiem}" href="/admin/nguoi-dung" class="btn btn-outline-secondary">
+                        <i class="bi bi-x"></i>
+                    </a>
+                </form>
+            </div>
+            <div class="col-md-3">
+                <form method="get" action="/admin/nguoi-dung">
+                    <select name="vaiTro" class="form-select shadow-sm" onchange="this.form.submit()">
+                        <option value="">-- Tất cả vai trò --</option>
+                        <option th:each="vt : ${dsVaiTro}"
+                                th:value="${vt}"
+                                th:text="${vt.nhanHienThi}"
+                                th:selected="${vaiTroLoc != null and vaiTroLoc == vt}"></option>
+                    </select>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── Bảng danh sách ── -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                        <tr style="background:#f0f4fa;border-bottom:2px solid #dee2e6;">
+                            <th class="ps-3 py-3 text-muted fw-semibold small" style="width:50px">#</th>
+                            <th class="py-3 text-muted fw-semibold small">TÀI KHOẢN</th>
+                            <th class="py-3 text-muted fw-semibold small">VAI TRÒ</th>
+                            <th class="py-3 text-muted fw-semibold small">LIÊN HỆ</th>
+                            <th class="py-3 text-muted fw-semibold small text-center">TRẠNG THÁI</th>
+                            <th class="py-3 text-muted fw-semibold small">NGÀY TẠO</th>
+                            <th class="py-3 text-muted fw-semibold small text-center">THAO TÁC</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="nd, stat : ${dsNguoiDung}" class="border-bottom">
+                            <td class="ps-3 text-muted small" th:text="${stat.count}">1</td>
+
+                            <!-- Avatar + Tên -->
+                            <td class="py-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
+                                         th:style="'width:40px;height:40px;font-size:1rem;flex-shrink:0;background:' + ${nd.vaiTro.mauNen}"
+                                         th:text="${nd.chuCaiDau}">N</div>
+                                    <div>
+                                        <div class="fw-semibold text-dark" th:text="${nd.hoTen}">Họ Tên</div>
+                                        <div class="text-muted small">
+                                            <i class="bi bi-person me-1"></i>
+                                            <code th:text="${nd.username}">username</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Vai trò -->
+                            <td>
+                                <span th:class="'badge border fw-normal bg-' + ${nd.vaiTro.mauSac} + '-subtle text-' + ${nd.vaiTro.mauSac} + ' border-' + ${nd.vaiTro.mauSac} + '-subtle'">
+                                    <i th:class="'bi ' + ${nd.vaiTro.iconClass} + ' me-1'"></i>
+                                    <span th:text="${nd.vaiTro.nhanHienThi}">Vai trò</span>
+                                </span>
+                            </td>
+
+                            <!-- Liên hệ -->
+                            <td>
+                                <div th:if="${nd.email}" class="small text-muted">
+                                    <i class="bi bi-envelope me-1"></i>
+                                    <a th:href="'mailto:' + ${nd.email}" class="text-decoration-none text-muted"
+                                       th:text="${nd.email}"></a>
+                                </div>
+                                <div th:if="${nd.soDienThoai}" class="small text-muted mt-1">
+                                    <i class="bi bi-phone me-1"></i>
+                                    <span th:text="${nd.soDienThoai}"></span>
+                                </div>
+                                <span th:if="${nd.email == null and nd.soDienThoai == null}" class="text-muted small">—</span>
+                            </td>
+
+                            <!-- Trạng thái -->
+                            <td class="text-center">
+                                <span th:if="${nd.isDangBiKhoa()}"
+                                      class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                    <i class="bi bi-lock-fill me-1"></i>Đang bị khóa
+                                </span>
+                                <span th:if="${!nd.isDangBiKhoa() and nd.isKichHoat()}"
+                                      class="badge bg-success-subtle text-success border border-success-subtle">
+                                    <i class="bi bi-circle-fill me-1" style="font-size:.45rem"></i>Hoạt động
+                                </span>
+                                <span th:if="${!nd.isDangBiKhoa() and !nd.isKichHoat()}"
+                                      class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                                    <i class="bi bi-circle-fill me-1" style="font-size:.45rem"></i>Đã tắt
+                                </span>
+                            </td>
+
+                            <!-- Ngày tạo -->
+                            <td>
+                                <span class="small text-muted"
+                                      th:text="${nd.ngayTao != null ? #temporals.format(nd.ngayTao,'dd/MM/yyyy HH:mm') : '—'}"></span>
+                            </td>
+
+                            <!-- Thao tác -->
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                    <a th:href="@{/admin/nguoi-dung/chi-tiet/{id}(id=${nd.id})}"
+                                       class="btn btn-sm btn-outline-primary" title="Chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a th:href="@{/admin/nguoi-dung/sua/{id}(id=${nd.id})}"
+                                       class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form th:action="@{/admin/nguoi-dung/doi-trang-thai/{id}(id=${nd.id})}"
+                                          method="post" class="d-inline">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                                th:title="${nd.isKichHoat() ? 'Tắt tài khoản' : 'Kích hoạt'}">
+                                            <i th:class="${nd.isKichHoat() ? 'bi bi-toggle-on' : 'bi bi-toggle-off'}"></i>
+                                        </button>
+                                    </form>
+                                    <form th:if="${nd.isDangBiKhoa()}"
+                                          th:action="@{/admin/nguoi-dung/mo-khoa/{id}(id=${nd.id})}"
+                                          method="post" class="d-inline">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <button type="submit" class="btn btn-sm btn-outline-info" title="Mở khóa">
+                                            <i class="bi bi-unlock"></i>
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/nguoi-dung/xoa/{id}(id=${nd.id})}" method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Xóa tài khoản này? Hành động không thể hoàn tác!')">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(dsNguoiDung)}">
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-person-slash fs-1 d-block mb-2 opacity-25"></i>
+                                Không tìm thấy người dùng nào
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent text-muted small py-2 px-3">
+                Hiển thị <strong th:text="${#lists.size(dsNguoiDung)}">0</strong> tài khoản
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -2,8 +2,8 @@ package com.qldt.controller;
 
 import com.qldt.model.*;
 import com.qldt.model.enums.*;
-import com.qldt.repository.GiangVienRepository;
 import com.qldt.repository.NguoiDungRepository;
+import com.qldt.repository.NhanVienRepository;
 import com.qldt.service.*;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -121,11 +121,11 @@ class MonHocController {
 class LopController {
     private final LopService lopService;
     private final KhoaService khoaService;
-    private final GiangVienService giangVienService;
+    private final NhanVienService nhanVienService;
     private void resolveCvht(Lop lop) {
         if (lop.getCoVanHocTap() != null && lop.getCoVanHocTap().getId() != null) {
             lop.setCoVanHocTap(
-                    giangVienService.findById(lop.getCoVanHocTap().getId()).orElse(null)
+                    nhanVienService.findById(lop.getCoVanHocTap().getId()).orElse(null)
             );
         } else {
             lop.setCoVanHocTap(null);
@@ -139,9 +139,10 @@ class LopController {
 
     @GetMapping("/them")
     public String themForm(Model model) {
-        model.addAttribute("lop", new Lop());
-        model.addAttribute("khoas", khoaService.findAll());
-        model.addAttribute("giangViens",giangVienService.findAll());
+        model.addAttribute("lop",        new Lop());
+        model.addAttribute("khoas",      khoaService.findAll());
+        // Dropdown cố vấn HT: chỉ lấy nhân viên là giảng viên
+        model.addAttribute("giangViens", nhanVienService.findAllGiangVien());
         return "lop/form";
     }
 
@@ -161,7 +162,7 @@ class LopController {
     public String suaForm(@PathVariable Long id, Model model) {
         model.addAttribute("lop", lopService.findById(id).orElseThrow());
         model.addAttribute("khoas", khoaService.findAll());
-        model.addAttribute("giangViens",giangVienService.findAll());
+        model.addAttribute("giangViens",nhanVienService.findAllGiangVien());
         return "lop/form";
     }
 
@@ -221,7 +222,7 @@ class LopHocPhanController {
 
     private final LopHocPhanService lhpService;
     private final MonHocService monService;
-    private final GiangVienService gvService;
+    private final NhanVienService gvService;
     private final SinhVienService svService;
     private final LopService lopService;
 
@@ -242,7 +243,7 @@ class LopHocPhanController {
     public String themForm(Model model) {
         LopHocPhan lhp = new LopHocPhan();
         lhp.setMonHoc(new MonHoc());
-        lhp.setGiangVien(new GiangVien());
+        lhp.setGiangVien(new NhanVien());
         model.addAttribute("lopHocPhan", lhp);
         model.addAttribute("monHocs", monService.findAll());
         model.addAttribute("giangViens", gvService.findAll());
@@ -255,7 +256,7 @@ class LopHocPhanController {
                        BindingResult result, Model model, RedirectAttributes ra) {
         if (result.hasErrors()) {
             if (lhp.getMonHoc() == null) lhp.setMonHoc(new MonHoc());
-            if (lhp.getGiangVien() == null) lhp.setGiangVien(new GiangVien());
+            if (lhp.getGiangVien() == null) lhp.setGiangVien(new NhanVien());
             model.addAttribute("monHocs", monService.findAll());
             model.addAttribute("giangViens", gvService.findAll());
             model.addAttribute("trangThais", TrangThaiLHP.values());
@@ -276,7 +277,7 @@ class LopHocPhanController {
         LopHocPhan lhp = lhpService.findById(id).orElseThrow();
         // Đảm bảo không null để form binding không lỗi
         if (lhp.getMonHoc() == null) lhp.setMonHoc(new MonHoc());
-        if (lhp.getGiangVien() == null) lhp.setGiangVien(new GiangVien());
+        if (lhp.getGiangVien() == null) lhp.setGiangVien(new NhanVien());
         model.addAttribute("lopHocPhan", lhp);
         model.addAttribute("monHocs", monService.findAll());
         model.addAttribute("giangViens", gvService.findAll());
@@ -298,7 +299,7 @@ class LopHocPhanController {
 
         if (result.hasErrors()) {
             if (formLhp.getMonHoc() == null) formLhp.setMonHoc(new MonHoc());
-            if (formLhp.getGiangVien() == null) formLhp.setGiangVien(new GiangVien());
+            if (formLhp.getGiangVien() == null) formLhp.setGiangVien(new NhanVien());
             model.addAttribute("monHocs", monService.findAll());
             model.addAttribute("giangViens", gvService.findAll());
             model.addAttribute("trangThais", TrangThaiLHP.values());
@@ -522,194 +523,255 @@ public class ThoiKhoaBieuController {
 
     private final ThoiKhoaBieuService tkbService;
     private final LopHocPhanService lhpService;
-    private final GiangVienService gvService;
+    private final NhanVienService nhanVienService;   // thay GiangVienService
     private final SinhVienService svService;
     private final NguoiDungRepository nguoiDungRepo;
-    private final GiangVienRepository giangVienRepo;
     private final PhongHocService phongHocService;
     private final TimeSlotService timeSlotService;
+    private boolean isQuanLy(NhanVien nv) {
+        if (nv == null || nv.getChucVu() == null) return false;
+        String ma = nv.getChucVu().getMaChucVu().toUpperCase();
+        return ma.equals("TK") || ma.equals("PTK") || ma.equals("TBM");
+    }
 
+
+    // ── Xem TKB (Admin / GV chọn giảng viên) ───────────────────────────
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'GIANG_VIEN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'NHAN_VIEN')")
     public String xemTKB(@RequestParam(required = false) Long giangVienId,
                          @RequestParam(required = false) String hocKy,
                          Authentication auth, Model model) {
-        model.addAttribute("giangViens", gvService.findAll());
-        model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
-        model.addAttribute("giangVienIdChon", giangVienId);
-        model.addAttribute("hocKyChon", hocKy);
-        model.addAttribute("tietMap", timeSlotService.buildTietMap());
+        model.addAttribute("giangViens",       nhanVienService.findAllGiangVien()); // đổi
+        model.addAttribute("danhSachHocKy",    lhpService.findAllHocKy());
+        model.addAttribute("giangVienIdChon",  giangVienId);
+        model.addAttribute("hocKyChon",        hocKy);
+        model.addAttribute("tietMap",          timeSlotService.buildTietMap());
+
+
         if (giangVienId != null && hocKy != null) {
-            model.addAttribute("thoiKhoaBieus", tkbService.findByGiangVien(giangVienId, hocKy));
-            model.addAttribute("giangVien", gvService.findById(giangVienId).orElse(null));
+            model.addAttribute("thoiKhoaBieus",
+                    tkbService.findByGiangVien(giangVienId, hocKy));
+            model.addAttribute("giangVien",
+                    nhanVienService.findById(giangVienId).orElse(null));
+            // THÊM MỚI:
+            model.addAttribute("thongKeTinChi",
+                    tkbService.thongKeTinChi(giangVienId, hocKy));
         }
         return "thoikhoabieu/xem";
     }
 
+    // ── TKB của tôi ─────────────────────────────────────────────────────
     @GetMapping("/cua-toi")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GIANG_VIEN', 'SINH_VIEN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'NHAN_VIEN', 'SINH_VIEN')")
     public String tkbCuaToi(@RequestParam(required = false) String hocKy,
                             Authentication auth, Model model) {
-        String username = auth.getName();
-        NguoiDung nd = nguoiDungRepo.findByUsername(username).orElseThrow();
+        NguoiDung nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
-        model.addAttribute("hocKyChon", hocKy);
-        model.addAttribute("tietMap", timeSlotService.buildTietMap());
-        if (nd.getVaiTro() == VaiTro.GIANG_VIEN && hocKy != null) {
-            GiangVien gv = giangVienRepo.findByNguoiDungId(nd.getId()).orElse(null);
-            if (gv != null) {
-                model.addAttribute("thoiKhoaBieus", tkbService.findByGiangVien(gv.getId(), hocKy));
-                model.addAttribute("tenNguoiDung", gv.getHoTenVaHocVi());
+        model.addAttribute("hocKyChon",     hocKy);
+        model.addAttribute("tietMap",       timeSlotService.buildTietMap());
+
+
+        if (nd.getVaiTro() == VaiTro.NHAN_VIEN && hocKy != null) {
+            // Dùng NhanVienService thay GiangVienRepository
+            NhanVien nv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
+            if (nv != null) {
+                model.addAttribute("thoiKhoaBieus",
+                        tkbService.findByGiangVien(nv.getId(), hocKy));
+                model.addAttribute("tenNguoiDung", nv.getHoTenVaHocVi());
             }
         } else if (nd.getVaiTro() == VaiTro.SINH_VIEN && hocKy != null) {
             SinhVien sv = svService.findByNguoiDungId(nd.getId()).orElse(null);
             if (sv != null) {
-                model.addAttribute("thoiKhoaBieus", tkbService.findBySinhVien(sv.getId(), hocKy));
+                model.addAttribute("thoiKhoaBieus",
+                        tkbService.findBySinhVien(sv.getId(), hocKy));
                 model.addAttribute("tenNguoiDung", sv.getHoTen());
             }
         }
         return "thoikhoabieu/cua-toi";
     }
 
+    // ── TKB theo tuần ───────────────────────────────────────────────────
     @GetMapping("/theo-tuan")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GIANG_VIEN', 'SINH_VIEN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'NHAN_VIEN', 'SINH_VIEN')")
     public String xemTheoTuan(
             @RequestParam(required = false) Long giangVienId,
             @RequestParam(required = false) String hocKy,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate ngay,
-            Authentication auth,
-            Model model) {
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay,
+            Authentication auth, Model model) {
 
-        if (ngay == null) {
-            ngay = LocalDate.now();
-        }
-
+        if (ngay == null) ngay = LocalDate.now();
         LocalDate thu2 = ngay.with(DayOfWeek.MONDAY);
 
-        model.addAttribute("thu2", thu2);
-        model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
-        model.addAttribute("hocKyChon", hocKy);
-        model.addAttribute("ngayChon", ngay);
-        model.addAttribute("tietMap", timeSlotService.buildTietMap());
-        model.addAttribute("thuTrongTuan",
-                List.of(
-                        thu2,
-                        thu2.plusDays(1),
-                        thu2.plusDays(2),
-                        thu2.plusDays(3),
-                        thu2.plusDays(4),
-                        thu2.plusDays(5)
-                ));
+        model.addAttribute("thu2",           thu2);
+        model.addAttribute("danhSachHocKy",  lhpService.findAllHocKy());
+        model.addAttribute("hocKyChon",      hocKy);
+        model.addAttribute("ngayChon",       ngay);
+        model.addAttribute("tietMap",        timeSlotService.buildTietMap());
+        model.addAttribute("thuTrongTuan",   List.of(
+                thu2, thu2.plusDays(1), thu2.plusDays(2),
+                thu2.plusDays(3), thu2.plusDays(4), thu2.plusDays(5)));
 
-        String username = auth.getName();
+        NguoiDung nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
 
-        NguoiDung nd = nguoiDungRepo
-                .findByUsername(username)
-                .orElseThrow();
-
-        // ================= ADMIN =================
         if (nd.getVaiTro() == VaiTro.ADMIN) {
-
-            model.addAttribute("giangViens", gvService.findAll());
+            model.addAttribute("giangViens",      nhanVienService.findAllGiangVien());
             model.addAttribute("giangVienIdChon", giangVienId);
-
             if (giangVienId != null && hocKy != null) {
-
-                model.addAttribute(
-                        "thoiKhoaBieus",
-                        tkbService.findByGiangVienTuan(
-                                giangVienId,
-                                hocKy,
-                                ngay
-                        )
-                );
-
-                model.addAttribute(
-                        "giangVien",
-                        gvService.findById(giangVienId).orElse(null)
-                );
+                model.addAttribute("thoiKhoaBieus",
+                        tkbService.findByGiangVienTuan(giangVienId, hocKy, ngay));
+                model.addAttribute("giangVien",
+                        nhanVienService.findById(giangVienId).orElse(null));
             }
-        }
 
-        // ================= GIANG VIEN =================
-        else if (nd.getVaiTro() == VaiTro.GIANG_VIEN) {
-
-            GiangVien gv = giangVienRepo
-                    .findByNguoiDungId(nd.getId())
-                    .orElse(null);
-
-            if (gv != null && hocKy != null) {
-
-                model.addAttribute(
-                        "thoiKhoaBieus",
-                        tkbService.findByGiangVienTuan(
-                                gv.getId(),
-                                hocKy,
-                                ngay
-                        )
-                );
-
-                model.addAttribute("giangVien", gv);
+        } else if (nd.getVaiTro() == VaiTro.NHAN_VIEN) {
+            NhanVien nv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
+            if (nv != null && hocKy != null) {
+                model.addAttribute("thoiKhoaBieus",
+                        tkbService.findByGiangVienTuan(nv.getId(), hocKy, ngay));
+                model.addAttribute("giangVien", nv);
             }
-        }
 
-        // ================= SINH VIEN =================
-        else if (nd.getVaiTro() == VaiTro.SINH_VIEN) {
-
-            SinhVien sv = svService
-                    .findByNguoiDungId(nd.getId())
-                    .orElse(null);
-
+        } else if (nd.getVaiTro() == VaiTro.SINH_VIEN) {
+            SinhVien sv = svService.findByNguoiDungId(nd.getId()).orElse(null);
             if (sv != null && hocKy != null) {
-
-                model.addAttribute(
-                        "thoiKhoaBieus",
-                        tkbService.findBySinhVienTuan(
-                                sv.getId(),
-                                hocKy,
-                                ngay
-                        )
-                );
-
+                model.addAttribute("thoiKhoaBieus",
+                        tkbService.findBySinhVienTuan(sv.getId(), hocKy, ngay));
                 model.addAttribute("sinhVien", sv);
             }
         }
 
         return "thoikhoabieu/theo-tuan";
     }
-    @GetMapping("/thong-ke")
-    @PreAuthorize("hasRole('ADMIN')")
-    public String thongKe(@RequestParam(required = false) String hocKy,
-                          Model model) {
+
+    // ── TKB theo tháng ──────────────────────────────────────────────────────────
+    @GetMapping("/theo-thang")
+    @PreAuthorize("hasAnyRole('ADMIN', 'NHAN_VIEN', 'SINH_VIEN')")
+    public String xemTheoThang(
+            @RequestParam(required = false) Long giangVienId,
+            @RequestParam(required = false) String hocKy,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay,
+            Authentication auth, Model model) {
+
+        if (ngay == null) ngay = LocalDate.now();
+        LocalDate dauThang  = ngay.withDayOfMonth(1);
+        LocalDate cuoiThang = ngay.withDayOfMonth(ngay.lengthOfMonth());
 
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
-        model.addAttribute("hocKyChon", hocKy);
+        model.addAttribute("hocKyChon",     hocKy);
+        model.addAttribute("ngayChon",      ngay);
+        model.addAttribute("dauThang",      dauThang);
+        model.addAttribute("cuoiThang",     cuoiThang);
+        model.addAttribute("thangHienTai",  ngay.getMonthValue());
+        model.addAttribute("namHienTai",    ngay.getYear());
 
-        if (hocKy != null && !hocKy.isBlank()) {
+        Map<Integer, TimeSlot> tietMap = timeSlotService.buildTietMap(); // ← giữ ref local
+        model.addAttribute("tietMap", tietMap);
 
-            List<TaiGiangDayDTO> ds = tkbService.thongKeTaiGiangDay(hocKy);
+        List<LocalDate> ngayTrongThang = dauThang.datesUntil(cuoiThang.plusDays(1)).toList();
+        model.addAttribute("ngayTrongThang", ngayTrongThang);
 
-            model.addAttribute("danhSachTai", ds);
+        NguoiDung nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
 
-            // Tổng tiết
-            int tongTietToanTruong = ds.stream()
-                    .mapToInt(TaiGiangDayDTO::tongTiet)
-                    .sum();
+        List<ThoiKhoaBieu> thoiKhoaBieus = null; // ← gom lại để build JSON 1 lần
 
-            // GV quá tải
-            long soGVQuaTai = ds.stream()
-                    .filter(t -> t.tyLeTai() > 1.0)
-                    .count();
-
-            model.addAttribute("tongTietToanTruong", tongTietToanTruong);
-            model.addAttribute("soGVQuaTai", soGVQuaTai);
+        if (nd.getVaiTro() == VaiTro.ADMIN) {
+            model.addAttribute("giangViens",      nhanVienService.findAllGiangVien());
+            model.addAttribute("giangVienIdChon", giangVienId);
+            if (giangVienId != null && hocKy != null) {
+                thoiKhoaBieus = tkbService.findByGiangVienThang(giangVienId, hocKy, ngay);
+                model.addAttribute("thoiKhoaBieus", thoiKhoaBieus);
+                model.addAttribute("giangVien",
+                        nhanVienService.findById(giangVienId).orElse(null));
+                model.addAttribute("thongKeTinChi",
+                        tkbService.thongKeTinChi(giangVienId, hocKy));
+            }
+        } else if (nd.getVaiTro() == VaiTro.NHAN_VIEN) {
+            NhanVien nv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
+            if (nv != null && hocKy != null) {
+                thoiKhoaBieus = tkbService.findByGiangVienThang(nv.getId(), hocKy, ngay);
+                model.addAttribute("thoiKhoaBieus", thoiKhoaBieus);
+                model.addAttribute("giangVien", nv);
+                model.addAttribute("thongKeTinChi",
+                        tkbService.thongKeTinChi(nv.getId(), hocKy));
+            }
+        } else if (nd.getVaiTro() == VaiTro.SINH_VIEN) {
+            SinhVien sv = svService.findByNguoiDungId(nd.getId()).orElse(null);
+            if (sv != null && hocKy != null) {
+                thoiKhoaBieus = tkbService.findBySinhVienThang(sv.getId(), hocKy, ngay);
+                model.addAttribute("thoiKhoaBieus", thoiKhoaBieus);
+                model.addAttribute("sinhVien", sv);
+            }
         }
 
+        // ── Build calendarJson (sau khi có thoiKhoaBieus từ bất kỳ role nào) ──
+        if (thoiKhoaBieus != null && !thoiKhoaBieus.isEmpty()) {
+            List<Map<String, Object>> calJson = thoiKhoaBieus.stream().map(tkb -> {
+                Map<String, Object> m = new java.util.LinkedHashMap<>();
+                m.put("thuTrongTuan", tkb.getThuTrongTuan());
+                m.put("tietBatDau",   tkb.getTietBatDau());
+                m.put("soTiet",       tkb.getSoTiet());
+                m.put("tenMon",       tkb.getLopHocPhan() != null && tkb.getLopHocPhan().getMonHoc() != null
+                        ? tkb.getLopHocPhan().getMonHoc().getTenMon() : "");
+                m.put("maLhp",        tkb.getLopHocPhan() != null ? tkb.getLopHocPhan().getMaLhp() : "");
+                m.put("lhpId",        tkb.getLopHocPhan() != null ? tkb.getLopHocPhan().getId() : null);
+                m.put("hoTenGv",      tkb.getLopHocPhan() != null && tkb.getLopHocPhan().getGiangVien() != null
+                        ? tkb.getLopHocPhan().getGiangVien().getHoTen() : "");
+                m.put("gvId",         tkb.getLopHocPhan() != null && tkb.getLopHocPhan().getGiangVien() != null
+                        ? tkb.getLopHocPhan().getGiangVien().getId() : null);
+                m.put("phongHoc",     tkb.getPhongHoc());
+                m.put("soTinChi",     tkb.getLopHocPhan() != null && tkb.getLopHocPhan().getMonHoc() != null
+                        ? tkb.getLopHocPhan().getMonHoc().getSoTinChi() : 0);
+                m.put("tenThu",       tkb.getTenThu());
+                m.put("tuanBatDau",   tkb.getTuanBatDau() != null ? tkb.getTuanBatDau().toString() : null);
+                m.put("tuanKetThuc",  tkb.getTuanKetThuc() != null ? tkb.getTuanKetThuc().toString() : null);
+
+                // Giờ học từ tietMap
+                if (tietMap != null && tietMap.get(tkb.getTietBatDau()) != null) {
+                    var ts  = tietMap.get(tkb.getTietBatDau());
+                    var ts2 = tietMap.get(tkb.getTietBatDau() + tkb.getSoTiet() - 1);
+                    String gio = ts.getGioBatDau().toString().substring(0, 5)
+                            + " – " + (ts2 != null ? ts2.getGioKetThuc().toString().substring(0, 5) : "?");
+                    m.put("gioHoc", gio);
+                } else {
+                    m.put("gioHoc", "");
+                }
+                return m;
+            }).collect(java.util.stream.Collectors.toList());
+
+            try {
+                String json = new com.fasterxml.jackson.databind.ObjectMapper()
+                        .writeValueAsString(calJson);
+                model.addAttribute("calendarJson", json);
+            } catch (Exception e) {
+                model.addAttribute("calendarJson", "[]");
+            }
+        } else {
+            model.addAttribute("calendarJson", "[]"); // luôn có attr để Thymeleaf không lỗi
+        }
+
+        return "thoikhoabieu/theo-thang";
+    }
+    // ── Thống kê tải giảng dạy ─────────────────────────────────────────
+    @GetMapping("/thong-ke")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String thongKe(@RequestParam(required = false) String hocKy, Model model) {
+        model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
+        model.addAttribute("hocKyChon",     hocKy);
+
+        if (hocKy != null && !hocKy.isBlank()) {
+            List<TaiGiangDayDTO> ds = tkbService.thongKeTaiGiangDay(hocKy);
+            model.addAttribute("danhSachTai", ds);
+            model.addAttribute("tongTietToanTruong",
+                    ds.stream().mapToInt(TaiGiangDayDTO::tongTiet).sum());
+            model.addAttribute("soGVQuaTai",
+                    ds.stream().filter(t -> t.tyLeTai() > 1.0).count());
+        }
         return "thoikhoabieu/thong-ke";
     }
 
+    // ── Tìm phòng trống (AJAX) ─────────────────────────────────────────
     @GetMapping("/phong-trong")
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseBody
@@ -723,11 +785,12 @@ public class ThoiKhoaBieuController {
                 .stream().map(PhongHocDTO::from).toList();
     }
 
+    // ── CRUD TKB ───────────────────────────────────────────────────────
     @GetMapping("/them")
     @PreAuthorize("hasRole('ADMIN')")
     public String themForm(Model model) {
-        model.addAttribute("thoiKhoaBieu", new ThoiKhoaBieu());
-        model.addAttribute("lopHocPhans", lhpService.findAll());
+        model.addAttribute("thoiKhoaBieu",  new ThoiKhoaBieu());
+        model.addAttribute("lopHocPhans",   lhpService.findAll());
         model.addAttribute("danhSachPhong", phongHocService.findAllHoatDong());
         return "thoikhoabieu/form";
     }
@@ -738,6 +801,29 @@ public class ThoiKhoaBieuController {
         try {
             tkbService.save(tkb);
             ra.addFlashAttribute("success", "Thêm thời khóa biểu thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/tkb";
+    }
+
+    @GetMapping("/sua/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String suaForm(@PathVariable Long id, Model model) {
+        model.addAttribute("thoiKhoaBieu",  tkbService.findById(id).orElseThrow());
+        model.addAttribute("lopHocPhans",   lhpService.findAll());
+        model.addAttribute("danhSachPhong", phongHocService.findAllHoatDong());
+        return "thoikhoabieu/form";
+    }
+
+    @PostMapping("/sua/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String sua(@PathVariable Long id,
+                      @ModelAttribute ThoiKhoaBieu tkb, RedirectAttributes ra) {
+        try {
+            tkb.setId(id);
+            tkbService.save(tkb);
+            ra.addFlashAttribute("success", "Cập nhật thành công!");
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
@@ -755,53 +841,37 @@ public class ThoiKhoaBieuController {
         }
         return "redirect:/tkb";
     }
-    @GetMapping("/sua/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public String suaForm(@PathVariable Long id, Model model) {
-        model.addAttribute("thoiKhoaBieu", tkbService.findById(id).orElseThrow());
-        model.addAttribute("lopHocPhans", lhpService.findAll());
-        model.addAttribute("danhSachPhong", phongHocService.findAllHoatDong());
-        return "thoikhoabieu/form";
-    }
 
-    @PostMapping("/sua/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public String sua(@PathVariable Long id, @ModelAttribute ThoiKhoaBieu tkb, RedirectAttributes ra) {
-        try {
-            tkb.setId(id);
-            tkbService.save(tkb);
-            ra.addFlashAttribute("success", "Cập nhật thành công!");
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/tkb";
-    }
 }
-
-// =====================================================================
-// GIANG VIEN PORTAL
-// =====================================================================
+//// =====================================================================
+//// GIANG VIEN PORTAL
+//// =====================================================================
 @Controller
 @RequestMapping("/giangvien")
-@PreAuthorize("hasAnyRole('ADMIN','GIANG_VIEN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'NHAN_VIEN')")
 @RequiredArgsConstructor
 class GiangVienPortalController {
-    private final GiangVienService gvService;
+
+    private final NhanVienService nhanVienService;
     private final LopHocPhanService lhpService;
     private final NguoiDungRepository nguoiDungRepo;
-    private final GiangVienRepository giangVienRepo;
+
+    private NhanVien getCurrentGiangVien(Authentication auth) {
+        var nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
+        return nhanVienService.findGiangVienByNguoiDungId(nd.getId())
+                .orElseThrow(() -> new IllegalStateException("Tài khoản không phải giảng viên"));
+    }
 
     @GetMapping("/dashboard")
     public String dashboard(Authentication auth, Model model) {
-        NguoiDung nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
-        GiangVien gv = giangVienRepo.findByNguoiDungId(nd.getId()).orElse(null);
+        var nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
+        NhanVien gv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
         model.addAttribute("giangVien", gv);
         if (gv != null) {
             model.addAttribute("lopHocPhans", lhpService.findByGiangVien(gv.getId()));
         }
         return "giangvien/dashboard";
     }
-
 
     @GetMapping("/lop/{id}/danh-sach")
     public String danhSachSinhVien(@PathVariable Long id, Model model) {
@@ -811,34 +881,64 @@ class GiangVienPortalController {
         return "giangvien/danh-sach-sv";
     }
 
-    //xem chi tiết giảng viên
     @GetMapping("/chi-tiet-gv")
     public String chiTiet(Authentication auth, Model model) {
-        NguoiDung nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
-        GiangVien gv = giangVienRepo.findByNguoiDungId(nd.getId()).orElse(null);
+        var nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
+        NhanVien gv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
         model.addAttribute("giangVien", gv);
 
         if (gv != null) {
-            List<LopHocPhan> lopHocPhans = lhpService.findByGiangVien(gv.getId());
-            model.addAttribute("soLopHocPhan", lopHocPhans.size());
-            model.addAttribute("soSinhVien", lopHocPhans.stream()
+            List<LopHocPhan> lhps = lhpService.findByGiangVien(gv.getId());
+            model.addAttribute("soLopHocPhan", lhps.size());
+            model.addAttribute("soSinhVien", lhps.stream()
                     .mapToInt(lhp -> lhpService.getDanhSachDangKy(lhp.getId()).size())
                     .sum());
         } else {
             model.addAttribute("soLopHocPhan", 0);
             model.addAttribute("soSinhVien", 0);
         }
-
         return "giangvien/chi-tiet-gv";
     }
+
     @PostMapping("/cap-nhat-diem")
-    public String capNhatDiem(@RequestParam Long dkId, @RequestParam Long lhpId,
-                               @RequestParam(required = false) Double diemQT,
-                               @RequestParam(required = false) Double diemThi,
-                               RedirectAttributes ra) {
-        try { lhpService.capNhatDiem(dkId, diemQT, diemThi); ra.addFlashAttribute("success", "Cập nhật điểm thành công!"); }
-        catch (Exception e) { ra.addFlashAttribute("error", e.getMessage()); }
+    public String capNhatDiem(@RequestParam Long dkId,
+                              @RequestParam Long lhpId,
+                              @RequestParam(required = false) Double diemQT,
+                              @RequestParam(required = false) Double diemThi,
+                              RedirectAttributes ra) {
+        try {
+            lhpService.capNhatDiem(dkId, diemQT, diemThi);
+            ra.addFlashAttribute("success", "Cập nhật điểm thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/giangvien/lop/" + lhpId + "/danh-sach";
+    }
+}
+
+@Controller
+@RequestMapping("/nhanvien")
+@PreAuthorize("hasAnyRole('ADMIN', 'NHAN_VIEN')")
+@RequiredArgsConstructor
+class NhanVienPortalController {
+
+    private final NhanVienService nhanVienService;
+    private final NguoiDungRepository nguoiDungRepo;
+
+    @GetMapping("/dashboard")
+    public String dashboard(Authentication auth, Model model) {
+        var nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
+        NhanVien nv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
+        model.addAttribute("nhanVien", nv);
+        return "nhan-vien/portal-dashboard";
+    }
+
+    @GetMapping("/chi-tiet")
+    public String chiTiet(Authentication auth, Model model) {
+        var nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
+        NhanVien nv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
+        model.addAttribute("nhanVien", nv);
+        return "nhan-vien/chi-tiet";
     }
 }
 

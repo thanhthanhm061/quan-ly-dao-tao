@@ -26,4 +26,12 @@ public interface LopHocPhanRepository extends JpaRepository<LopHocPhan, Long> {
     Optional<LopHocPhan> findByIdForUpdate(@Param("id") Long id);
     @Query("SELECT DISTINCT lhp.hocKy FROM LopHocPhan lhp ORDER BY lhp.hocKy DESC")
     List<String> findAllHocKy();
+
+    @Query("""
+            SELECT lhp FROM LopHocPhan lhp
+            WHERE lhp.giangVien.id = :nhanVienId
+              AND lhp.hocKy        = :hocKy
+            """)
+    List<LopHocPhan> findByGiangVienAndHocKy(@Param("nhanVienId") Long nhanVienId,
+                                             @Param("hocKy") String hocKy);
 }

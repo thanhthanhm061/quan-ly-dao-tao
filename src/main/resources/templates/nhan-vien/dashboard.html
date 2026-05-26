@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::div#pageContent}, 'Quản lý Nhân Sự')}">
+<div id="pageContent">
+    <div class="container-fluid px-4 pb-4">
+
+        <!-- ── Thông báo flash ─────────────────────────────────────── -->
+        <div th:if="${thanhCong}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm mt-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i><span th:text="${thanhCong}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- ── Tiêu đề trang ───────────────────────────────────────── -->
+        <div class="d-flex align-items-center justify-content-between py-3 mb-1 border-bottom">
+            <div>
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-speedometer2 me-2 text-success"></i>Bảng Điều Khiển Nhân Sự
+                </h5>
+                <small class="text-muted">
+                    Cập nhật:
+                    <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}">--</span>
+                    · Năm học <span th:text="${namHoc}">2025-2026</span>
+                </small>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/admin/nhan-vien" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-list-ul me-1"></i>Danh sách
+                </a>
+                <a href="/admin/nhan-vien/them" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Thêm nhân viên
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Thẻ thống kê nhanh (6 thẻ) ────────────────────────── -->
+        <div class="row g-3 my-2">
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="rounded-3 p-3 text-white h-100"
+                     style="background: linear-gradient(135deg,#1a5276,#2471a3)">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fs-2 fw-bold lh-1" th:text="${thongKe.tongNhanVien}">0</div>
+                            <div class="small opacity-75 mt-1">Tổng nhân viên</div>
+                        </div>
+                        <i class="bi bi-people fs-2 opacity-25"></i>
+                    </div>
+                    <div class="mt-2 small opacity-75">
+                        <i class="bi bi-arrow-up-short"></i>
+                        <span th:text="'+' + ${thongKe.moiThangNay} + ' tháng này'">+0 tháng này</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="rounded-3 p-3 text-white h-100"
+                     style="background: linear-gradient(135deg,#1e8449,#27ae60)">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fs-2 fw-bold lh-1" th:text="${thongKe.dangLamViec}">0</div>
+                            <div class="small opacity-75 mt-1">Đang làm việc</div>
+                        </div>
+                        <i class="bi bi-person-check fs-2 opacity-25"></i>
+                    </div>
+                    <div class="mt-2 small opacity-75">
+                        <span th:text="${thongKe.tiLeHoatDong + '% biên chế'}">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="rounded-3 p-3 text-white h-100"
+                     style="background: linear-gradient(135deg,#6c3483,#9b59b6)">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fs-2 fw-bold lh-1" th:text="${thongKe.soKhoa}">0</div>
+                            <div class="small opacity-75 mt-1">Khoa / phòng ban</div>
+                        </div>
+                        <i class="bi bi-building fs-2 opacity-25"></i>
+                    </div>
+                    <div class="mt-2 small opacity-75">
+                        <span th:text="${thongKe.soKhoaHoatDong + ' đang hoạt động'}">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="rounded-3 p-3 text-white h-100"
+                     style="background: linear-gradient(135deg,#1f618d,#2e86c1)">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fs-2 fw-bold lh-1" th:text="${thongKe.soTienSi}">0</div>
+                            <div class="small opacity-75 mt-1">Tiến sĩ trở lên</div>
+                        </div>
+                        <i class="bi bi-award fs-2 opacity-25"></i>
+                    </div>
+                    <div class="mt-2 small opacity-75">
+                        <span th:text="${thongKe.tiLeTienSi + '% giảng viên'}">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="rounded-3 p-3 h-100"
+                     style="background: linear-gradient(135deg,#b7770d,#d68910); color:#fff;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fs-2 fw-bold lh-1" th:text="${thongKe.soHetHanHopDong}">0</div>
+                            <div class="small opacity-75 mt-1">Sắp hết HĐ (90 ngày)</div>
+                        </div>
+                        <i class="bi bi-clock-history fs-2 opacity-25"></i>
+                    </div>
+                    <div class="mt-2 small opacity-75">Cần xem xét gia hạn</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="rounded-3 p-3 text-white h-100"
+                     style="background: linear-gradient(135deg,#7b241c,#c0392b)">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fs-2 fw-bold lh-1" th:text="${thongKe.daNghi}">0</div>
+                            <div class="small opacity-75 mt-1">Đã nghỉ việc</div>
+                        </div>
+                        <i class="bi bi-person-x fs-2 opacity-25"></i>
+                    </div>
+                    <div class="mt-2 small opacity-75">
+                        <span th:text="'Tháng này: ' + ${thongKe.nghiThangNay}">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Hàng chính: Biểu đồ theo khoa + Cơ cấu ──────────────── -->
+        <div class="row g-3 mb-3">
+
+            <!-- Nhân viên theo khoa (bar chart tĩnh) -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white d-flex align-items-center justify-content-between py-2 px-3">
+          <span class="fw-semibold small text-muted text-uppercase"
+                style="letter-spacing:.05em">
+            <i class="bi bi-bar-chart me-1"></i>Nhân viên theo khoa
+          </span>
+                        <a href="/admin/khoa" class="btn btn-link btn-sm p-0 text-muted">Quản lý khoa →</a>
+                    </div>
+                    <div class="card-body px-3 py-2">
+                        <div th:each="item : ${nhanVienTheoKhoa}"
+                             class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small fw-semibold" th:text="${item.tenKhoa}">Tên Khoa</span>
+                                <span class="small fw-bold text-primary" th:text="${item.soNhanVien}">0</span>
+                            </div>
+                            <div class="progress" style="height:6px; border-radius:999px;">
+                                <div class="progress-bar bg-primary"
+                                     role="progressbar"
+                                     th:style="'width:' + ${item.tiLePhan} + '%'"
+                                     th:attr="aria-valuenow=${item.soNhanVien}">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted" th:text="${item.soGiangVien + ' giảng viên'}">0 GV</small>
+                                <small class="text-muted" th:text="${item.soNhanVienHanhChinh + ' HC'}">0 HC</small>
+                            </div>
+                        </div>
+
+                        <!-- Fallback nếu chưa có dữ liệu -->
+                        <div th:if="${#lists.isEmpty(nhanVienTheoKhoa)}"
+                             class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2 opacity-25"></i>
+                            Chưa có dữ liệu
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột phải: Học vị + Loại hợp đồng -->
+            <div class="col-lg-5">
+                <div class="row g-3 h-100">
+
+                    <!-- Cơ cấu học vị -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white py-2 px-3">
+              <span class="fw-semibold small text-muted text-uppercase" style="letter-spacing:.05em">
+                <i class="bi bi-mortarboard me-1"></i>Cơ cấu học vị
+              </span>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="row g-2 text-center">
+                                    <div class="col-3">
+                                        <div class="rounded-3 py-2 px-1" style="background:#eef4fd">
+                                            <div class="fw-bold text-primary" th:text="${thongKe.soGSSTS}">0</div>
+                                            <div class="text-muted" style="font-size:10px;">GS/PGS.TS</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="rounded-3 py-2 px-1" style="background:#eef4fd">
+                                            <div class="fw-bold text-primary" th:text="${thongKe.soTienSiThu}">0</div>
+                                            <div class="text-muted" style="font-size:10px;">TS</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="rounded-3 py-2 px-1" style="background:#f0f9f0">
+                                            <div class="fw-bold text-success" th:text="${thongKe.soThacSi}">0</div>
+                                            <div class="text-muted" style="font-size:10px;">ThS</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="rounded-3 py-2 px-1" style="background:#f5f5f4">
+                                            <div class="fw-bold text-secondary" th:text="${thongKe.soCuNhan}">0</div>
+                                            <div class="text-muted" style="font-size:10px;">CN/Khác</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loại hợp đồng -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white py-2 px-3">
+              <span class="fw-semibold small text-muted text-uppercase" style="letter-spacing:.05em">
+                <i class="bi bi-file-earmark-text me-1"></i>Loại hợp đồng
+              </span>
+                            </div>
+                            <div class="card-body px-3 py-2">
+                                <div th:each="hd : ${loaiHopDong}" class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="rounded-circle"
+                                             th:style="'width:8px;height:8px;background:' + ${hd.mauSac}"></div>
+                                        <span class="small" th:text="${hd.ten}">Loại HĐ</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fw-semibold small" th:text="${hd.soLuong}">0</span>
+                                        <span class="text-muted small" th:text="'(' + ${hd.tiLe} + '%)'">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Hàng dưới: Nhân viên mới + Sắp hết HĐ + Chức vụ gần đây ── -->
+        <div class="row g-3 mb-3">
+
+            <!-- Tuyển dụng gần đây -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-2 px-3">
+          <span class="fw-semibold small text-muted text-uppercase" style="letter-spacing:.05em">
+            <i class="bi bi-person-plus me-1 text-success"></i>Tuyển dụng gần đây
+          </span>
+                        <a href="/admin/nhan-vien?sort=moiNhat" class="btn btn-link btn-sm p-0 text-muted">Xem thêm →</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div th:each="nv : ${nhanVienMoi}" class="d-flex align-items-center gap-3 px-3 py-2 border-bottom">
+                            <!-- Avatar -->
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                 style="width:36px;height:36px;font-size:13px;background:#27ae60;"
+                                 th:text="${nv.chuCaiDau}">N</div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-semibold small text-truncate" th:text="${nv.hoTen}">Họ Tên</div>
+                                <div class="text-muted" style="font-size:11px;"
+                                     th:text="${(nv.hocVi != null ? nv.hocVi + ' · ' : '') + (nv.khoa != null ? nv.khoa.tenKhoa : 'Chưa phân công')}">—</div>
+                            </div>
+                            <div class="text-end flex-shrink-0">
+                                <div class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:10px;"
+                                     th:text="${nv.ngayTuyenDung != null ? #temporals.format(nv.ngayTuyenDung,'dd/MM/yy') : '—'}">—</div>
+                            </div>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(nhanVienMoi)}"
+                             class="text-center py-4 text-muted small">
+                            <i class="bi bi-inbox d-block fs-3 mb-1 opacity-25"></i>Chưa có dữ liệu
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sắp hết hạn hợp đồng -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-2 px-3">
+          <span class="fw-semibold small text-muted text-uppercase" style="letter-spacing:.05em">
+            <i class="bi bi-clock-history me-1 text-warning"></i>Sắp hết hạn HĐ
+          </span>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle"
+                              style="font-size:10px;"
+                              th:text="${thongKe.soHetHanHopDong + ' người'}">0</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div th:each="nv : ${sapHetHanHD}" class="d-flex align-items-center gap-3 px-3 py-2 border-bottom">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                 style="width:36px;height:36px;font-size:13px;background:#e67e22;"
+                                 th:text="${nv.chuCaiDau}">N</div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-semibold small text-truncate" th:text="${nv.hoTen}">Họ Tên</div>
+                                <div class="text-muted" style="font-size:11px;"
+                                     th:text="${nv.chucVu != null ? nv.chucVu.tenChucVu : 'Chưa có chức vụ'}">—</div>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <!-- Tô đỏ nếu còn dưới 30 ngày -->
+                                <span th:if="${nv.soNgayConLai != null and nv.soNgayConLai <= 30}"
+                                      class="badge bg-danger-subtle text-danger border border-danger-subtle"
+                                      style="font-size:10px;"
+                                      th:text="${nv.soNgayConLai + ' ngày'}">0</span>
+                                <span th:if="${nv.soNgayConLai != null and nv.soNgayConLai > 30}"
+                                      class="badge bg-warning-subtle text-warning border border-warning-subtle"
+                                      style="font-size:10px;"
+                                      th:text="${nv.soNgayConLai + ' ngày'}">0</span>
+                            </div>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(sapHetHanHD)}"
+                             class="text-center py-4 text-muted small">
+                            <i class="bi bi-check-circle d-block fs-3 mb-1 text-success opacity-50"></i>
+                            Không có hợp đồng sắp hết hạn
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent py-2 px-3" th:if="${!#lists.isEmpty(sapHetHanHD)}">
+                        <a href="/admin/nhan-vien?filter=sapHetHan" class="btn btn-sm btn-outline-warning w-100">
+                            <i class="bi bi-list-check me-1"></i>Xem tất cả &amp; xử lý
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thay đổi chức vụ gần đây -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-2 px-3">
+          <span class="fw-semibold small text-muted text-uppercase" style="letter-spacing:.05em">
+            <i class="bi bi-arrow-left-right me-1 text-info"></i>Thay đổi chức vụ
+          </span>
+                        <a href="/admin/nhan-vien" class="btn btn-link btn-sm p-0 text-muted">Xem thêm →</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div th:each="ls : ${lichSuChucVuGanDay}"
+                             class="px-3 py-2 border-bottom">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                     style="width:28px;height:28px;font-size:11px;background:#3498db;"
+                                     th:text="${ls.nhanVien.chuCaiDau}">N</div>
+                                <span class="fw-semibold small" th:text="${ls.nhanVien.hoTen}">Họ Tên</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-1 ps-1" style="font-size:11px;">
+              <span class="text-muted text-truncate" style="max-width:90px;"
+                    th:text="${ls.chucVu.tenChucVu}">Chức vụ</span>
+                                <i class="bi bi-arrow-right text-muted"></i>
+                                <span class="badge bg-info-subtle text-info border border-info-subtle" style="font-size:10px;">
+                Đang đảm nhiệm
+              </span>
+                            </div>
+                            <div class="text-muted ps-1" style="font-size:10px; margin-top:2px;"
+                                 th:text="'Từ: ' + ${#temporals.format(ls.ngayBatDau,'dd/MM/yyyy')}">—</div>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(lichSuChucVuGanDay)}"
+                             class="text-center py-4 text-muted small">
+                            <i class="bi bi-inbox d-block fs-3 mb-1 opacity-25"></i>Chưa có dữ liệu
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Truy cập nhanh ─────────────────────────────────────── -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-2 px-3">
+      <span class="fw-semibold small text-muted text-uppercase" style="letter-spacing:.05em">
+        <i class="bi bi-grid me-1"></i>Truy cập nhanh
+      </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <a href="/admin/nhan-vien/them"
+                           class="btn btn-outline-success w-100 d-flex flex-column align-items-center py-3 gap-1 border-0 rounded-3"
+                           style="background:#f0f9f0;">
+                            <i class="bi bi-person-plus fs-4 text-success"></i>
+                            <span class="small fw-semibold text-success">Thêm nhân viên</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <a href="/admin/chuc-vu"
+                           class="btn btn-outline-warning w-100 d-flex flex-column align-items-center py-3 gap-1 border-0 rounded-3"
+                           style="background:#fef9f0;">
+                            <i class="bi bi-award fs-4 text-warning"></i>
+                            <span class="small fw-semibold text-warning">Quản lý chức vụ</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <a href="/admin/khoa"
+                           class="btn btn-outline-primary w-100 d-flex flex-column align-items-center py-3 gap-1 border-0 rounded-3"
+                           style="background:#eef4fd;">
+                            <i class="bi bi-building fs-4 text-primary"></i>
+                            <span class="small fw-semibold text-primary">Quản lý khoa</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <a href="/admin/nguoi-dung"
+                           class="btn btn-outline-secondary w-100 d-flex flex-column align-items-center py-3 gap-1 border-0 rounded-3"
+                           style="background:#f5f5f4;">
+                            <i class="bi bi-person-lock fs-4 text-secondary"></i>
+                            <span class="small fw-semibold text-secondary">Tài khoản ND</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <a href="/admin/nhan-vien?filter=sapHetHan"
+                           class="btn w-100 d-flex flex-column align-items-center py-3 gap-1 border-0 rounded-3"
+                           style="background:#fef5e7;">
+                            <i class="bi bi-clock-history fs-4" style="color:#e67e22;"></i>
+                            <span class="small fw-semibold" style="color:#e67e22;">HĐ sắp hết hạn</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <a href="/admin/nhan-vien/bao-cao"
+                           class="btn w-100 d-flex flex-column align-items-center py-3 gap-1 border-0 rounded-3"
+                           style="background:#f8f0fe;">
+                            <i class="bi bi-file-earmark-bar-graph fs-4" style="color:#8e44ad;"></i>
+                            <span class="small fw-semibold" style="color:#8e44ad;">Báo cáo nhân sự</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</html>

@@ -4,113 +4,183 @@
       th:replace="~{layout/base :: layout(~{::content}, 'Tổng quan')}">
 
 <body>
+
 <th:block th:fragment="content">
 
     <style>
 
         body{
-            background:#f8fafc;
+            background:#f1f5f9;
         }
 
+        .dashboard-header{
+            margin-bottom:32px;
+        }
+
+        .dashboard-title{
+            font-size:32px;
+            font-weight:800;
+            color:#0f172a;
+            margin-bottom:6px;
+        }
+
+        .dashboard-subtitle{
+            color:#64748b;
+            font-size:15px;
+        }
+
+        /* =========================
+           CARD
+        ========================== */
+
         .stat-card{
-            background:#fff;
-            border-radius:20px;
+            background:#ffffff;
+            border-radius:22px;
             padding:24px;
-            box-shadow:0 4px 20px rgba(0,0,0,0.08);
+            box-shadow:0 6px 24px rgba(15,23,42,0.06);
             transition:all .3s ease;
-            border:none;
+            border:1px solid #e2e8f0;
             height:100%;
+            position:relative;
+            overflow:hidden;
         }
 
         .stat-card:hover{
-            transform:translateY(-6px);
-            box-shadow:0 10px 30px rgba(0,0,0,0.12);
+            transform:translateY(-5px);
+            box-shadow:0 14px 35px rgba(15,23,42,0.12);
+        }
+
+        .stat-card::before{
+            content:'';
+            position:absolute;
+            top:0;
+            left:0;
+            width:100%;
+            height:5px;
+            background:linear-gradient(to right,#3b82f6,#06b6d4);
+        }
+
+        .stat-top{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            margin-bottom:18px;
+        }
+
+        .stat-label{
+            font-size:14px;
+            color:#64748b;
+            margin-bottom:8px;
+        }
+
+        .stat-number{
+            font-size:30px;
+            font-weight:800;
+            color:#0f172a;
+            line-height:1;
         }
 
         .stat-icon{
-            width:60px;
-            height:60px;
+            width:62px;
+            height:62px;
             border-radius:18px;
             display:flex;
             align-items:center;
             justify-content:center;
             font-size:24px;
+            flex-shrink:0;
         }
 
-        .dashboard-title{
-            font-size:30px;
-            font-weight:700;
-            color:#1e293b;
+        .stat-btn{
+            border-radius:12px;
+            font-weight:600;
+            padding:8px 14px;
         }
 
-        .dashboard-subtitle{
-            color:#64748b;
-            margin-bottom:30px;
-        }
-
-        .chart-card{
-            background:#fff;
-            border-radius:20px;
-            padding:28px;
-            box-shadow:0 4px 20px rgba(0,0,0,0.08);
-            border:none;
-        }
-
-        .chart-title{
-            font-size:20px;
-            font-weight:700;
-            color:#1e293b;
-        }
-
-        /* FIX SIZE CHART */
-        .chart-wrapper{
-            position:relative;
-            width:100%;
-            max-width:300px;
-            height:300px;
-            margin:0 auto;
-        }
+        /* =========================
+           QUICK ACTION
+        ========================== */
 
         .quick-card{
+            background:#fff;
             border:none;
-            border-radius:20px;
+            border-radius:24px;
+            box-shadow:0 6px 24px rgba(15,23,42,0.06);
             overflow:hidden;
-            box-shadow:0 4px 20px rgba(0,0,0,0.08);
         }
 
         .quick-card .card-header{
             background:linear-gradient(135deg,#0f172a,#1e293b);
-            color:white;
-            font-size:18px;
-            font-weight:600;
-            padding:18px 22px;
+            color:#fff;
+            padding:20px 24px;
             border:none;
+            font-size:18px;
+            font-weight:700;
+        }
+
+        .quick-card .card-body{
+            padding:24px;
         }
 
         .quick-btn{
-            padding:14px;
-            border-radius:14px;
-            font-weight:600;
-            transition:0.3s;
+            border-radius:16px;
+            padding:15px;
+            font-weight:700;
+            transition:.3s;
+            border:none;
         }
 
         .quick-btn:hover{
-            transform:translateY(-2px);
+            transform:translateY(-3px);
         }
 
-        /* LEGEND NGANG */
+        /* =========================
+           CHART
+        ========================== */
+
+        .chart-card{
+            background:#fff;
+            border-radius:24px;
+            padding:30px;
+            box-shadow:0 6px 24px rgba(15,23,42,0.06);
+            border:none;
+        }
+
+        .chart-title{
+            font-size:22px;
+            font-weight:800;
+            color:#0f172a;
+        }
+
+        .chart-subtitle{
+            color:#64748b;
+            margin-top:6px;
+            font-size:14px;
+        }
+
+        .chart-wrapper{
+            position:relative;
+            width:100%;
+            max-width:360px;
+            height:360px;
+            margin:30px auto;
+        }
+
         .chart-legend{
             display:flex;
             justify-content:center;
             flex-wrap:wrap;
-            gap:18px;
-            margin-top:25px;
+            gap:16px;
+            margin-top:10px;
         }
 
         .legend-item{
             display:flex;
             align-items:center;
             gap:8px;
+            background:#f8fafc;
+            padding:10px 14px;
+            border-radius:12px;
             font-size:14px;
             font-weight:600;
             color:#334155;
@@ -122,10 +192,29 @@
             border-radius:50%;
         }
 
+        /* =========================
+           RESPONSIVE
+        ========================== */
+
+        @media(max-width:768px){
+
+            .dashboard-title{
+                font-size:26px;
+            }
+
+            .chart-wrapper{
+                height:300px;
+            }
+
+        }
+
     </style>
 
-    <!-- HEADER -->
-    <div class="mb-4">
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <div class="dashboard-header">
 
         <div class="dashboard-title">
             <i class="fas fa-chart-line text-primary me-2"></i>
@@ -138,123 +227,222 @@
 
     </div>
 
-    <!-- STATISTICS -->
+    <!-- =========================
+         STATISTICS
+    ========================== -->
+
     <div class="row g-4 mb-4">
 
-        <div class="col-md-4 col-lg">
+        <!-- Sinh viên -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
             <div class="stat-card">
 
-                <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-top">
 
                     <div>
-                        <p class="text-muted small mb-1">Tổng sinh viên</p>
-                        <h3 class="fw-bold mb-0" th:text="${tongSV}">0</h3>
+                        <div class="stat-label">Tổng sinh viên</div>
+                        <div class="stat-number"
+                             th:text="${tongSV}">0</div>
                     </div>
 
-                    <div class="stat-icon" style="background:#dbeafe;color:#1d4ed8">
+                    <div class="stat-icon"
+                         style="background:#dbeafe;color:#2563eb">
                         <i class="fas fa-user-graduate"></i>
                     </div>
 
                 </div>
 
                 <a th:href="@{/admin/sinh-vien}"
-                   class="btn btn-sm btn-outline-primary mt-3">
+                   class="btn btn-outline-primary stat-btn">
                     Xem danh sách
                 </a>
 
             </div>
         </div>
 
-        <div class="col-md-4 col-lg">
+        <!-- Giảng viên -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
             <div class="stat-card">
 
-                <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-top">
 
                     <div>
-                        <p class="text-muted small mb-1">Tổng giảng viên</p>
-                        <h3 class="fw-bold mb-0" th:text="${tongGV}">0</h3>
+                        <div class="stat-label">Tổng giảng viên</div>
+                        <div class="stat-number"
+                             th:text="${tongGV}">0</div>
                     </div>
 
-                    <div class="stat-icon" style="background:#d1fae5;color:#059669">
+                    <div class="stat-icon"
+                         style="background:#dcfce7;color:#16a34a">
                         <i class="fas fa-chalkboard-teacher"></i>
                     </div>
 
                 </div>
 
                 <a th:href="@{/admin/giang-vien}"
-                   class="btn btn-sm btn-outline-success mt-3">
+                   class="btn btn-outline-success stat-btn">
                     Xem danh sách
                 </a>
 
             </div>
         </div>
 
-        <div class="col-md-4 col-lg">
+        <!-- Môn học -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
             <div class="stat-card">
 
-                <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-top">
 
                     <div>
-                        <p class="text-muted small mb-1">Tổng môn học</p>
-                        <h3 class="fw-bold mb-0" th:text="${tongMon}">0</h3>
+                        <div class="stat-label">Tổng môn học</div>
+                        <div class="stat-number"
+                             th:text="${tongMon}">0</div>
                     </div>
 
-                    <div class="stat-icon" style="background:#fef3c7;color:#d97706">
+                    <div class="stat-icon"
+                         style="background:#fef3c7;color:#d97706">
                         <i class="fas fa-book"></i>
                     </div>
 
                 </div>
 
                 <a th:href="@{/admin/mon-hoc}"
-                   class="btn btn-sm btn-outline-warning mt-3">
+                   class="btn btn-outline-warning stat-btn">
                     Xem danh sách
                 </a>
 
             </div>
         </div>
 
-        <div class="col-md-4 col-lg">
+        <!-- Lớp -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
             <div class="stat-card">
 
-                <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-top">
 
                     <div>
-                        <p class="text-muted small mb-1">Tổng lớp</p>
-                        <h3 class="fw-bold mb-0" th:text="${tongLop}">0</h3>
+                        <div class="stat-label">Tổng lớp</div>
+                        <div class="stat-number"
+                             th:text="${tongLop}">0</div>
                     </div>
 
-                    <div class="stat-icon" style="background:#ede9fe;color:#7c3aed">
+                    <div class="stat-icon"
+                         style="background:#ede9fe;color:#7c3aed">
                         <i class="fas fa-door-open"></i>
                     </div>
 
                 </div>
 
                 <a th:href="@{/admin/lop}"
-                   class="btn btn-sm btn-outline-secondary mt-3">
+                   class="btn btn-outline-secondary stat-btn">
                     Xem danh sách
                 </a>
 
             </div>
         </div>
 
-        <div class="col-md-4 col-lg">
+        <!-- Lớp học phần -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
             <div class="stat-card">
 
-                <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-top">
 
                     <div>
-                        <p class="text-muted small mb-1">Lớp học phần</p>
-                        <h3 class="fw-bold mb-0" th:text="${tongLHP}">0</h3>
+                        <div class="stat-label">Lớp học phần</div>
+                        <div class="stat-number"
+                             th:text="${tongLHP}">0</div>
                     </div>
 
-                    <div class="stat-icon" style="background:#fee2e2;color:#dc2626">
+                    <div class="stat-icon"
+                         style="background:#fee2e2;color:#dc2626">
                         <i class="fas fa-clipboard-list"></i>
                     </div>
 
                 </div>
 
                 <a th:href="@{/admin/lop-hoc-phan}"
-                   class="btn btn-sm btn-outline-danger mt-3">
+                   class="btn btn-outline-danger stat-btn">
+                    Xem danh sách
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Khoa -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div>
+                        <div class="stat-label">Tổng khoa</div>
+                        <div class="stat-number"
+                             th:text="${tongKhoa}">0</div>
+                    </div>
+
+                    <div class="stat-icon"
+                         style="background:#cffafe;color:#0891b2">
+                        <i class="fas fa-building"></i>
+                    </div>
+
+                </div>
+
+                <a th:href="@{/admin/khoa}"
+                   class="btn btn-outline-info stat-btn">
+                    Xem danh sách
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Chức vụ -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div>
+                        <div class="stat-label">Tổng chức vụ</div>
+                        <div class="stat-number"
+                             th:text="${tongChucVu}">0</div>
+                    </div>
+
+                    <div class="stat-icon"
+                         style="background:#fae8ff;color:#c026d3">
+                        <i class="fas fa-user-tag"></i>
+                    </div>
+
+                </div>
+
+                <a th:href="@{/admin/chuc-vu}"
+                   class="btn btn-outline-dark stat-btn">
+                    Xem danh sách
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Nhân viên -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div>
+                        <div class="stat-label">Tổng nhân viên</div>
+                        <div class="stat-number"
+                             th:text="${tongNhanVien}">0</div>
+                    </div>
+
+                    <div class="stat-icon"
+                         style="background:#e0f2fe;color:#0284c7">
+                        <i class="fas fa-users"></i>
+                    </div>
+
+                </div>
+
+                <a th:href="@{/admin/nhan-vien}"
+                   class="btn btn-outline-primary stat-btn">
                     Xem danh sách
                 </a>
 
@@ -263,7 +451,10 @@
 
     </div>
 
-    <!-- QUICK ACTION -->
+    <!-- =========================
+         QUICK ACTION
+    ========================== -->
+
     <div class="card quick-card mb-4">
 
         <div class="card-header">
@@ -275,7 +466,7 @@
 
             <div class="row g-3">
 
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6">
                     <a th:href="@{/admin/sinh-vien/them}"
                        class="btn btn-primary quick-btn w-100">
                         <i class="fas fa-plus me-2"></i>
@@ -283,7 +474,7 @@
                     </a>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6">
                     <a th:href="@{/admin/giang-vien/them}"
                        class="btn btn-success quick-btn w-100">
                         <i class="fas fa-plus me-2"></i>
@@ -291,35 +482,67 @@
                     </a>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6">
                     <a th:href="@{/admin/lop-hoc-phan/them}"
-                       class="btn btn-warning quick-btn w-100 text-white">
+                       class="btn btn-warning text-white quick-btn w-100">
                         <i class="fas fa-plus me-2"></i>
                         Mở lớp học phần
                     </a>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6">
                     <a th:href="@{/tkb/them}"
-                       class="btn btn-info quick-btn w-100 text-white">
+                       class="btn btn-info text-white quick-btn w-100">
                         <i class="fas fa-calendar-plus me-2"></i>
                         Thêm thời khóa biểu
+                    </a>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <a th:href="@{/admin/khoa/them}"
+                       class="btn btn-primary quick-btn w-100">
+                        <i class="fas fa-plus me-2"></i>
+                        Thêm khoa
+                    </a>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <a th:href="@{/admin/chuc-vu/them}"
+                       class="btn btn-dark quick-btn w-100">
+                        <i class="fas fa-plus me-2"></i>
+                        Thêm chức vụ
+                    </a>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <a th:href="@{/admin/nhan-vien/them}"
+                       class="btn btn-success quick-btn w-100">
+                        <i class="fas fa-plus me-2"></i>
+                        Thêm nhân viên
                     </a>
                 </div>
 
             </div>
 
         </div>
+
     </div>
 
-    <!-- CHART -->
+    <!-- =========================
+         CHART
+    ========================== -->
+
     <div class="chart-card">
 
-        <div class="text-center mb-4">
+        <div class="text-center">
 
             <div class="chart-title">
                 <i class="fas fa-chart-pie text-primary me-2"></i>
                 Thống kê sinh viên theo ngành
+            </div>
+
+            <div class="chart-subtitle">
+                Biểu đồ số lượng sinh viên theo từng khoa/ngành
             </div>
 
         </div>
@@ -328,12 +551,14 @@
             <canvas id="khoaChart"></canvas>
         </div>
 
-        <!-- LEGEND -->
         <div id="customLegend" class="chart-legend"></div>
 
     </div>
 
-    <!-- CHART JS -->
+    <!-- =========================
+         CHART JS
+    ========================== -->
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
@@ -343,7 +568,6 @@
             .then(data => {
 
                 const labels = data.map(item => item[0]);
-
                 const values = data.map(item => item[1]);
 
                 const colors = [
@@ -353,29 +577,23 @@
                     '#ef4444',
                     '#8b5cf6',
                     '#06b6d4',
-                    '#14b8a6'
+                    '#14b8a6',
+                    '#ec4899'
                 ];
 
-                // TẠO CHART
                 new Chart(document.getElementById('khoaChart'), {
 
                     type: 'doughnut',
 
                     data: {
-
                         labels: labels,
-
                         datasets: [{
-
                             data: values,
-
                             backgroundColor: colors,
-
-                            borderWidth: 4,
+                            borderWidth: 5,
                             borderColor: '#ffffff',
                             hoverOffset: 18,
-                            cutout: '68%'
-
+                            cutout: '70%'
                         }]
                     },
 
@@ -386,16 +604,15 @@
 
                         plugins: {
 
-                            // ẨN legend mặc định
                             legend: {
                                 display: false
                             },
 
                             tooltip: {
 
-                                backgroundColor: '#1e293b',
-                                padding: 12,
-                                cornerRadius: 10,
+                                backgroundColor: '#0f172a',
+                                padding: 14,
+                                cornerRadius: 12,
 
                                 titleFont: {
                                     size: 14
@@ -411,15 +628,15 @@
 
                         animation: {
                             animateRotate: true,
-                            duration: 1400
+                            duration: 1200
                         }
 
                     }
 
                 });
 
-                // CUSTOM LEGEND NGANG
-                const legendContainer = document.getElementById('customLegend');
+                const legendContainer =
+                    document.getElementById('customLegend');
 
                 labels.forEach((label, index) => {
 
@@ -430,6 +647,7 @@
                             ${label}
                         </div>
                     `;
+
                 });
 
             });
@@ -437,5 +655,6 @@
     </script>
 
 </th:block>
+
 </body>
 </html>

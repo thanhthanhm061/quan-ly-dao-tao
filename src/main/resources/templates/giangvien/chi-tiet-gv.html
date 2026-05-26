@@ -60,7 +60,6 @@
             font-size: 13px; color: #bfdbfe;
         }
 
-        /* STATS */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -83,7 +82,6 @@
 
         .stat-label { font-size: 13px; color: #64748b; font-weight: 500; }
 
-        /* BODY */
         .detail-body { padding: 35px; }
 
         .section-title {
@@ -95,7 +93,6 @@
             display: flex; align-items: center; gap: 8px;
         }
 
-        /* INFO ITEM */
         .info-item {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -129,7 +126,6 @@
             color: #0f172a; word-break: break-word;
         }
 
-        /* ACTIONS */
         .action-wrapper {
             margin-top: 35px;
             display: flex; gap: 14px; flex-wrap: wrap;
@@ -143,18 +139,17 @@
         }
 
         .btn-custom:hover { transform: translateY(-2px); }
-        .btn-back { background: #e2e8f0; color: #0f172a; }
-        .btn-back:hover { background: #cbd5e1; }
-        .btn-lop { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; }
-        .btn-tkb { background: linear-gradient(135deg, #059669, #047857); color: white; }
+        .btn-back  { background: #e2e8f0; color: #0f172a; }
+        .btn-back:hover  { background: #cbd5e1; }
+        .btn-tkb   { background: linear-gradient(135deg, #059669, #047857); color: white; }
 
         @media(max-width: 768px) {
             .detail-header { flex-direction: column; text-align: center; padding: 30px 20px; }
-            .detail-body { padding: 22px; }
-            .gv-name { font-size: 24px; }
-            .stats-row { grid-template-columns: 1fr; }
+            .detail-body   { padding: 22px; }
+            .gv-name       { font-size: 24px; }
+            .stats-row     { grid-template-columns: 1fr; }
             .action-wrapper { flex-direction: column; }
-            .btn-custom { width: 100%; justify-content: center; }
+            .btn-custom    { width: 100%; justify-content: center; }
         }
     </style>
 
@@ -167,7 +162,6 @@
 
         <!-- HEADER -->
         <div class="detail-header d-flex align-items-center gap-4">
-
             <div class="avatar">
                 <i class="fas fa-chalkboard-teacher"></i>
             </div>
@@ -177,7 +171,7 @@
 
                 <div class="gv-code">
                     <i class="fas fa-id-badge"></i>
-                    Mã GV: <span th:text="${giangVien.maGv}"></span>
+                    Mã GV: <span th:text="${giangVien.maNhanVien}"></span>
                 </div>
 
                 <div th:if="${giangVien.hocVi != null}" class="gv-hocvi">
@@ -185,7 +179,6 @@
                     <span th:text="${giangVien.hocVi}"></span>
                 </div>
             </div>
-
         </div>
 
         <!-- BODY -->
@@ -226,7 +219,7 @@
                 <div class="col-md-6">
                     <div class="info-item">
                         <div class="info-label">Mã giảng viên</div>
-                        <div class="info-value" th:text="${giangVien.maGv ?: '-'}"></div>
+                        <div class="info-value" th:text="${giangVien.maNhanVien ?: '-'}"></div>
                     </div>
                 </div>
 
@@ -239,15 +232,20 @@
 
                 <div class="col-md-6">
                     <div class="info-item">
+                        <!-- FIX: chuyenNganh → chuyenMon -->
                         <div class="info-label">Chuyên ngành</div>
-                        <div class="info-value" th:text="${giangVien.chuyenNganh ?: '-'}"></div>
+                        <div class="info-value" th:text="${giangVien.chuyenMon ?: '-'}"></div>
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="info-item">
                         <div class="info-label">Ngày sinh</div>
-                        <div class="info-value" th:text="${giangVien.ngaySinh ?: '-'}"></div>
+                        <div class="info-value"
+                             th:text="${giangVien.ngaySinh != null
+                                ? #temporals.format(giangVien.ngaySinh, 'dd/MM/yyyy')
+                                : '-'}">
+                        </div>
                     </div>
                 </div>
 
@@ -272,25 +270,40 @@
                     </div>
                 </div>
 
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Học hàm</div>
+                        <div class="info-value" th:text="${giangVien.hocHam ?: '-'}"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Trạng thái</div>
+                        <div class="info-value">
+                            <span th:if="${giangVien.trangThai}"
+                                  class="badge bg-success fs-6">Đang làm việc</span>
+                            <span th:unless="${giangVien.trangThai}"
+                                  class="badge bg-secondary fs-6">Đã nghỉ</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- ACTIONS -->
             <div class="action-wrapper">
-
                 <a th:href="@{/giangvien/dashboard}" class="btn btn-custom btn-back">
                     <i class="fas fa-arrow-left"></i>
                     Quay lại
                 </a>
-
                 <a th:href="@{/tkb/cua-toi}" class="btn btn-custom btn-tkb">
                     <i class="fas fa-calendar-alt"></i>
                     Thời khóa biểu
                 </a>
-
             </div>
 
         </div>
-
     </div>
 
 </th:block>

@@ -90,7 +90,7 @@
                             <option value="">-- Chọn giảng viên --</option>
                             <option th:each="gv : ${giangViens}"
                                     th:value="${gv.id}"
-                                    th:text="${gv.maGv + ' - ' + gv.hoTen + (gv.hocVi != null ? ' (' + gv.hocVi + ')' : '')}"
+                                    th:text="${gv.maNhanVien + ' - ' + gv.hoTen + (gv.hocVi != null ? ' (' + gv.hocVi + ')' : '')}"
                                     th:selected="${lopHocPhan.giangVien != null
                                               and lopHocPhan.giangVien.id != null
                                               and lopHocPhan.giangVien.id == gv.id}">

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Dashboard Nhân viên')}">
+
+<body>
+<th:block th:fragment="content">
+
+    <style>
+        body { background: #f1f5f9; }
+
+        .portal-header {
+            background: linear-gradient(135deg, #0f4c81, #1565c0);
+            border-radius: 24px;
+            padding: 32px 36px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 10px 30px rgba(21,101,192,.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-header::after {
+            content: '';
+            position: absolute;
+            right: -60px; top: -60px;
+            width: 220px; height: 220px;
+            background: rgba(255,255,255,.06);
+            border-radius: 50%;
+        }
+
+        .avatar {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.15);
+            border: 3px solid rgba(255,255,255,.25);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 38px; color: white;
+            flex-shrink: 0;
+        }
+
+        .nv-name  { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+        .nv-ma    {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,.12);
+            padding: 6px 14px; border-radius: 12px;
+            font-size: 13px; color: #e2e8f0;
+            margin-bottom: 8px;
+        }
+        .nv-chucvu {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,.1);
+            padding: 5px 12px; border-radius: 20px;
+            font-size: 13px; color: #bfdbfe;
+        }
+
+        /* STAT CARDS */
+        .stat-card {
+            border: none;
+            border-radius: 20px;
+            padding: 24px;
+            background: white;
+            box-shadow: 0 4px 16px rgba(0,0,0,.06);
+            transition: all .25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute; left: 0; top: 0;
+            width: 5px; height: 100%;
+        }
+
+        .stat-card.blue::before  { background: #2563eb; }
+        .stat-card.green::before { background: #059669; }
+        .stat-card.orange::before{ background: #d97706; }
+        .stat-card.purple::before{ background: #7c3aed; }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,.1);
+        }
+
+        .stat-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; margin-bottom: 14px;
+        }
+
+        .stat-icon.blue   { background: #eff6ff; color: #2563eb; }
+        .stat-icon.green  { background: #ecfdf5; color: #059669; }
+        .stat-icon.orange { background: #fffbeb; color: #d97706; }
+        .stat-icon.purple { background: #f5f3ff; color: #7c3aed; }
+
+        .stat-num   { font-size: 28px; font-weight: 800; color: #0f172a; line-height: 1; }
+        .stat-label { font-size: 13px; color: #64748b; margin-top: 6px; font-weight: 500; }
+
+        /* INFO SECTION */
+        .section-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,.06);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 700;
+            font-size: 14px;
+            color: #334155;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            padding: 14px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            align-items: center;
+        }
+
+        .info-row:last-child { border-bottom: none; }
+
+        .info-row:hover { background: #f8fafc; }
+
+        .info-key {
+            width: 200px;
+            flex-shrink: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+
+        .info-val {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        /* ACTION BUTTONS */
+        .action-btn {
+            border: none;
+            border-radius: 14px;
+            padding: 12px 22px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex; align-items: center; gap: 8px;
+            transition: all .2s;
+            text-decoration: none;
+        }
+
+        .action-btn:hover { transform: translateY(-2px); }
+        .btn-profile { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; }
+        .btn-doi-mk  { background: linear-gradient(135deg, #059669, #047857); color: white; }
+
+        @media(max-width: 768px) {
+            .portal-header { flex-direction: column; text-align: center; padding: 24px; }
+            .info-key { width: 140px; font-size: 12px; }
+        }
+    </style>
+
+    <!-- HEADER -->
+    <div class="portal-header">
+        <div class="avatar">
+            <span th:text="${nhanVien?.chuCaiDau ?: '?'}"></span>
+        </div>
+        <div style="position:relative;z-index:1">
+            <div class="nv-name"
+                 th:text="${nhanVien?.hoTen ?: 'Nhân viên'}">
+            </div>
+            <div class="nv-ma">
+                <i class="fas fa-id-badge"></i>
+                Mã NV: <span th:text="${nhanVien?.maNhanVien ?: '-'}"></span>
+            </div>
+            <div th:if="${nhanVien?.chucVu != null}" class="nv-chucvu">
+                <i class="fas fa-briefcase"></i>
+                <span th:text="${nhanVien.chucVu.tenChucVu}"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLASH MESSAGES -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show rounded-4 mb-4">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="row g-3 mb-4" th:if="${nhanVien != null}">
+
+        <div class="col-6 col-md-3">
+            <div class="stat-card blue">
+                <div class="stat-icon blue"><i class="fas fa-building"></i></div>
+                <div class="stat-num"
+                     th:text="${nhanVien.khoa?.tenKhoa != null ? '1' : '0'}">
+                </div>
+                <div class="stat-label">Khoa / Đơn vị</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="stat-card green">
+                <div class="stat-icon green"><i class="fas fa-briefcase"></i></div>
+                <div class="stat-num"
+                     th:text="${nhanVien.chucVu != null ? '1' : '0'}">
+                </div>
+                <div class="stat-label">Chức vụ hiện tại</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="stat-card orange">
+                <div class="stat-icon orange"><i class="fas fa-file-contract"></i></div>
+                <div class="stat-num"
+                     th:text="${nhanVien.loaiHopDong != null ? nhanVien.loaiHopDong : '-'}">
+                </div>
+                <div class="stat-label">Loại hợp đồng</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="stat-card purple">
+                <div class="stat-icon purple"><i class="fas fa-circle"></i></div>
+                <div class="stat-num">
+                    <span th:if="${nhanVien.trangThai}"
+                          class="text-success" style="font-size:16px">Đang làm</span>
+                    <span th:unless="${nhanVien.trangThai}"
+                          class="text-secondary" style="font-size:16px">Đã nghỉ</span>
+                </div>
+                <div class="stat-label">Trạng thái</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- THÔNG TIN CÁ NHÂN -->
+    <div class="section-card" th:if="${nhanVien != null}">
+
+        <div class="section-header">
+            <i class="fas fa-user text-primary"></i>
+            Thông tin cá nhân
+        </div>
+
+        <div class="info-row">
+            <div class="info-key">Họ và tên</div>
+            <div class="info-val" th:text="${nhanVien.hoTen ?: '-'}"></div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Mã nhân viên</div>
+            <div class="info-val">
+                <code th:text="${nhanVien.maNhanVien ?: '-'}"></code>
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Ngày sinh</div>
+            <div class="info-val"
+                 th:text="${nhanVien.ngaySinh != null
+                     ? #temporals.format(nhanVien.ngaySinh, 'dd/MM/yyyy') : '-'}">
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Giới tính</div>
+            <select name="gioiTinh" class="form-select">
+                <option value="">-- Chọn --</option>
+                <option value="Nam"  th:selected="${nhanVien.gioiTinh == 'Nam'}">Nam</option>
+                <option value="Nữ"   th:selected="${nhanVien.gioiTinh == 'Nữ'}">Nữ</option>
+                <option value="Khác" th:selected="${nhanVien.gioiTinh == 'Khác'}">Khác</option>
+            </select>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Email</div>
+            <div class="info-val" th:text="${nhanVien.email ?: '-'}"></div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Số điện thoại</div>
+            <div class="info-val" th:text="${nhanVien.soDienThoai ?: '-'}"></div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Địa chỉ</div>
+            <div class="info-val" th:text="${nhanVien.diaChi ?: '-'}"></div>
+        </div>
+
+    </div>
+
+    <!-- THÔNG TIN CÔNG TÁC -->
+    <div class="section-card" th:if="${nhanVien != null}">
+
+        <div class="section-header">
+            <i class="fas fa-briefcase text-primary"></i>
+            Thông tin công tác
+        </div>
+
+        <div class="info-row">
+            <div class="info-key">Khoa / Đơn vị</div>
+            <div class="info-val" th:text="${nhanVien.khoa?.tenKhoa ?: '-'}"></div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Chức vụ</div>
+            <div class="info-val" th:text="${nhanVien.chucVu?.tenChucVu ?: '-'}"></div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Học vị</div>
+            <div class="info-val" th:text="${nhanVien.hocVi ?: '-'}"></div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Học hàm</div>
+            <div class="info-val" th:text="${nhanVien.hocHam ?: '-'}"></div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Chuyên môn</div>
+            <div class="info-val" th:text="${nhanVien.chuyenMon ?: '-'}"></div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Loại hợp đồng</div>
+            <div class="info-val" th:text="${nhanVien.loaiHopDong ?: '-'}"></div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Ngày tuyển dụng</div>
+            <div class="info-val"
+                 th:text="${nhanVien.ngayTuyenDung != null
+                     ? #temporals.format(nhanVien.ngayTuyenDung, 'dd/MM/yyyy') : '-'}">
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-key">Bắt đầu làm việc</div>
+            <div class="info-val"
+                 th:text="${nhanVien.batDauLamViec != null
+                     ? #temporals.format(nhanVien.batDauLamViec, 'dd/MM/yyyy') : '-'}">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="d-flex gap-3 flex-wrap" th:if="${nhanVien != null}">
+        <a th:href="@{/nhanvien/chi-tiet}" class="action-btn btn-profile">
+            <i class="fas fa-user"></i> Xem chi tiết
+        </a>
+        <a th:href="@{/doi-mat-khau}" class="action-btn btn-doi-mk">
+            <i class="fas fa-key"></i> Đổi mật khẩu
+        </a>
+    </div>
+
+    <!-- Trường hợp không tìm thấy nhân viên -->
+    <div th:if="${nhanVien == null}" class="alert alert-warning rounded-4">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Không tìm thấy thông tin nhân viên. Vui lòng liên hệ admin.
+    </div>
+
+</th:block>
+</body>
+</html>
