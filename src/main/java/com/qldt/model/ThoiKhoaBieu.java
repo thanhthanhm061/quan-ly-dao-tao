@@ -22,70 +22,7 @@ public class ThoiKhoaBieu {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
-//
-//    public Long getId() {
-//        return id;
-//    }
-//
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
-//
-//    public LopHocPhan getLopHocPhan() {
-//        return lopHocPhan;
-//    }
-//
-//    public void setLopHocPhan(LopHocPhan lopHocPhan) {
-//        this.lopHocPhan = lopHocPhan;
-//    }
-//
-//    public int getThuTrongTuan() {
-//        return thuTrongTuan;
-//    }
-//
-//    public void setThuTrongTuan(int thuTrongTuan) {
-//        this.thuTrongTuan = thuTrongTuan;
-//    }
-//
-//    public int getTietBatDau() {
-//        return tietBatDau;
-//    }
-//
-//    public void setTietBatDau(int tietBatDau) {
-//        this.tietBatDau = tietBatDau;
-//    }
-//
-//    public int getSoTiet() {
-//        return soTiet;
-//    }
-//
-//    public void setSoTiet(int soTiet) {
-//        this.soTiet = soTiet;
-//    }
-//
-//    public String getPhongHoc() {
-//        return phongHoc;
-//    }
-//
-//    public void setPhongHoc(String phongHoc) {
-//        this.phongHoc = phongHoc;
-//    }
-//
-//    public LocalDate getTuanBatDau() {
-//        return tuanBatDau;
-//    }
-//
-//    public void setTuanBatDau(LocalDate tuanBatDau) {
-//        this.tuanBatDau = tuanBatDau;
-//    }
-//
-//    public LocalDate getTuanKetThuc() {
-//        return tuanKetThuc;
-//    }
-//
-//    public void setTuanKetThuc(LocalDate tuanKetThuc) {
-//        this.tuanKetThuc = tuanKetThuc;
-//    }
+
 
     @ManyToOne
     @JoinColumn(name = "lhp_id", nullable = false)
@@ -125,6 +62,7 @@ public class ThoiKhoaBieu {
         // Quy ước: 1 tín chỉ lý thuyết = 15 tiết/kỳ = ~1-2 tiết/tuần
         return lopHocPhan.getMonHoc().getSoTinChi() * 15;
     }
+
 
     // Tính danh sách tuần từ tuanBatDau → tuanKetThuc
     public List<LocalDate> getDanhSachTuan() {

@@ -4,41 +4,20 @@
 <body><th:block th:fragment="content">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
-        .tkb-grid th .date-sub {
-            font-size: .72rem;
-            font-weight: 400;
-            opacity: .7;
-            display: block;
-            margin-top: 2px;
-        }
-        .tkb-grid th.today-col { background: #1d4ed8 !important; }
+        .tkb-grid th .date-sub { font-size:.72rem; font-weight:400; opacity:.7; display:block; margin-top:2px; }
+        .tkb-grid th.today-col { background:#1d4ed8 !important; }
         :root {
-            --navy: #0f2542;
-            --navy-light: #1e3a5f;
-            --blue: #2563eb;
-            --blue-soft: #dbeafe;
-            --green: #059669;
-            --green-soft: #d1fae5;
-            --amber: #d97706;
-            --amber-soft: #fef3c7;
-            --violet: #7c3aed;
-            --violet-soft: #ede9fe;
-            --rose: #dc2626;
-            --rose-soft: #fee2e2;
-            --sky: #0284c7;
-            --sky-soft: #e0f2fe;
-            --surface: #f8fafc;
-            --border: #e2e8f0;
-            --text: #0f172a;
-            --text-muted: #64748b;
-            --radius: 10px;
-            --shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.06);
+            --navy:#0f2542; --navy-light:#1e3a5f; --blue:#2563eb; --blue-soft:#dbeafe;
+            --green:#059669; --green-soft:#d1fae5; --amber:#d97706; --amber-soft:#fef3c7;
+            --violet:#7c3aed; --violet-soft:#ede9fe; --rose:#dc2626; --rose-soft:#fee2e2;
+            --sky:#0284c7; --sky-soft:#e0f2fe; --surface:#f8fafc; --border:#e2e8f0;
+            --text:#0f172a; --text-muted:#64748b; --radius:10px;
+            --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.06);
         }
-
-        body { font-family: 'Be Vietnam Pro', sans-serif; background: #f1f5f9; }
+        body { font-family:'Be Vietnam Pro',sans-serif; background:#f1f5f9; }
 
         .tkb-tabs { display:flex; gap:4px; background:#fff; border-radius:12px; padding:5px;
-            box-shadow: var(--shadow); margin-bottom:22px; border:none; }
+            box-shadow:var(--shadow); margin-bottom:22px; border:none; }
         .tkb-tabs .nav-item { flex:1; }
         .tkb-tabs .nav-link { border:none; border-radius:8px; font-weight:500; font-size:.85rem;
             color:var(--text-muted); padding:8px 10px; text-align:center; transition:.2s; white-space:nowrap; }
@@ -47,25 +26,42 @@
 
         .card { border:1px solid var(--border); border-radius:var(--radius);
             box-shadow:var(--shadow); background:#fff; }
-        .card-header { background:var(--navy); color:#fff; border-radius:var(--radius) var(--radius) 0 0 !important;
+        .card-header { background:var(--navy); color:#fff;
+            border-radius:var(--radius) var(--radius) 0 0 !important;
             padding:14px 18px; font-weight:600; border:none; }
 
         .filter-card { border:1.5px solid var(--border); border-radius:var(--radius);
             background:#fff; padding:18px 22px; margin-bottom:20px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+            box-shadow:0 1px 4px rgba(0,0,0,.05); }
         .form-label { font-size:.82rem; font-weight:600; color:var(--text-muted);
             text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; }
-        .form-select, .form-control { border:1.5px solid var(--border); border-radius:8px;
+        .form-select,.form-control { border:1.5px solid var(--border); border-radius:8px;
             font-size:.9rem; padding:9px 12px; color:var(--text); transition:.2s; }
-        .form-select:focus, .form-control:focus { border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; }
+        .form-select:focus,.form-control:focus { border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; }
 
         .btn-primary { background:var(--navy); border-color:var(--navy); border-radius:8px;
             font-weight:600; font-size:.88rem; padding:9px 18px; }
         .btn-primary:hover { background:var(--navy-light); border-color:var(--navy-light); }
-        .btn-success { background:var(--green); border-color:var(--green); border-radius:8px;
-            font-weight:600; font-size:.88rem; }
+        .btn-success { background:var(--green); border-color:var(--green); border-radius:8px; font-weight:600; }
         .btn-outline-secondary { border-radius:8px; font-size:.82rem; font-weight:500; }
         .btn-outline-danger { border-radius:6px; }
+
+        /* ── Widget tín chỉ ── */
+        .credit-bar-wrap { background:#fff; border:1.5px solid var(--border);
+            border-radius:var(--radius); padding:16px 20px; margin-bottom:20px;
+            box-shadow:var(--shadow); }
+        .credit-title { font-size:.8rem; font-weight:700; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px; }
+        .credit-stats { display:flex; gap:28px; flex-wrap:wrap; margin-bottom:12px; align-items:flex-end; }
+        .credit-stat { text-align:center; }
+        .credit-num { font-size:2rem; font-weight:800; color:var(--navy); line-height:1; }
+        .credit-num.done { color:var(--green); }
+        .credit-num.left { color:var(--amber); }
+        .credit-label { font-size:.72rem; color:var(--text-muted); margin-top:3px; }
+        .credit-progress { height:10px; border-radius:10px; background:#e2e8f0; overflow:hidden; }
+        .credit-fill { height:100%; border-radius:10px;
+            background:linear-gradient(90deg,#059669,#34d399); transition:width .6s ease; }
+        .credit-pct { font-size:.78rem; font-weight:600; color:var(--text-muted); margin-top:6px; }
 
         .legend-row { padding:10px 16px 8px; display:flex; gap:6px; flex-wrap:wrap;
             border-bottom:1px solid var(--border); background:#fafbfc; }
@@ -82,7 +78,7 @@
         .tkb-cell { position:absolute; z-index:2; left:2px; right:2px; top:2px;
             border-radius:6px; overflow:hidden; display:flex; flex-direction:column;
             justify-content:center; padding:5px 7px; cursor:default;
-            transition: transform .15s, box-shadow .15s; }
+            transition:transform .15s,box-shadow .15s; }
         .tkb-cell:hover { transform:scale(1.02); z-index:10; box-shadow:0 4px 16px rgba(0,0,0,.12); }
         .tkb-cell .mon { font-size:.73rem; font-weight:700; line-height:1.25; }
         .tkb-cell .meta { font-size:.67rem; opacity:.75; margin-top:1px; }
@@ -92,8 +88,7 @@
         .detail-table thead th { background:var(--surface); font-size:.78rem; font-weight:700;
             color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;
             padding:10px 14px; border-bottom:2px solid var(--border); }
-        .detail-table tbody td { padding:11px 14px; font-size:.88rem; border-bottom:1px solid #f0f4f8;
-            vertical-align:middle; }
+        .detail-table tbody td { padding:11px 14px; font-size:.88rem; border-bottom:1px solid #f0f4f8; vertical-align:middle; }
         .detail-table tbody tr:last-child td { border-bottom:none; }
         .detail-table tbody tr:hover { background:#f8fafd; }
 
@@ -105,124 +100,34 @@
         .empty-state { text-align:center; padding:56px 20px; color:var(--text-muted); }
         .empty-state i { font-size:3rem; opacity:.25; display:block; margin-bottom:14px; }
         .empty-state h5 { font-weight:600; color:#334155; }
-        .empty-state p { font-size:.9rem; }
         .empty-links { display:flex; gap:8px; justify-content:center; margin-top:14px; }
 
-        .flash-success { background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46;
-            border-radius:8px; padding:10px 16px; margin-bottom:16px; font-size:.9rem; }
-        .flash-error { background:#fef2f2; border:1px solid #fecaca; color:#991b1b;
-            border-radius:8px; padding:10px 16px; margin-bottom:16px; font-size:.9rem; }
-
-        /* Sub-text trong cell bảng chi tiết */
         .cell-sub { font-size:.78rem; color:var(--text-muted); margin-top:2px; display:block; }
-        /* ═════════ TOAST DELETE ═════════ */
 
-        .toast-delete {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-
-            width: 340px;
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 14px 40px rgba(0,0,0,.18);
-            border: 1px solid #fee2e2;
-            overflow: hidden;
-            z-index: 99999;
-
-            opacity: 0;
-            pointer-events: none;
-
-            transform: translateX(-50%) translateY(-20px);
-
-            transition:
-                    opacity .25s ease,
-                    transform .25s ease;
-        }
-
-        .toast-delete.show {
-            opacity: 1;
-            pointer-events: auto;
-
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .toast-delete-header {
-            background: linear-gradient(135deg,#dc2626,#ef4444);
-            color: #fff;
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .toast-delete-header i {
-            font-size: 1.1rem;
-        }
-
-        .toast-delete-body {
-            padding: 16px;
-        }
-
-        .toast-delete-title {
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 10px;
-            font-size: .92rem;
-        }
-
-        .toast-delete-info {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 10px 12px;
-            font-size: .8rem;
-            color: var(--text-muted);
-            line-height: 1.7;
-        }
-
-        .toast-delete-info strong {
-            color: var(--text);
-        }
-
-        .toast-delete-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 14px;
-        }
-
-        .toast-btn-cancel {
-            border: 1px solid #e2e8f0;
-            background: #fff;
-            color: #475569;
-            border-radius: 10px;
-            padding: 7px 14px;
-            font-size: .82rem;
-            font-weight: 600;
-        }
-
-        .toast-btn-cancel:hover {
-            background: #f1f5f9;
-        }
-
-        .toast-btn-delete {
-            border: none;
-            background: linear-gradient(135deg,#dc2626,#ef4444);
-            color: #fff;
-            border-radius: 10px;
-            padding: 7px 14px;
-            font-size: .82rem;
-            font-weight: 600;
-        }
-
-        .toast-btn-delete:hover {
-            opacity: .92;
-        }
+        /* Toast delete (giữ nguyên từ bản cũ) */
+        .toast-delete { position:fixed; top:24px; left:50%; width:340px; background:#fff;
+            border-radius:16px; box-shadow:0 14px 40px rgba(0,0,0,.18); border:1px solid #fee2e2;
+            overflow:hidden; z-index:99999; opacity:0; pointer-events:none;
+            transform:translateX(-50%) translateY(-20px);
+            transition:opacity .25s ease, transform .25s ease; }
+        .toast-delete.show { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+        .toast-delete-header { background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff;
+            padding:14px 16px; display:flex; align-items:center; gap:10px; }
+        .toast-delete-body { padding:16px; }
+        .toast-delete-title { font-weight:700; color:var(--text); margin-bottom:10px; font-size:.92rem; }
+        .toast-delete-info { background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;
+            padding:10px 12px; font-size:.8rem; color:var(--text-muted); line-height:1.7; }
+        .toast-delete-info strong { color:var(--text); }
+        .toast-delete-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
+        .toast-btn-cancel { border:1px solid #e2e8f0; background:#fff; color:#475569; border-radius:10px;
+            padding:7px 14px; font-size:.82rem; font-weight:600; }
+        .toast-btn-cancel:hover { background:#f1f5f9; }
+        .toast-btn-delete { border:none; background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff;
+            border-radius:10px; padding:7px 14px; font-size:.82rem; font-weight:600; }
+        .toast-btn-delete:hover { opacity:.92; }
     </style>
 
-
-    <!-- ── TABS ── -->
+    <!-- ── TABS (4 tabs) ── -->
     <ul class="tkb-tabs nav">
         <li class="nav-item">
             <a class="nav-link active" th:href="@{/tkb}">
@@ -232,6 +137,11 @@
         <li class="nav-item">
             <a class="nav-link" th:href="@{/tkb/theo-tuan}">
                 <i class="fas fa-calendar-week me-1"></i>Theo tuần
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/tkb/theo-thang}">
+                <i class="fas fa-calendar me-1"></i>Theo tháng
             </a>
         </li>
         <li class="nav-item">
@@ -249,8 +159,7 @@
                 <select name="giangVienId" class="form-select">
                     <option value="">— Chọn giảng viên —</option>
                     <option th:each="gv : ${giangViens}"
-                            th:value="${gv.id}"
-                            th:text="${gv.hoTenVaHocVi}"
+                            th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
                             th:selected="${gv.id == giangVienIdChon}">
                     </option>
                 </select>
@@ -276,6 +185,41 @@
                 </a>
             </div>
         </form>
+    </div>
+
+    <!-- ── WIDGET TÍN CHỈ (hiện khi đã chọn GV và HK) ── -->
+    <div th:if="${thongKeTinChi != null}" class="credit-bar-wrap">
+        <div class="credit-title">
+            <i class="fas fa-graduation-cap me-2"></i>
+            Tín chỉ học kỳ — <span th:text="${hocKyChon}"></span>
+        </div>
+        <div class="credit-stats">
+            <div class="credit-stat">
+                <div class="credit-num" th:text="${thongKeTinChi['phanCong']}">0</div>
+                <div class="credit-label">Được phân công</div>
+            </div>
+            <div style="font-size:1.4rem;color:#e2e8f0;align-self:center">→</div>
+            <div class="credit-stat">
+                <div class="credit-num done" th:text="${thongKeTinChi['daDay']}">0</div>
+                <div class="credit-label">Đã có lịch</div>
+            </div>
+            <div style="font-size:1.4rem;color:#e2e8f0;align-self:center">+</div>
+            <div class="credit-stat">
+                <div class="credit-num left" th:text="${thongKeTinChi['conLai']}">0</div>
+                <div class="credit-label">Chưa xếp lịch</div>
+            </div>
+        </div>
+        <div class="credit-progress">
+            <div class="credit-fill"
+                 th:style="'width:' + ${thongKeTinChi['phanCong'] > 0 ?
+                     (thongKeTinChi['daDay'] * 100 / thongKeTinChi['phanCong']) : 0} + '%'">
+            </div>
+        </div>
+        <div class="credit-pct"
+             th:text="${thongKeTinChi['phanCong'] > 0 ?
+                 #numbers.formatDecimal(thongKeTinChi['daDay'] * 100.0 / thongKeTinChi['phanCong'], 1, 1) + '%' : '0%'}
+                 + ' đã xếp lịch'">
+        </div>
     </div>
 
     <!-- ── KẾT QUẢ ── -->
@@ -305,7 +249,12 @@
                         <a th:if="${giangVienIdChon != null and hocKyChon != null}"
                            th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},hocKy=${hocKyChon})}"
                            class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-calendar-week me-1"></i>Xem theo tuần
+                            <i class="fas fa-calendar-week me-1"></i>Theo tuần
+                        </a>
+                        <a th:if="${giangVienIdChon != null and hocKyChon != null}"
+                           th:href="@{/tkb/theo-thang(giangVienId=${giangVienIdChon},hocKy=${hocKyChon})}"
+                           class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-calendar me-1"></i>Theo tháng
                         </a>
                     </div>
                 </div>
@@ -345,7 +294,6 @@
                             <tr th:each="tiet : ${#numbers.sequence(1,12)}">
                                 <td class="tiet-label">
                                     <div th:text="'T' + ${tiet}"></div>
-                                    <!-- Giờ học từ tietMap -->
                                     <div th:if="${tietMap != null and tietMap[tiet] != null}"
                                          style="font-size:.65rem;color:#94a3b8;margin-top:2px"
                                          th:text="${#temporals.format(tietMap[tiet].gioBatDau,'HH:mm')}">
@@ -363,20 +311,14 @@
                                                        ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':
                                                          i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':
                                                          i.index%6==4?'#dc2626':'#0284c7'}">
-
-                                            <!-- Tên môn -->
                                             <span class="mon"
                                                   th:style="'color:' + ${i.index%6==0?'#1e40af':i.index%6==1?'#065f46':
                                                              i.index%6==2?'#92400e':i.index%6==3?'#5b21b6':
                                                              i.index%6==4?'#991b1b':'#0c4a6e'}"
                                                   th:text="${tkb.lopHocPhan?.monHoc?.tenMon ?: '---'}"></span>
-
-                                            <!-- Giảng viên -->
                                             <span class="meta text-muted"
                                                   th:if="${tkb.lopHocPhan?.giangVien != null}"
                                                   th:text="${tkb.lopHocPhan.giangVien.hoTen}"></span>
-
-                                            <!-- Giờ học -->
                                             <span class="meta text-muted"
                                                   th:if="${tietMap != null and tietMap[tkb.tietBatDau] != null}"
                                                   th:text="${#temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm')}
@@ -384,13 +326,9 @@
                                                            ${tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
                                                              #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?'}">
                                             </span>
-
-                                            <!-- Phòng · Tiết -->
                                             <span class="meta text-muted"
                                                   th:text="'P.' + ${tkb.phongHoc ?: '?'} + ' · T' +
                                                            ${tkb.tietBatDau} + '–' + ${tkb.tietBatDau+tkb.soTiet-1}"></span>
-
-                                            <!-- Tín chỉ -->
                                             <span class="tc text-muted"
                                                   th:if="${tkb.lopHocPhan?.monHoc?.soTinChi != null}"
                                                   th:text="${tkb.lopHocPhan.monHoc.soTinChi} + ' TC'"></span>
@@ -414,21 +352,14 @@
                     <table class="detail-table">
                         <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Môn học / Giảng viên</th>
-                            <th>Tín chỉ</th>
-                            <th>Thứ</th>
-                            <th>Tiết / Giờ học</th>
-                            <th>Phòng</th>
-                            <th>Từ ngày</th>
-                            <th>Đến ngày</th>
+                            <th>#</th><th>Môn học / Giảng viên</th><th>Tín chỉ</th>
+                            <th>Thứ</th><th>Tiết / Giờ học</th><th>Phòng</th>
+                            <th>Từ ngày</th><th>Đến ngày</th>
                             <th sec:authorize="hasRole('ADMIN')"></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="tkb,i : ${thoiKhoaBieus}">
-
-                            <!-- STT -->
                             <td>
                                 <span class="tag"
                                       th:style="'background:' + ${i.index%6==0?'#dbeafe;color:#1e40af':
@@ -438,8 +369,6 @@
                                                  i.index%6==4?'#fee2e2;color:#991b1b':'#e0f2fe;color:#0c4a6e'}"
                                       th:text="${i.index+1}"></span>
                             </td>
-
-                            <!-- Môn học + Giảng viên (cùng 1 cột) -->
                             <td>
                                 <div class="fw-semibold" style="font-size:.88rem"
                                      th:text="${tkb.lopHocPhan?.monHoc?.tenMon ?: '---'}"></div>
@@ -447,20 +376,12 @@
                                       th:if="${tkb.lopHocPhan?.giangVien != null}"
                                       th:text="${tkb.lopHocPhan.giangVien.hoTen}"></span>
                             </td>
-
-                            <!-- Tín chỉ (cột riêng) -->
                             <td>
                                 <span class="tag tag-muted"
                                       th:if="${tkb.lopHocPhan?.monHoc?.soTinChi != null}"
                                       th:text="${tkb.lopHocPhan.monHoc.soTinChi} + ' TC'"></span>
                             </td>
-
-                            <!-- Thứ -->
-                            <td>
-                                <span class="tag tag-primary" th:text="${tkb.tenThu}"></span>
-                            </td>
-
-                            <!-- Tiết + Giờ học (cùng 1 cột) -->
+                            <td><span class="tag tag-primary" th:text="${tkb.tenThu}"></span></td>
                             <td>
                                 <div style="font-size:.88rem"
                                      th:text="'T' + ${tkb.tietBatDau} + ' → T' + ${tkb.tietBatDau+tkb.soTiet-1}"></div>
@@ -472,60 +393,35 @@
                                                  #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?'}">
                                 </span>
                             </td>
-
-                            <!-- Phòng -->
-                            <td>
-                                <span class="tag tag-muted" th:text="${tkb.phongHoc ?: '-'}"></span>
-                            </td>
-
-                            <!-- Từ ngày -->
+                            <td><span class="tag tag-muted" th:text="${tkb.phongHoc ?: '-'}"></span></td>
                             <td style="font-size:.83rem;color:var(--text-muted)"
                                 th:text="${tkb.tuanBatDau != null ? #temporals.format(tkb.tuanBatDau,'dd/MM/yyyy') : '—'}"></td>
-
-                            <!-- Đến ngày -->
                             <td style="font-size:.83rem;color:var(--text-muted)"
                                 th:text="${tkb.tuanKetThuc != null ? #temporals.format(tkb.tuanKetThuc,'dd/MM/yyyy') : '—'}"></td>
-
-                            <!-- Thao tác ADMIN -->
                             <td sec:authorize="hasRole('ADMIN')">
                                 <a th:href="@{/tkb/sua/{id}(id=${tkb.id})}"
                                    class="btn btn-sm btn-outline-warning me-1" title="Sửa">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <form th:action="@{/tkb/xoa/{id}(id=${tkb.id})}"
-                                      method="post"
-                                      class="d-inline form-delete-tkb">
-
-                                    <input type="hidden"
-                                           th:name="${_csrf.parameterName}"
-                                           th:value="${_csrf.token}"/>
-
+                                      method="post" class="d-inline form-delete-tkb">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                     <button type="button"
                                             class="btn btn-sm btn-outline-danger btn-delete-tkb"
-
-                                            th:attr="
-                data-mon=${tkb.lopHocPhan?.monHoc?.tenMon},
-                data-thu=${tkb.tenThu},
-                data-phong=${tkb.phongHoc},
-                data-tiet=${'T' + tkb.tietBatDau + ' → T' + (tkb.tietBatDau+tkb.soTiet-1)}
-            "
-
+                                            th:attr="data-mon=${tkb.lopHocPhan?.monHoc?.tenMon},
+                                                     data-thu=${tkb.tenThu},
+                                                     data-phong=${tkb.phongHoc},
+                                                     data-tiet=${'T' + tkb.tietBatDau + ' → T' + (tkb.tietBatDau+tkb.soTiet-1)}"
                                             title="Xóa">
-
                                         <i class="fas fa-trash-alt"></i>
-
                                     </button>
-
                                 </form>
                             </td>
-
                         </tr>
-
                         </tbody>
                     </table>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -539,190 +435,84 @@
                 <a th:href="@{/tkb/theo-tuan}" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-calendar-week me-1"></i>Lịch theo tuần
                 </a>
+                <a th:href="@{/tkb/theo-thang}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-calendar me-1"></i>Lịch theo tháng
+                </a>
                 <a th:href="@{/tkb/thong-ke}" class="btn btn-outline-warning btn-sm">
                     <i class="fas fa-chart-bar me-1"></i>Thống kê tải
                 </a>
             </div>
         </div>
     </div>
-    <!-- ═════════ TOAST XÁC NHẬN XÓA ═════════ -->
-    <div class="toast-delete" id="deleteToast">
 
+    <!-- ── TOAST XÓA ── -->
+    <div class="toast-delete" id="deleteToast">
         <div class="toast-delete-header">
             <i class="fas fa-trash-alt"></i>
             <div>Xác nhận xóa lịch học</div>
         </div>
-
         <div class="toast-delete-body">
-
-            <div class="toast-delete-title">
-                Bạn muốn xóa lịch học này?
-            </div>
-
+            <div class="toast-delete-title">Bạn muốn xóa lịch học này?</div>
             <div class="toast-delete-info">
-                <div>
-                    <strong>Môn:</strong>
-                    <span id="toastMon"></span>
-                </div>
-
-                <div>
-                    <strong>Thứ:</strong>
-                    <span id="toastThu"></span>
-                </div>
-
-                <div>
-                    <strong>Tiết:</strong>
-                    <span id="toastTiet"></span>
-                </div>
-
-                <div>
-                    <strong>Phòng:</strong>
-                    <span id="toastPhong"></span>
-                </div>
+                <div><strong>Môn:</strong> <span id="toastMon"></span></div>
+                <div><strong>Thứ:</strong> <span id="toastThu"></span></div>
+                <div><strong>Tiết:</strong> <span id="toastTiet"></span></div>
+                <div><strong>Phòng:</strong> <span id="toastPhong"></span></div>
             </div>
-
             <div class="toast-delete-actions">
-
-                <button type="button"
-                        class="toast-btn-cancel"
-                        id="btnCloseToast">
-
-                    Hủy
+                <button type="button" class="toast-btn-cancel" id="btnCloseToast">Hủy</button>
+                <button type="button" class="toast-btn-delete" id="btnConfirmDelete">
+                    <i class="fas fa-trash me-1"></i>Xóa
                 </button>
-
-                <button type="button"
-                        class="toast-btn-delete"
-                        id="btnConfirmDelete">
-
-                    <i class="fas fa-trash me-1"></i>
-                    Xóa
-                </button>
-
             </div>
-
         </div>
-
     </div>
+
 </th:block></body></html>
+
 <script>
-
-    /* ═════════ HIỂN THỊ NGÀY TRONG TUẦN ═════════ */
+    /* ── Ngày trong tuần ── */
     (function () {
-
         const today = new Date();
-
         const dow = today.getDay();
-
         const diffToMon = (dow === 0) ? -6 : 1 - dow;
-
         const monday = new Date(today);
-
         monday.setDate(today.getDate() + diffToMon);
-
         for (let i = 0; i < 6; i++) {
-
             const d = new Date(monday);
-
             d.setDate(monday.getDate() + i);
-
             const dd = String(d.getDate()).padStart(2, '0');
-
             const mm = String(d.getMonth() + 1).padStart(2, '0');
-
             const th = document.getElementById('th-' + (i + 2));
-
             if (!th) continue;
-
             th.querySelector('.date-sub').textContent = dd + '/' + mm;
-
-            if (d.toDateString() === today.toDateString()) {
-                th.classList.add('today-col');
-            }
+            if (d.toDateString() === today.toDateString()) th.classList.add('today-col');
         }
-
     })();
 
-
-
-    /* ═════════ TOAST XÓA ═════════ */
+    /* ── Toast xóa ── */
     (function () {
-
         const toast = document.getElementById('deleteToast');
-
-        const btnClose = document.getElementById('btnCloseToast');
-
+        if (!toast) return;
+        const btnClose   = document.getElementById('btnCloseToast');
         const btnConfirm = document.getElementById('btnConfirmDelete');
+        let currentForm  = null;
 
-        let currentForm = null;
-
-
-
-        /* ===== MỞ TOAST ===== */
         document.querySelectorAll('.btn-delete-tkb').forEach(btn => {
-
-            btn.addEventListener('click', function (e) {
-
-                e.preventDefault();
-
+            btn.addEventListener('click', function () {
                 currentForm = this.closest('form');
-
-                document.getElementById('toastMon').textContent =
-                    this.dataset.mon || '-';
-
-                document.getElementById('toastThu').textContent =
-                    this.dataset.thu || '-';
-
-                document.getElementById('toastTiet').textContent =
-                    this.dataset.tiet || '-';
-
-                document.getElementById('toastPhong').textContent =
-                    this.dataset.phong || '-';
-
+                document.getElementById('toastMon').textContent   = this.dataset.mon   || '-';
+                document.getElementById('toastThu').textContent   = this.dataset.thu   || '-';
+                document.getElementById('toastTiet').textContent  = this.dataset.tiet  || '-';
+                document.getElementById('toastPhong').textContent = this.dataset.phong || '-';
                 toast.classList.add('show');
-
             });
-
         });
-
-
-
-        /* ===== ĐÓNG TOAST ===== */
-        btnClose.addEventListener('click', function () {
-
-            toast.classList.remove('show');
-
-        });
-
-
-
-        /* ===== XÁC NHẬN XÓA ===== */
-        btnConfirm.addEventListener('click', function () {
-
-            toast.classList.remove('show');
-
-            if (currentForm) {
-                currentForm.submit();
-            }
-
-        });
-
-
-
-        /* ===== CLICK NGOÀI ĐỂ ĐÓNG ===== */
-        document.addEventListener('click', function (e) {
-
-            if (
-                toast.classList.contains('show') &&
-                !toast.contains(e.target) &&
-                !e.target.closest('.btn-delete-tkb')
-            ) {
-
+        btnClose.addEventListener('click', () => toast.classList.remove('show'));
+        btnConfirm.addEventListener('click', () => { toast.classList.remove('show'); if (currentForm) currentForm.submit(); });
+        document.addEventListener('click', e => {
+            if (toast.classList.contains('show') && !toast.contains(e.target) && !e.target.closest('.btn-delete-tkb'))
                 toast.classList.remove('show');
-
-            }
-
         });
-
     })();
-
 </script>

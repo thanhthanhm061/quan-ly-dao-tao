@@ -17,7 +17,7 @@ public class DataInitializer implements CommandLineRunner {
     private final NguoiDungRepository nguoiDungRepo;
     private final KhoaRepository khoaRepo;
     private final LopRepository lopRepo;
-    private final GiangVienRepository giangVienRepo;
+    private final NhanVienRepository  nhanVienRepo;
     private final SinhVienRepository sinhVienRepo;
     private final MonHocRepository monHocRepo;
     private final LopHocPhanRepository lhpRepo;
@@ -51,16 +51,16 @@ public class DataInitializer implements CommandLineRunner {
         // ===== GIẢNG VIÊN =====
         NguoiDung ndGv1 = nguoiDungRepo.save(NguoiDung.builder()
             .username("gv001").matKhau(defaultPass).hoTen("Nguyễn Văn An")
-            .email("nguyenvanan@qldt.edu.vn").vaiTro(VaiTro.GIANG_VIEN).kichHoat(true).build());
-        GiangVien gv1 = giangVienRepo.save(GiangVien.builder()
-            .maGv("GV001").hoTen("Nguyễn Văn An").hocVi("TS").chuyenNganh("Lập trình Java")
+            .email("nguyenvanan@qldt.edu.vn").vaiTro(VaiTro.NHAN_VIEN).kichHoat(true).build());
+        NhanVien gv1 = nhanVienRepo.save(NhanVien.builder()
+            .maNhanVien("GV001").hoTen("Nguyễn Văn An").hocVi("TS").chuyenMon("Lập trình Java")
             .email("nguyenvanan@qldt.edu.vn").khoa(khoaCNTT).nguoiDung(ndGv1).build());
 
         NguoiDung ndGv2 = nguoiDungRepo.save(NguoiDung.builder()
             .username("gv002").matKhau(defaultPass).hoTen("Trần Thị Bình")
-            .email("tranthibinh@qldt.edu.vn").vaiTro(VaiTro.GIANG_VIEN).kichHoat(true).build());
-        GiangVien gv2 = giangVienRepo.save(GiangVien.builder()
-            .maGv("GV002").hoTen("Trần Thị Bình").hocVi("ThS").chuyenNganh("Cơ sở dữ liệu")
+            .email("tranthibinh@qldt.edu.vn").vaiTro(VaiTro.NHAN_VIEN).kichHoat(true).build());
+        NhanVien gv2 = nhanVienRepo.save(NhanVien.builder()
+            .maNhanVien("GV002").hoTen("Trần Thị Bình").hocVi("ThS").chuyenMon("Cơ sở dữ liệu")
             .email("tranthibinh@qldt.edu.vn").khoa(khoaCNTT).nguoiDung(ndGv2).build());
 
         // ===== SINH VIÊN =====

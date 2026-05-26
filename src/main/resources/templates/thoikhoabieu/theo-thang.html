@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml"
+      th:replace="~{layout/base :: layout(~{::content}, 'Lịch theo tháng')}">
+<body><th:block th:fragment="content">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --navy:#0f2542; --navy-light:#1e3a5f; --blue:#2563eb;
+            --surface:#f8fafc; --border:#e2e8f0; --text:#0f172a; --text-muted:#64748b;
+            --radius:10px; --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.06);
+        }
+        body { font-family:'Be Vietnam Pro',sans-serif; background:#f1f5f9; }
+
+        /* Tabs */
+        .tkb-tabs { display:flex; gap:4px; background:#fff; border-radius:12px; padding:5px;
+            box-shadow:var(--shadow); margin-bottom:22px; border:none; }
+        .tkb-tabs .nav-item { flex:1; }
+        .tkb-tabs .nav-link { border:none; border-radius:8px; font-weight:500; font-size:.85rem;
+            color:var(--text-muted); padding:8px 10px; text-align:center; transition:.2s; white-space:nowrap; }
+        .tkb-tabs .nav-link:hover { background:var(--surface); color:var(--navy); }
+        .tkb-tabs .nav-link.active { background:var(--navy); color:#fff; }
+
+        /* Filter */
+        .filter-card { border:1.5px solid var(--border); border-radius:var(--radius);
+            background:#fff; padding:18px 22px; margin-bottom:20px;
+            box-shadow:0 1px 4px rgba(0,0,0,.05); }
+        .form-label { font-size:.82rem; font-weight:600; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; }
+        .form-select,.form-control { border:1.5px solid var(--border); border-radius:8px;
+            font-size:.9rem; padding:9px 12px; transition:.2s; }
+        .form-select:focus,.form-control:focus { border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; }
+        .btn-primary { background:var(--navy); border-color:var(--navy); border-radius:8px;
+            font-weight:600; font-size:.88rem; }
+
+        /* Card */
+        .card { border:1px solid var(--border); border-radius:var(--radius);
+            box-shadow:var(--shadow); background:#fff; margin-bottom:20px; }
+        .card-header { background:var(--navy); color:#fff;
+            border-radius:var(--radius) var(--radius) 0 0 !important;
+            padding:14px 20px; font-weight:600; border:none;
+            display:flex; align-items:center; justify-content:space-between; }
+
+        /* Credit widget */
+        .credit-bar-wrap { background:#fff; border:1.5px solid var(--border); border-radius:var(--radius);
+            padding:16px 20px; margin-bottom:20px; box-shadow:var(--shadow); }
+        .credit-title { font-size:.8rem; font-weight:700; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px; }
+        .credit-stats { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:12px; }
+        .credit-stat { text-align:center; }
+        .credit-num { font-size:1.6rem; font-weight:800; color:var(--navy); line-height:1; }
+        .credit-num.done { color:#059669; }
+        .credit-num.left { color:#d97706; }
+        .credit-label { font-size:.72rem; color:var(--text-muted); margin-top:3px; }
+        .credit-progress { height:8px; border-radius:8px; background:#e2e8f0; overflow:hidden; }
+        .credit-fill { height:100%; border-radius:8px; background:linear-gradient(90deg,#059669,#34d399);
+            transition:width .6s ease; }
+
+        /* Month nav */
+        .month-nav { display:flex; align-items:center; gap:10px; }
+        .month-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 14px;
+            border:1.5px solid rgba(255,255,255,.3); border-radius:8px;
+            font-size:.82rem; font-weight:500; color:#fff; text-decoration:none; transition:.2s; }
+        .month-btn:hover { background:rgba(255,255,255,.15); color:#fff; }
+
+        /* Calendar grid */
+        .cal-wrap { overflow-x:auto; }
+        .cal-grid { width:100%; border-collapse:collapse; table-layout:fixed; min-width:560px; }
+        .cal-grid th { background:var(--navy); color:#fff; font-weight:600; font-size:.8rem;
+            padding:10px 6px; text-align:center; border:1px solid rgba(255,255,255,.1); }
+        .cal-grid td { border:1px solid #e8edf3; vertical-align:top; padding:6px 5px;
+            height:100px; position:relative; }
+        .cal-grid td.other-month { background:#fafbfc; }
+        .cal-grid td.today-cell { background:#eff6ff; }
+        .cal-grid td.today-cell .day-num { background:var(--blue); color:#fff; }
+
+        .day-num { width:24px; height:24px; border-radius:50%; display:inline-flex;
+            align-items:center; justify-content:center; font-size:.78rem; font-weight:700;
+            color:var(--text-muted); margin-bottom:4px; }
+
+        /* Event pill trong calendar */
+        .cal-event {
+            display:block; border-radius:5px; padding:2px 6px; margin-bottom:2px;
+            font-size:.68rem; font-weight:600; cursor:pointer; line-height:1.4;
+            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+            transition:opacity .15s, transform .15s;
+        }
+        .cal-event:hover { opacity:.85; transform:scale(1.01); }
+        .cal-more { font-size:.68rem; color:var(--text-muted); cursor:pointer; }
+
+        .tag { display:inline-flex; align-items:center; font-size:.75rem;
+            padding:3px 10px; border-radius:20px; font-weight:600; }
+        .tag-primary { background:#dbeafe; color:#1e40af; }
+
+        /* Empty */
+        .empty-state { text-align:center; padding:56px 20px; color:var(--text-muted); }
+        .empty-state i { font-size:3rem; opacity:.25; display:block; margin-bottom:14px; }
+        .empty-state h5 { font-weight:600; color:#334155; }
+
+        /* ══ POPUP ══ */
+        .tkb-overlay {
+            position:fixed; inset:0; background:rgba(15,37,66,.45);
+            z-index:5000; display:flex; align-items:center; justify-content:center;
+            opacity:0; pointer-events:none; transition:opacity .2s ease;
+        }
+        .tkb-overlay.show { opacity:1; pointer-events:auto; }
+        .tkb-popup {
+            background:#fff; border-radius:16px; width:420px; max-width:95vw;
+            box-shadow:0 24px 80px rgba(0,0,0,.25);
+            transform:translateY(16px) scale(.97);
+            transition:transform .22s ease;
+            overflow:hidden;
+        }
+        .tkb-overlay.show .tkb-popup { transform:translateY(0) scale(1); }
+        .popup-header { padding:16px 20px 14px; display:flex; align-items:flex-start;
+            justify-content:space-between; border-bottom:1px solid var(--border); }
+        .popup-mon { font-size:1rem; font-weight:700; color:var(--navy); }
+        .popup-lhp { font-size:.8rem; color:var(--text-muted); margin-top:2px; }
+        .popup-close { width:28px; height:28px; border:none; background:#f1f5f9; border-radius:8px;
+            display:flex; align-items:center; justify-content:center; cursor:pointer;
+            color:var(--text-muted); font-size:.85rem; flex-shrink:0; transition:.15s; }
+        .popup-close:hover { background:#e2e8f0; }
+        .popup-body { padding:16px 20px; }
+        .popup-row { display:flex; align-items:center; gap:10px; padding:7px 0;
+            border-bottom:1px solid #f0f4f8; font-size:.88rem; }
+        .popup-row:last-child { border-bottom:none; }
+        .popup-row i { width:18px; color:var(--text-muted); flex-shrink:0; }
+        .popup-row .label { color:var(--text-muted); min-width:90px; font-size:.8rem; }
+        .popup-row .value { font-weight:600; color:var(--text); }
+        .popup-actions { padding:14px 20px 16px; display:flex; gap:8px; flex-wrap:wrap;
+            border-top:1px solid var(--border); background:#fafbfc; }
+        .popup-btn { flex:1; min-width:120px; padding:9px 12px; border-radius:10px;
+            font-size:.82rem; font-weight:600; border:none; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; gap:6px; transition:.18s; }
+        .popup-btn-leave  { background:#fef2f2; color:#dc2626; border:1.5px solid #fecaca; }
+        .popup-btn-leave:hover  { background:#dc2626; color:#fff; border-color:#dc2626; }
+        .popup-btn-approve { background:#ecfdf5; color:#059669; border:1.5px solid #a7f3d0; }
+        .popup-btn-approve:hover { background:#059669; color:#fff; border-color:#059669; }
+        .popup-btn-makeup  { background:#eff6ff; color:#2563eb; border:1.5px solid #bfdbfe; }
+        .popup-btn-makeup:hover  { background:#2563eb; color:#fff; border-color:#2563eb; }
+    </style>
+
+    <!-- ── TABS ── -->
+    <ul class="tkb-tabs nav">
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb}">
+            <i class="fas fa-calendar-alt me-1"></i>Tổng quan</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb/theo-tuan}">
+            <i class="fas fa-calendar-week me-1"></i>Theo tuần</a></li>
+        <li class="nav-item"><a class="nav-link active" th:href="@{/tkb/theo-thang}">
+            <i class="fas fa-calendar me-1"></i>Theo tháng</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb/thong-ke}">
+            <i class="fas fa-chart-bar me-1"></i>Thống kê tải</a></li>
+    </ul>
+
+    <!-- ── FILTER ── -->
+    <div class="filter-card">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3" sec:authorize="hasRole('ADMIN')">
+                <label class="form-label">Giảng viên</label>
+                <select name="giangVienId" class="form-select">
+                    <option value="">— Chọn —</option>
+                    <option th:each="gv : ${giangViens}"
+                            th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
+                            th:selected="${gv.id == giangVienIdChon}">
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Học kỳ</label>
+                <select name="hocKy" class="form-select">
+                    <option value="">— Chọn —</option>
+                    <option th:each="hk : ${danhSachHocKy}"
+                            th:value="${hk}" th:text="${hk}"
+                            th:selected="${hk == hocKyChon}">
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Tháng / Năm</label>
+                <input type="month" name="ngay" class="form-control"
+                       th:value="${namHienTai != null ? namHienTai + '-' + #strings.leftPad('' + thangHienTai, 2, '0') : ''}"/>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Xem tháng này
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── WIDGET TÍN CHỈ ── -->
+    <div th:if="${thongKeTinChi != null}" class="credit-bar-wrap">
+        <div class="credit-title"><i class="fas fa-graduation-cap me-2"></i>Tín chỉ học kỳ</div>
+        <div class="credit-stats">
+            <div class="credit-stat">
+                <div class="credit-num" th:text="${thongKeTinChi['phanCong']}">0</div>
+                <div class="credit-label">Được phân công</div>
+            </div>
+            <div class="credit-stat">
+                <div class="credit-num done" th:text="${thongKeTinChi['daDay']}">0</div>
+                <div class="credit-label">Đã có lịch</div>
+            </div>
+            <div class="credit-stat">
+                <div class="credit-num left" th:text="${thongKeTinChi['conLai']}">0</div>
+                <div class="credit-label">Chưa xếp lịch</div>
+            </div>
+        </div>
+        <div class="credit-progress">
+            <div class="credit-fill"
+                 th:style="'width:' + ${thongKeTinChi['phanCong'] > 0 ?
+                     (thongKeTinChi['daDay'] * 100 / thongKeTinChi['phanCong']) : 0} + '%'">
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CALENDAR ── -->
+    <div th:if="${thoiKhoaBieus != null}">
+
+        <div th:if="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
+            <div class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <h5>Không có lịch trong tháng này</h5>
+                <p>Thử chọn tháng khác hoặc kiểm tra lại học kỳ.</p>
+            </div>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <span>
+                        <i class="fas fa-calendar me-2"></i>
+                        Tháng <span th:text="${thangHienTai}"></span> / <span th:text="${namHienTai}"></span>
+                        <span th:if="${giangVien != null}"> — <span th:text="${giangVien.hoTenVaHocVi}"></span></span>
+                        <span th:if="${sinhVien != null}"> — <span th:text="${sinhVien.hoTen}"></span></span>
+                    </span>
+                    <span class="tag tag-primary" th:text="${#lists.size(thoiKhoaBieus)} + ' buổi'"></span>
+                </div>
+                <div class="month-nav">
+                    <a th:href="@{/tkb/theo-thang(giangVienId=${giangVienIdChon},
+                       hocKy=${hocKyChon},
+                       ngay=${ngayChon != null ? ngayChon.minusMonths(1) : ''})}"
+                       class="month-btn">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </a>
+                    <a th:href="@{/tkb/theo-thang(giangVienId=${giangVienIdChon},
+                       hocKy=${hocKyChon},
+                       ngay=${ngayChon != null ? ngayChon.plusMonths(1) : ''})}"
+                       class="month-btn">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="cal-wrap">
+                    <!-- Dữ liệu TKB được xử lý bằng JS, inject qua JSON -->
+                    <div id="calendarData"
+                         th:attr="data-json=${calendarJson}"
+                         style="display:none"></div>
+                    <div id="calendarGrid" style="padding:0"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CHƯA CHỌN ── -->
+    <div th:if="${thoiKhoaBieus == null}" class="card">
+        <div class="empty-state">
+            <i class="fas fa-calendar"></i>
+            <h5>Chọn học kỳ và tháng để xem lịch</h5>
+            <p>ADMIN có thể chọn thêm giảng viên cần xem.</p>
+        </div>
+    </div>
+
+    <!-- ══ POPUP ══ -->
+    <div class="tkb-overlay" id="tkbOverlay" onclick="dongPopup(event)">
+        <div class="tkb-popup">
+            <div class="popup-header">
+                <div>
+                    <div class="popup-mon" id="popupMon">—</div>
+                    <div class="popup-lhp" id="popupLhp">—</div>
+                </div>
+                <button class="popup-close" onclick="dongPopupBtn()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="popup-body">
+                <div class="popup-row">
+                    <i class="fas fa-user-tie"></i>
+                    <span class="label">Giảng viên</span>
+                    <span class="value" id="popupGv">—</span>
+                </div>
+                <div class="popup-row">
+                    <i class="fas fa-calendar-day"></i>
+                    <span class="label">Ngày học</span>
+                    <span class="value" id="popupNgay">—</span>
+                </div>
+                <div class="popup-row">
+                    <i class="fas fa-clock"></i>
+                    <span class="label">Tiết / Giờ</span>
+                    <span class="value" id="popupTiet">—</span>
+                </div>
+                <div class="popup-row">
+                    <i class="fas fa-door-open"></i>
+                    <span class="label">Phòng học</span>
+                    <span class="value" id="popupPhong">—</span>
+                </div>
+                <div class="popup-row">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span class="label">Tín chỉ</span>
+                    <span class="value" id="popupTc">—</span>
+                </div>
+            </div>
+            <div class="popup-actions" id="popupActions">
+                <button id="btnXinNghi" class="popup-btn popup-btn-leave"
+                        onclick="diXinNghi()" style="display:none">
+                    <i class="fas fa-file-medical"></i> Xin nghỉ ngày này
+                </button>
+                <button id="btnDuyetDon" class="popup-btn popup-btn-approve"
+                        onclick="diDuyetDon()" style="display:none">
+                    <i class="fas fa-clipboard-check"></i> Xem đơn nghỉ
+                </button>
+                <button id="btnXepBu" class="popup-btn popup-btn-makeup"
+                        onclick="diXepBu()" style="display:none">
+                    <i class="fas fa-calendar-plus"></i> Xếp lịch dạy bù
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Server meta -->
+    <div id="serverMeta"
+         th:attr="
+             data-is-admin=${#authorization.expression('hasRole(''ADMIN'')') ? 'true' : 'false'},
+             data-is-quan-ly=${isQuanLy != null and isQuanLy ? 'true' : 'false'},
+             data-current-nv-id=${currentNvId ?: ''},
+             data-thang=${thangHienTai},
+             data-nam=${namHienTai}
+         "
+         style="display:none">
+    </div>
+
+</th:block></body></html>
+
+<script th:inline="javascript">
+    /* ═══════════════════════════════════════════════════════
+       RENDER CALENDAR GRID (JavaScript)
+       Dữ liệu TKB được Thymeleaf inject vào #calendarData
+       qua attribute data-json (JSON array).
+       ═══════════════════════════════════════════════════════ */
+
+    const COLORS = [
+        { bg:'#dbeafe', border:'#2563eb', text:'#1e40af' },
+        { bg:'#d1fae5', border:'#059669', text:'#065f46' },
+        { bg:'#fef3c7', border:'#d97706', text:'#92400e' },
+        { bg:'#ede9fe', border:'#7c3aed', text:'#5b21b6' },
+        { bg:'#fee2e2', border:'#dc2626', text:'#991b1b' },
+        { bg:'#e0f2fe', border:'#0284c7', text:'#0c4a6e' },
+    ];
+    const DAY_NAMES = ['CN','T2','T3','T4','T5','T6','T7'];
+
+    const meta    = document.getElementById('serverMeta');
+    const isAdmin  = meta?.dataset.isAdmin  === 'true';
+    const isQuanLy = meta?.dataset.isQuanLy === 'true';
+    const curNvId  = meta?.dataset.currentNvId || '';
+    const thang    = parseInt(meta?.dataset.thang || '1');
+    const nam      = parseInt(meta?.dataset.nam   || new Date().getFullYear());
+
+    let popupNgayIso = '', popupGvId = '', popupLhpId = '';
+
+    /* ── Lấy JSON dữ liệu TKB ── */
+    const calDataEl = document.getElementById('calendarData');
+    let events = [];
+    if (calDataEl && calDataEl.dataset.json) {
+        try { events = JSON.parse(calDataEl.dataset.json); } catch(e) {}
+    }
+
+    /* ── Render calendar ── */
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        if (!grid) return;
+
+        const today = new Date();
+        const firstDay = new Date(nam, thang - 1, 1);
+        const lastDay  = new Date(nam, thang, 0);
+        const startDow = firstDay.getDay(); // 0=CN
+
+        // Build event map: key = "YYYY-MM-DD" → list of events occurring on that weekday
+        // TKB là lịch lặp: mỗi tuần vào cùng thuTrongTuan trong khoảng tuanBatDau–tuanKetThuc
+        // Duyệt từng ngày trong tháng, xét TKB nào áp dụng
+
+        let html = `<table class="cal-grid">
+            <thead><tr>`;
+        DAY_NAMES.forEach(d => { html += `<th>${d}</th>`; });
+        html += `</tr></thead><tbody>`;
+
+        let dayCount = 1;
+        let row = `<tr>`;
+
+        // Padding ô trống đầu tháng
+        for (let i = 0; i < startDow; i++) row += `<td class="other-month"></td>`;
+
+        const totalCells = startDow + lastDay.getDate();
+        const totalRows  = Math.ceil(totalCells / 7);
+
+        let cell = startDow;
+
+        for (let r = 0; r < totalRows; r++) {
+            if (r > 0) row = `<tr>`;
+            for (let c = (r === 0 ? startDow : 0); c < 7; c++) {
+                if (dayCount > lastDay.getDate()) {
+                    row += `<td class="other-month"></td>`;
+                } else {
+                    const dateObj   = new Date(nam, thang - 1, dayCount);
+                    const jsDow     = dateObj.getDay(); // 0=CN,1=Mon,...
+                    const thuServer = jsDow === 0 ? 8 : jsDow + 1; // 2=T2..7=T7, 8=CN
+                    const dateIso   = dateObj.toISOString().split('T')[0];
+                    const isToday   = dateObj.toDateString() === today.toDateString();
+
+                    // Lọc TKB áp dụng cho ngày này
+                    const dayEvents = events.filter(ev => {
+                        if (ev.thuTrongTuan !== thuServer) return false;
+                        const start = ev.tuanBatDau ? new Date(ev.tuanBatDau) : null;
+                        const end   = ev.tuanKetThuc ? new Date(ev.tuanKetThuc) : null;
+                        if (start && dateObj < start) return false;
+                        if (end   && dateObj > end)   return false;
+                        return true;
+                    });
+
+                    let evHtml = '';
+                    const MAX_SHOW = 2;
+                    dayEvents.slice(0, MAX_SHOW).forEach((ev, idx) => {
+                        const clr = COLORS[idx % COLORS.length];
+                        const label = ev.tenMon || '—';
+                        const phong = ev.phongHoc || '?';
+                        const gio   = ev.gioHoc   || '';
+                        const dataAttrs = [
+                            `data-mon="${escHtml(ev.tenMon)}"`,
+                            `data-lhp="${escHtml(ev.maLhp)}"`,
+                            `data-gv="${escHtml(ev.hoTenGv)}"`,
+                            `data-thu="${escHtml(ev.tenThu)}"`,
+                            `data-ngay="${formatNgay(dateIso)}"`,
+                            `data-ngay-iso="${dateIso}"`,
+                            `data-tiet="T${ev.tietBatDau} → T${ev.tietBatDau + ev.soTiet - 1}"`,
+                            `data-phong="${escHtml(ev.phongHoc)}"`,
+                            `data-tc="${ev.soTinChi}"`,
+                            `data-gio="${escHtml(ev.gioHoc)}"`,
+                            `data-lhp-id="${ev.lhpId}"`,
+                            `data-gv-id="${ev.gvId}"`,
+                        ].join(' ');
+                        evHtml += `<span class="cal-event"
+                            style="background:${clr.bg};color:${clr.text};border-left:3px solid ${clr.border}"
+                            ${dataAttrs}
+                            onclick="moPopup(this)">
+                            ${escHtml(label)} · P${phong}
+                        </span>`;
+                    });
+                    if (dayEvents.length > MAX_SHOW) {
+                        evHtml += `<div class="cal-more">+${dayEvents.length - MAX_SHOW} buổi nữa</div>`;
+                    }
+
+                    row += `<td class="${isToday ? 'today-cell' : ''}">
+                        <div class="day-num">${dayCount}</div>
+                        ${evHtml}
+                    </td>`;
+                    dayCount++;
+                }
+            }
+            row += `</tr>`;
+            html += row;
+        }
+
+        html += `</tbody></table>`;
+        grid.innerHTML = html;
+    }
+
+    function escHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    function formatNgay(iso) {
+        if (!iso) return '';
+        const [y,m,d] = iso.split('-');
+        return `${d}/${m}/${y}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', renderCalendar);
+
+    /* ══ POPUP ══ */
+    const overlay = document.getElementById('tkbOverlay');
+
+    function moPopup(el) {
+        const d = el.dataset;
+        document.getElementById('popupMon').textContent  = d.mon  || '—';
+        document.getElementById('popupLhp').textContent  = d.lhp  || '—';
+        document.getElementById('popupGv').textContent   = d.gv   || '—';
+        document.getElementById('popupNgay').textContent = (d.thu || '') + ', ' + (d.ngay || '—');
+        document.getElementById('popupTiet').textContent = (d.tiet || '—') + (d.gio ? '  (' + d.gio + ')' : '');
+        document.getElementById('popupPhong').textContent= 'Phòng ' + (d.phong || '?');
+        document.getElementById('popupTc').textContent   = d.tc ? d.tc + ' tín chỉ' : '—';
+
+        popupNgayIso = d.ngayIso || '';
+        popupGvId    = d.gvId    || '';
+        popupLhpId   = d.lhpId  || '';
+
+        const laMinhDang = curNvId && popupGvId && curNvId === popupGvId;
+        document.getElementById('btnXinNghi').style.display  = laMinhDang ? '' : 'none';
+        document.getElementById('btnDuyetDon').style.display = (isAdmin || isQuanLy) ? '' : 'none';
+        document.getElementById('btnXepBu').style.display    = (isAdmin || isQuanLy) ? '' : 'none';
+        document.getElementById('popupActions').style.display =
+            (laMinhDang || isAdmin || isQuanLy) ? '' : 'none';
+
+        overlay.classList.add('show');
+    }
+
+    function dongPopup(e) { if (e.target === overlay) overlay.classList.remove('show'); }
+    function dongPopupBtn() { overlay.classList.remove('show'); }
+    document.addEventListener('keydown', e => { if (e.key==='Escape') overlay.classList.remove('show'); });
+
+    function diXinNghi()  { location.href = '/don-nghi/tao?ngayBatDau=' + popupNgayIso + '&ngayKetThuc=' + popupNgayIso; }
+    function diDuyetDon() { location.href = '/don-nghi/duyet?giangVienId=' + popupGvId; }
+    function diXepBu()    { location.href = '/lich-day-bu/xep?lhpId=' + popupLhpId + '&giangVienId=' + popupGvId + '&ngayNghiGoc=' + popupNgayIso; }
+</script>

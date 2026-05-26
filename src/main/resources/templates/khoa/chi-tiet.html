@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::content}, 'Chi tiết khoa')}">
+
+<th:block th:fragment="content">
+
+    <style>
+
+        body{
+            background:#f1f5f9;
+        }
+
+        .detail-card{
+            border:none;
+            border-radius:24px;
+            overflow:hidden;
+            box-shadow:0 10px 30px rgba(0,0,0,.08);
+            background:#fff;
+        }
+
+        .detail-header{
+            background:linear-gradient(135deg,#1e3a8a,#2563eb);
+            color:white;
+            padding:24px 30px;
+        }
+
+        .detail-title{
+            font-size:28px;
+            font-weight:700;
+            display:flex;
+            align-items:center;
+            gap:14px;
+        }
+
+        .back-btn{
+            width:42px;
+            height:42px;
+            border-radius:12px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .info-table td{
+            padding:14px 10px;
+            vertical-align:middle;
+            border:none;
+        }
+
+        .info-label{
+            width:180px;
+            color:#64748b;
+            font-weight:600;
+        }
+
+        .badge-code{
+            background:#dbeafe;
+            color:#2563eb;
+            padding:8px 14px;
+            border-radius:10px;
+            font-size:14px;
+            font-weight:700;
+        }
+
+        .badge-active{
+            background:#dcfce7;
+            color:#16a34a;
+            padding:7px 14px;
+            border-radius:999px;
+            font-size:13px;
+            font-weight:700;
+        }
+
+        .badge-stop{
+            background:#fee2e2;
+            color:#dc2626;
+            padding:7px 14px;
+            border-radius:999px;
+            font-size:13px;
+            font-weight:700;
+        }
+
+        .staff-card{
+            border:none;
+            border-radius:24px;
+            overflow:hidden;
+            box-shadow:0 10px 30px rgba(0,0,0,.08);
+        }
+
+        .staff-header{
+            background:#0ea5e9;
+            color:white;
+            padding:18px 24px;
+            font-weight:700;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+
+        .staff-badge{
+            background:white;
+            color:#0284c7;
+            border-radius:999px;
+            padding:6px 14px;
+            font-size:13px;
+            font-weight:700;
+        }
+
+        .table thead{
+            background:#f8fafc;
+        }
+
+        .table thead th{
+            border:none;
+            padding:16px;
+            font-size:14px;
+            font-weight:700;
+            color:#334155;
+        }
+
+        .table tbody td{
+            padding:16px;
+            vertical-align:middle;
+        }
+
+        .staff-name{
+            font-weight:700;
+            color:#0f172a;
+            text-decoration:none;
+        }
+
+        .staff-name:hover{
+            color:#2563eb;
+        }
+
+        .action-btn{
+            border-radius:12px;
+            padding:10px 18px;
+            font-weight:600;
+        }
+
+    </style>
+
+    <div class="container-fluid px-4">
+
+        <!-- TOP HEADER -->
+        <div class="detail-card mb-4">
+
+            <div class="detail-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <a th:href="@{/admin/khoa}"
+                       class="btn btn-light back-btn">
+
+                        <i class="fas fa-arrow-left"></i>
+
+                    </a>
+
+                    <div>
+
+                        <div class="detail-title">
+
+                            <i class="fas fa-building"></i>
+
+                            <span th:text="${khoa.tenKhoa}">
+                                Khoa CNTT
+                            </span>
+
+                        </div>
+
+                        <div class="mt-2 text-white-50">
+
+                            Mã khoa:
+                            <strong th:text="${khoa.maKhoa}">
+                                CNTT
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <a th:href="@{/admin/khoa/sua/{id}(id=${khoa.id})}"
+                   class="btn btn-light text-warning action-btn">
+
+                    <i class="fas fa-edit me-1"></i>
+                    Chỉnh sửa
+
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="row g-4">
+
+            <!-- THÔNG TIN -->
+            <div class="col-lg-5">
+
+                <div class="detail-card h-100">
+
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold mb-4">
+                            <i class="fas fa-circle-info text-primary me-2"></i>
+                            Thông tin cơ bản
+                        </h5>
+
+                        <table class="table info-table mb-0">
+
+                            <tr>
+
+                                <td class="info-label">
+                                    Mã khoa
+                                </td>
+
+                                <td>
+                                    <span class="badge-code"
+                                          th:text="${khoa.maKhoa}">
+                                    </span>
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td class="info-label">
+                                    Tên khoa
+                                </td>
+
+                                <td class="fw-semibold"
+                                    th:text="${khoa.tenKhoa}">
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td class="info-label">
+                                    Ngày thành lập
+                                </td>
+
+                                <td th:text="${khoa.ngayThanhLap != null ? #temporals.format(khoa.ngayThanhLap,'dd/MM/yyyy') : '-'}">
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td class="info-label">
+                                    Số điện thoại
+                                </td>
+
+                                <td th:text="${khoa.soDienThoai ?: '-'}">
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td class="info-label">
+                                    Email
+                                </td>
+
+                                <td>
+
+                                    <a th:if="${khoa.email != null}"
+                                       th:href="'mailto:' + ${khoa.email}"
+                                       th:text="${khoa.email}"
+                                       class="text-decoration-none">
+                                    </a>
+
+                                    <span th:unless="${khoa.email != null}">
+                                        -
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td class="info-label">
+                                    Địa chỉ
+                                </td>
+
+                                <td th:text="${khoa.diaChi ?: '-'}">
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td class="info-label">
+                                    Trạng thái
+                                </td>
+
+                                <td>
+
+                                    <span th:if="${khoa.trangThai}"
+                                          class="badge-active">
+
+                                        Hoạt động
+
+                                    </span>
+
+                                    <span th:unless="${khoa.trangThai}"
+                                          class="badge-stop">
+
+                                        Tạm dừng
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                            <tr th:if="${khoa.moTa != null}">
+
+                                <td class="info-label">
+                                    Mô tả
+                                </td>
+
+                                <td th:text="${khoa.moTa}">
+                                </td>
+
+                            </tr>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- NHÂN VIÊN -->
+            <div class="col-lg-7">
+
+                <div class="staff-card">
+
+                    <div class="staff-header">
+
+                        <div>
+                            <i class="fas fa-users me-2"></i>
+                            Nhân viên thuộc khoa
+                        </div>
+
+                        <span class="staff-badge"
+                              th:text="${khoa.soNhanVien + ' người'}">
+                        </span>
+
+                    </div>
+
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle mb-0">
+
+                            <thead>
+
+                            <tr>
+                                <th>Họ tên</th>
+                                <th>Chức vụ</th>
+                                <th>Email</th>
+                                <th class="text-center">Trạng thái</th>
+                            </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                            <tr th:if="${#lists.isEmpty(khoa.nhanViens)}">
+
+                                <td colspan="4"
+                                    class="text-center py-5 text-muted">
+
+                                    Chưa có nhân viên
+
+                                </td>
+
+                            </tr>
+
+                            <tr th:each="nv : ${khoa.nhanViens}">
+
+                                <td>
+
+                                    <a th:href="@{/admin/nhan-vien/chi-tiet/{id}(id=${nv.id})}"
+                                       class="staff-name"
+                                       th:text="${nv.hoTenVaHocVi}">
+                                    </a>
+
+                                    <div class="small text-muted mt-1"
+                                         th:text="${nv.maNhanVien}">
+                                    </div>
+
+                                </td>
+
+                                <td th:text="${nv.chucVu != null ? nv.chucVu.tenChucVu : '-'}">
+                                </td>
+
+                                <td th:text="${nv.email ?: '-'}">
+                                </td>
+
+                                <td class="text-center">
+
+                                    <span th:if="${nv.trangThai}"
+                                          class="badge-active">
+
+                                        Đang làm
+
+                                    </span>
+
+                                    <span th:unless="${nv.trangThai}"
+                                          class="badge-stop">
+
+                                        Đã nghỉ
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</th:block>
+
+</html>

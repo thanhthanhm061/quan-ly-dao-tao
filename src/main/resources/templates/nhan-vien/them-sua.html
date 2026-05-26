@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::#page-content}, ${tieuDe})}">
+<body>
+<div id="page-content">
+
+    <div class="container-fluid px-4">
+
+        <!-- HEADER -->
+        <div class="d-flex align-items-center py-3 mb-3 border-bottom">
+            <a th:href="@{/admin/nhan-vien}"
+               class="btn btn-outline-secondary btn-sm me-3">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h4 class="mb-0 fw-bold" th:text="${tieuDe}">Nhân viên</h4>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+
+                        <form th:action="${nhanVien.id == null}
+                                ? @{/admin/nhan-vien/them}
+                                : @{/admin/nhan-vien/sua/{id}(id=${nhanVien.id})}"
+                              th:object="${nhanVien}"
+                              method="post">
+
+                            <input type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}"/>
+
+                            <!-- THÔNG TIN CƠ BẢN -->
+                            <h6 class="text-primary fw-bold border-bottom pb-2 mb-3">
+                                <i class="fas fa-user me-1"></i>
+                                Thông Tin Cơ Bản
+                            </h6>
+
+                            <div class="row g-3">
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Mã Nhân Viên</label>
+                                    <input type="text"
+                                           th:field="*{maNhanVien}"
+                                           class="form-control"
+                                           th:readonly="${nhanVien.id != null}"/>
+                                    <div class="invalid-feedback d-block"
+                                         th:errors="*{maNhanVien}"></div>
+                                </div>
+
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold">Họ Tên</label>
+                                    <input type="text"
+                                           th:field="*{hoTen}"
+                                           class="form-control"/>
+                                    <div class="invalid-feedback d-block"
+                                         th:errors="*{hoTen}"></div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">Giới Tính</label>
+                                    <select name="gioiTinh" class="form-select">
+                                        <option value="">-- Chọn --</option>
+                                        <option value="Nam"  th:selected="${nhanVien.gioiTinh == 'Nam'}">Nam</option>
+                                        <option value="Nữ"   th:selected="${nhanVien.gioiTinh == 'Nữ'}">Nữ</option>
+                                        <option value="Khác" th:selected="${nhanVien.gioiTinh == 'Khác'}">Khác</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">Ngày Sinh</label>
+                                    <input type="date"
+                                           th:field="*{ngaySinh}"
+                                           class="form-control"/>
+                                </div>
+
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold">Email</label>
+                                    <input type="email"
+                                           th:field="*{email}"
+                                           class="form-control"/>
+                                    <div class="invalid-feedback d-block"
+                                         th:errors="*{email}"></div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">SĐT</label>
+                                    <input type="text"
+                                           th:field="*{soDienThoai}"
+                                           class="form-control"/>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Địa Chỉ</label>
+                                    <input type="text"
+                                           th:field="*{diaChi}"
+                                           class="form-control"/>
+                                </div>
+
+                            </div>
+
+                            <!-- HỌC VẤN -->
+                            <h6 class="text-success fw-bold border-bottom pb-2 mb-3 mt-4">
+                                <i class="fas fa-graduation-cap me-1"></i>
+                                Học Vấn & Chuyên Nghành
+                            </h6>
+
+                            <div class="row g-3">
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Học Vị</label>
+                                    <select th:field="*{hocVi}" class="form-select">
+                                        <option value="">-- Học vị --</option>
+                                        <option th:each="hv : ${dsHocVi}"
+                                                th:value="${hv}"
+                                                th:text="${hv}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Học Hàm</label>
+                                    <select th:field="*{hocHam}" class="form-select">
+                                        <option value="">-- Học hàm --</option>
+                                        <option th:each="hh : ${dsHocHam}"
+                                                th:value="${hh}"
+                                                th:text="${hh == '' ? '(Không có)' : hh}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Chuyên Ngành</label>
+                                    <input type="text"
+                                           th:field="*{chuyenMon}"
+                                           class="form-control"
+                                           placeholder="Ví dụ: Công nghệ phần mềm..."/>
+                                </div>
+
+                            </div>
+
+                            <!-- CÔNG TÁC -->
+                            <h6 class="text-warning fw-bold border-bottom pb-2 mb-3 mt-4">
+                                <i class="fas fa-briefcase me-1"></i>
+                                Thông Tin Công Tác
+                            </h6>
+
+                            <div class="row g-3">
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Khoa</label>
+                                    <select th:field="*{khoa}" class="form-select">
+                                        <option value="">-- Chọn khoa --</option>
+                                        <option th:each="k : ${dsKhoa}"
+                                                th:value="${k.id}"
+                                                th:text="${k.tenKhoa}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Chức Vụ</label>
+                                    <select th:field="*{chucVu}" class="form-select">
+                                        <option value="">-- Chọn chức vụ --</option>
+                                        <option th:each="cv : ${dsChucVu}"
+                                                th:value="${cv.id}"
+                                                th:text="${cv.tenChucVu}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Loại Hợp Đồng</label>
+                                    <select th:field="*{loaiHopDong}" class="form-select">
+                                        <option value="">-- Loại hợp đồng --</option>
+                                        <option th:each="hd : ${dsLoaiHopDong}"
+                                                th:value="${hd}"
+                                                th:text="${hd}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Ngày Tuyển Dụng</label>
+                                    <input type="date"
+                                           th:field="*{ngayTuyenDung}"
+                                           class="form-control"/>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Ngày Bắt Đầu Làm Việc</label>
+                                    <input type="date"
+                                           th:field="*{batDauLamViec}"
+                                           class="form-control"/>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Hệ Số Lương</label>
+                                    <input type="number"
+                                           th:field="*{heSoLuong}"
+                                           class="form-control"
+                                           step="0.01"
+                                           placeholder="Ví dụ: 2.34"/>
+                                </div>
+
+                            </div>
+
+                            <hr class="my-4"/>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <a th:href="@{/admin/nhan-vien}"
+                                   class="btn btn-secondary">
+                                    <i class="fas fa-times me-1"></i>Hủy
+                                </a>
+                                <button class="btn btn-success" type="submit">
+                                    <i class="fas fa-save me-1"></i>Lưu Nhân Viên
+                                </button>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>

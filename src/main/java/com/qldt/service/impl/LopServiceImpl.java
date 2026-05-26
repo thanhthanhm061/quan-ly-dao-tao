@@ -1,8 +1,9 @@
 package com.qldt.service.impl;
 import com.qldt.model.Lop;
-import com.qldt.repository.GiangVienRepository;
+
 import com.qldt.repository.KhoaRepository;
 import com.qldt.repository.LopRepository;
+import com.qldt.repository.NhanVienRepository;
 import com.qldt.service.LopService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,7 @@ import java.util.*;
 public class LopServiceImpl implements LopService {
     private final LopRepository repo;
     private final KhoaRepository khoaRepo;
-    private final GiangVienRepository giangVienRepo;
+    private final NhanVienRepository nhanVienRepo;
 
     @Override
     @Transactional(readOnly = true)
@@ -40,7 +41,7 @@ public class LopServiceImpl implements LopService {
 
         // Resolve CoVanHocTap
         if (lop.getCoVanHocTap() != null && lop.getCoVanHocTap().getId() != null) {
-            lop.setCoVanHocTap(giangVienRepo.findById(lop.getCoVanHocTap().getId()).orElse(null));
+            lop.setCoVanHocTap(nhanVienRepo.findById(lop.getCoVanHocTap().getId()).orElse(null));
         } else {
             lop.setCoVanHocTap(null);
         }

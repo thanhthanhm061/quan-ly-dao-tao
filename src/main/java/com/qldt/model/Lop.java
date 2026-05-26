@@ -34,8 +34,8 @@ public class Lop {
     // Thêm vào class Lop
     @ManyToOne
     @JoinColumn(name = "co_van_ht_id")
-    private GiangVien coVanHocTap;
+    private NhanVien coVanHocTap;
 
-    public GiangVien getCoVanHocTap() { return coVanHocTap; }
-    public void setCoVanHocTap(GiangVien coVanHocTap) { this.coVanHocTap = coVanHocTap; }
+    public NhanVien getCoVanHocTap() { return coVanHocTap; }
+    public void setCoVanHocTap(NhanVien coVanHocTap) { this.coVanHocTap = coVanHocTap; }
 }

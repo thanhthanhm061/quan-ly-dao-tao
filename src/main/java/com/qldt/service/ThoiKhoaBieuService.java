@@ -20,4 +20,8 @@ public interface ThoiKhoaBieuService {
     List<PhongHoc> timPhongTrong(String hocKy, int thu, int tietBd, int soTiet, int sucCanThiet);
     List<PhongHoc> findAllPhong();
 
+    List<ThoiKhoaBieu> findByGiangVienThang(Long gvId, String hocKy, LocalDate ngayTrongThang);
+    List<ThoiKhoaBieu> findBySinhVienThang(Long svId, String hocKy, LocalDate ngayTrongThang);
+    Map<String, Integer> thongKeTinChi(Long nhanVienId, String hocKy); // {daDay, phanCong, conLai}
+
 }

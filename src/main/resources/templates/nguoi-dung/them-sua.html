@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::main}, 'Quản lý Người Dùng')}">
+
+<body>
+<main>
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center py-3 mb-3 border-bottom">
+            <a href="/admin/nguoi-dung" class="btn btn-outline-secondary btn-sm me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h5 class="mb-0 fw-bold" th:text="${tieuDe}">Quản lý Người Dùng</h5>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h6 class="mb-0 fw-semibold text-primary">
+                            <i class="bi bi-person-plus me-2"></i>
+                            Thông Tin Tài Khoản
+                        </h6>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <!-- Form TẠO MỚI -->
+                        <form th:if="${dto != null}"
+                              action="/admin/nguoi-dung/them"
+                              th:object="${dto}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold small text-muted">TÊN ĐĂNG NHẬP <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                        <input type="text" th:field="*{username}" class="form-control"
+                                               th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'"
+                                               placeholder="vd: gv001, nv002..."/>
+                                        <div class="invalid-feedback" th:errors="*{username}"></div>
+                                    </div>
+                                    <div class="form-text">Chỉ chữ thường, số, dấu _ (3-50 ký tự)</div>
+                                </div>
+
+                                <div class="col-md-7">
+                                    <label class="form-label fw-semibold small text-muted">HỌ VÀ TÊN <span class="text-danger">*</span></label>
+                                    <input type="text" th:field="*{hoTen}" class="form-control"
+                                           th:classappend="${#fields.hasErrors('hoTen')} ? 'is-invalid'"
+                                           placeholder="Họ tên đầy đủ"/>
+                                    <div class="invalid-feedback" th:errors="*{hoTen}"></div>
+                                </div>
+
+                                <div class="col-md-7">
+                                    <label class="form-label fw-semibold small text-muted">EMAIL</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                        <input type="email" th:field="*{email}" class="form-control"
+                                               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                                               placeholder="email@truong.edu.vn"/>
+                                        <div class="invalid-feedback" th:errors="*{email}"></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold small text-muted">SỐ ĐIỆN THOẠI</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                                        <input type="text" th:field="*{soDienThoai}" class="form-control"
+                                               placeholder="0xxx xxx xxx"/>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-muted">VAI TRÒ <span class="text-danger">*</span></label>
+                                    <select th:field="*{vaiTro}" class="form-select"
+                                            th:classappend="${#fields.hasErrors('vaiTro')} ? 'is-invalid'">
+                                        <option value="">-- Chọn vai trò --</option>
+                                        <option th:each="vt : ${dsVaiTro}" th:value="${vt}" th:text="${vt.nhanHienThi}"></option>
+                                    </select>
+                                    <div class="invalid-feedback" th:errors="*{vaiTro}"></div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-muted">MẬT KHẨU <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                        <input type="password" th:field="*{matKhau}" class="form-control"
+                                               th:classappend="${#fields.hasErrors('matKhau')} ? 'is-invalid'"
+                                               placeholder="Tối thiểu 6 ký tự" id="pwInput"/>
+                                        <button class="btn btn-outline-secondary" type="button"
+                                                onclick="togglePw('pwInput', this)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <div class="invalid-feedback" th:errors="*{matKhau}"></div>
+                                    </div>
+                                    <div class="form-text">Nên có chữ hoa + số (vd: Admin@123)</div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold small text-muted">GHI CHÚ</label>
+                                    <textarea th:field="*{ghiChu}" class="form-control" rows="2"
+                                              placeholder="Ghi chú về tài khoản này..."></textarea>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               th:field="*{kichHoat}" id="kichHoat"/>
+                                        <label class="form-check-label" for="kichHoat">Kích hoạt tài khoản ngay</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4"/>
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="/admin/nguoi-dung" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-1"></i>Hủy
+                                </a>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="bi bi-person-plus me-1"></i>Tạo Tài Khoản
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Form CẬP NHẬT -->
+                        <form th:if="${nguoiDung != null and nguoiDung.id != null}"
+                              th:action="@{/admin/nguoi-dung/sua/{id}(id=${nguoiDung.id})}"
+                              th:object="${nguoiDung}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" th:field="*{id}">
+                            <input type="hidden" th:field="*{username}">
+                            <input type="hidden" th:field="*{matKhau}">
+
+                            <div class="alert alert-light border d-flex align-items-center gap-2 mb-4">
+                                <i class="bi bi-person-circle fs-4 text-primary"></i>
+                                <div>
+                                    <div class="fw-semibold" th:text="${nguoiDung.username}">username</div>
+                                    <div class="text-muted small">Tên đăng nhập không thể thay đổi</div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold small text-muted">HỌ VÀ TÊN <span class="text-danger">*</span></label>
+                                    <input type="text" th:field="*{hoTen}" class="form-control"
+                                           th:classappend="${#fields.hasErrors('hoTen')} ? 'is-invalid'"/>
+                                    <div class="invalid-feedback" th:errors="*{hoTen}"></div>
+                                </div>
+
+                                <div class="col-md-7">
+                                    <label class="form-label fw-semibold small text-muted">EMAIL</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                        <input type="email" th:field="*{email}" class="form-control"
+                                               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"/>
+                                        <div class="invalid-feedback" th:errors="*{email}"></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold small text-muted">SỐ ĐIỆN THOẠI</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                                        <input type="text" th:field="*{soDienThoai}" class="form-control"/>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-muted">VAI TRÒ <span class="text-danger">*</span></label>
+                                    <select th:field="*{vaiTro}" class="form-select">
+                                        <option th:each="vt : ${dsVaiTro}" th:value="${vt}" th:text="${vt.nhanHienThi}"
+                                                th:selected="${nguoiDung.vaiTro == vt}"></option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mt-4">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               th:field="*{kichHoat}" id="kichHoat2"/>
+                                        <label class="form-check-label" for="kichHoat2">Tài khoản đang hoạt động</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold small text-muted">GHI CHÚ</label>
+                                    <textarea th:field="*{ghiChu}" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <hr class="my-4"/>
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="/admin/nguoi-dung" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-1"></i>Hủy
+                                </a>
+                                <button type="submit" class="btn btn-warning text-white px-4">
+                                    <i class="bi bi-save me-1"></i>Lưu Thay Đổi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePw(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        }
+    </script>
+</main>
+</body>
+</html>
