@@ -5,15 +5,14 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
-
         :root {
             --navy:#0f2542; --navy-light:#1e3a5f; --blue:#2563eb;
             --surface:#f8fafc; --border:#e2e8f0; --text:#0f172a; --text-muted:#64748b;
             --radius:10px; --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.06);
+            --green:#059669; --amber:#d97706;
         }
         body { font-family:'Be Vietnam Pro',sans-serif; background:#f1f5f9; }
 
-        /* Tabs */
         .tkb-tabs { display:flex; gap:4px; background:#fff; border-radius:12px; padding:5px;
             box-shadow:var(--shadow); margin-bottom:22px; border:none; }
         .tkb-tabs .nav-item { flex:1; }
@@ -22,19 +21,15 @@
         .tkb-tabs .nav-link:hover { background:var(--surface); color:var(--navy); }
         .tkb-tabs .nav-link.active { background:var(--navy); color:#fff; }
 
-        /* Filter */
         .filter-card { border:1.5px solid var(--border); border-radius:var(--radius);
-            background:#fff; padding:18px 22px; margin-bottom:20px;
-            box-shadow:0 1px 4px rgba(0,0,0,.05); }
+            background:#fff; padding:18px 22px; margin-bottom:20px; box-shadow:0 1px 4px rgba(0,0,0,.05); }
         .form-label { font-size:.82rem; font-weight:600; color:var(--text-muted);
             text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; }
         .form-select,.form-control { border:1.5px solid var(--border); border-radius:8px;
             font-size:.9rem; padding:9px 12px; transition:.2s; }
         .form-select:focus,.form-control:focus { border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; }
-        .btn-primary { background:var(--navy); border-color:var(--navy); border-radius:8px;
-            font-weight:600; font-size:.88rem; }
+        .btn-primary { background:var(--navy); border-color:var(--navy); border-radius:8px; font-weight:600; font-size:.88rem; }
 
-        /* Card */
         .card { border:1px solid var(--border); border-radius:var(--radius);
             box-shadow:var(--shadow); background:#fff; margin-bottom:20px; }
         .card-header { background:var(--navy); color:#fff;
@@ -42,77 +37,105 @@
             padding:14px 20px; font-weight:600; border:none;
             display:flex; align-items:center; justify-content:space-between; }
 
-        /* Credit widget */
+        /* ── Thanh tiến độ học kỳ compact ── */
+        .semester-progress-bar {
+            padding:10px 18px 11px; background:#f8fafc; border-bottom:1px solid var(--border);
+            display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+        }
+        .sp-label { font-size:.78rem; font-weight:700; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+        .sp-track-wrap { flex:1; min-width:100px; }
+        .sp-track { height:5px; background:#e2e8f0; border-radius:5px; overflow:hidden; }
+        .sp-fill { height:100%; border-radius:5px;
+            background:linear-gradient(90deg,#059669,#34d399); transition:width .6s ease; }
+        .sp-pct { font-size:.72rem; color:var(--text-muted); margin-top:3px; font-weight:600; }
+        .sp-nums { font-size:.82rem; color:var(--text-muted); white-space:nowrap; }
+        .sp-nums strong { color:var(--navy); font-weight:800; }
+        .sp-nums .warn { color:var(--amber); font-weight:700; }
+
+        /* Credit widget (tổng quan HK) */
         .credit-bar-wrap { background:#fff; border:1.5px solid var(--border); border-radius:var(--radius);
             padding:16px 20px; margin-bottom:20px; box-shadow:var(--shadow); }
         .credit-title { font-size:.8rem; font-weight:700; color:var(--text-muted);
             text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px; }
         .credit-stats { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:12px; }
-        .credit-stat { text-align:center; }
-        .credit-num { font-size:1.6rem; font-weight:800; color:var(--navy); line-height:1; }
-        .credit-num.done { color:#059669; }
-        .credit-num.left { color:#d97706; }
+        .credit-stat .credit-num { font-size:1.6rem; font-weight:800; color:var(--navy); line-height:1; }
+        .credit-num.done { color:#059669; } .credit-num.left { color:#d97706; }
         .credit-label { font-size:.72rem; color:var(--text-muted); margin-top:3px; }
         .credit-progress { height:8px; border-radius:8px; background:#e2e8f0; overflow:hidden; }
-        .credit-fill { height:100%; border-radius:8px; background:linear-gradient(90deg,#059669,#34d399);
-            transition:width .6s ease; }
+        .credit-fill { height:100%; border-radius:8px;
+            background:linear-gradient(90deg,#059669,#34d399); transition:width .6s ease; }
 
         /* Month nav */
-        .month-nav { display:flex; align-items:center; gap:10px; }
-        .month-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 14px;
+        .month-nav .month-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 14px;
             border:1.5px solid rgba(255,255,255,.3); border-radius:8px;
             font-size:.82rem; font-weight:500; color:#fff; text-decoration:none; transition:.2s; }
-        .month-btn:hover { background:rgba(255,255,255,.15); color:#fff; }
+        .month-nav .month-btn:hover { background:rgba(255,255,255,.15); color:#fff; }
 
-        /* Calendar grid */
-        .cal-wrap { overflow-x:auto; }
-        .cal-grid { width:100%; border-collapse:collapse; table-layout:fixed; min-width:560px; }
-        .cal-grid th { background:var(--navy); color:#fff; font-weight:600; font-size:.8rem;
-            padding:10px 6px; text-align:center; border:1px solid rgba(255,255,255,.1); }
-        .cal-grid td { border:1px solid #e8edf3; vertical-align:top; padding:6px 5px;
-            height:100px; position:relative; }
-        .cal-grid td.other-month { background:#fafbfc; }
+        /* ══ CALENDAR ══ */
+        .cal-wrap { overflow-x:auto; background:#fff; }
+        .cal-grid { width:100%; min-width:920px; border-collapse:separate; border-spacing:0; table-layout:fixed; }
+        .cal-grid th { background:var(--navy); color:#fff; font-size:.8rem; font-weight:700;
+            text-align:center; padding:14px 6px; border-right:1px solid rgba(255,255,255,.08); letter-spacing:.02em; }
+        .cal-grid th:last-child { border-right:none; }
+        .cal-grid td { vertical-align:top; height:135px; padding:8px 6px;
+            border:1px solid #edf2f7; background:#fff; position:relative; transition:.15s; }
+        .cal-grid td:hover { background:#f8fbff; }
+        .cal-grid td.other-month { background:#f8fafc; opacity:.55; }
         .cal-grid td.today-cell { background:#eff6ff; }
-        .cal-grid td.today-cell .day-num { background:var(--blue); color:#fff; }
+        .cal-grid td.today-cell::after { content:''; position:absolute; inset:0;
+            border:2px solid #3b82f6; pointer-events:none; }
 
-        .day-num { width:24px; height:24px; border-radius:50%; display:inline-flex;
-            align-items:center; justify-content:center; font-size:.78rem; font-weight:700;
-            color:var(--text-muted); margin-bottom:4px; }
+        .day-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+        .day-name { font-size:.68rem; font-weight:700; color:#94a3b8; text-transform:uppercase; }
+        .day-num { width:30px; height:30px; border-radius:10px; display:flex;
+            align-items:center; justify-content:center; font-size:.84rem; font-weight:700;
+            color:#334155; background:#f1f5f9; }
+        .today-cell .day-num { background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff;
+            box-shadow:0 4px 12px rgba(37,99,235,.28); }
 
-        /* Event pill trong calendar */
-        .cal-event {
-            display:block; border-radius:5px; padding:2px 6px; margin-bottom:2px;
-            font-size:.68rem; font-weight:600; cursor:pointer; line-height:1.4;
-            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-            transition:opacity .15s, transform .15s;
+        /* Event card */
+        .cal-event { position:relative; display:flex; flex-direction:column; gap:2px;
+            border-radius:10px; padding:7px 9px; margin-bottom:6px; cursor:pointer;
+            overflow:hidden; transition:.18s; border-left:4px solid transparent; }
+        .cal-event:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.12); z-index:5; }
+        .cal-event .ev-mon { font-size:.72rem; font-weight:700; line-height:1.3; overflow:hidden;
+            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+        .cal-event .ev-meta { font-size:.64rem; font-weight:500; opacity:.8;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+        /* Lịch dạy bù trong calendar */
+        .cal-event.ev-bu {
+            border-left-style: dashed !important;
+            border-width: 3px !important;
+            opacity: .88;
         }
-        .cal-event:hover { opacity:.85; transform:scale(1.01); }
-        .cal-more { font-size:.68rem; color:var(--text-muted); cursor:pointer; }
+        .ev-bu-badge { display:inline-block; font-size:.58rem; font-weight:800;
+            background:#fef3c7; color:#92400e; padding:1px 5px; border-radius:4px;
+            margin-bottom:3px; letter-spacing:.03em; }
+
+        .cal-more { margin-top:4px; padding:5px 8px; border-radius:8px; background:#f1f5f9;
+            color:#475569; font-size:.68rem; font-weight:600; text-align:center; cursor:pointer; transition:.15s; }
+        .cal-more:hover { background:#e2e8f0; }
 
         .tag { display:inline-flex; align-items:center; font-size:.75rem;
             padding:3px 10px; border-radius:20px; font-weight:600; }
         .tag-primary { background:#dbeafe; color:#1e40af; }
 
-        /* Empty */
         .empty-state { text-align:center; padding:56px 20px; color:var(--text-muted); }
         .empty-state i { font-size:3rem; opacity:.25; display:block; margin-bottom:14px; }
         .empty-state h5 { font-weight:600; color:#334155; }
 
         /* ══ POPUP ══ */
-        .tkb-overlay {
-            position:fixed; inset:0; background:rgba(15,37,66,.45);
+        .tkb-overlay { position:fixed; inset:0; background:rgba(15,37,66,.45);
             z-index:5000; display:flex; align-items:center; justify-content:center;
-            opacity:0; pointer-events:none; transition:opacity .2s ease;
-        }
+            opacity:0; pointer-events:none; transition:opacity .2s ease; }
         .tkb-overlay.show { opacity:1; pointer-events:auto; }
-        .tkb-popup {
-            background:#fff; border-radius:16px; width:420px; max-width:95vw;
-            box-shadow:0 24px 80px rgba(0,0,0,.25);
-            transform:translateY(16px) scale(.97);
-            transition:transform .22s ease;
-            overflow:hidden;
-        }
+        .tkb-popup { background:#fff; border-radius:16px; width:480px; max-width:96vw;
+            box-shadow:0 24px 80px rgba(0,0,0,.25); transform:translateY(16px) scale(.97);
+            transition:transform .22s ease; overflow:hidden; max-height:90vh; overflow-y:auto; }
         .tkb-overlay.show .tkb-popup { transform:translateY(0) scale(1); }
+
         .popup-header { padding:16px 20px 14px; display:flex; align-items:flex-start;
             justify-content:space-between; border-bottom:1px solid var(--border); }
         .popup-mon { font-size:1rem; font-weight:700; color:var(--navy); }
@@ -121,6 +144,17 @@
             display:flex; align-items:center; justify-content:center; cursor:pointer;
             color:var(--text-muted); font-size:.85rem; flex-shrink:0; transition:.15s; }
         .popup-close:hover { background:#e2e8f0; }
+
+        .popup-tab-bar { display:flex; border-bottom:2px solid var(--border); background:#fafbfc; }
+        .popup-tab { flex:1; padding:10px; text-align:center; font-size:.8rem; font-weight:600;
+            color:var(--text-muted); cursor:pointer; border:none; background:none;
+            border-bottom:2px solid transparent; margin-bottom:-2px; transition:.18s; }
+        .popup-tab.active { color:var(--navy); border-bottom-color:var(--navy); }
+        .popup-tab:hover:not(.active) { background:#f1f5f9; }
+
+        .popup-pane { display:none; }
+        .popup-pane.show { display:block; }
+
         .popup-body { padding:16px 20px; }
         .popup-row { display:flex; align-items:center; gap:10px; padding:7px 0;
             border-bottom:1px solid #f0f4f8; font-size:.88rem; }
@@ -128,17 +162,62 @@
         .popup-row i { width:18px; color:var(--text-muted); flex-shrink:0; }
         .popup-row .label { color:var(--text-muted); min-width:90px; font-size:.8rem; }
         .popup-row .value { font-weight:600; color:var(--text); }
+
+        .bu-badge { display:inline-block; font-size:.58rem; font-weight:800; letter-spacing:.03em;
+            background:#fef3c7; color:#92400e; padding:1px 5px; border-radius:4px; }
+
+        .popup-progress { padding:14px 20px; background:#f8fafc; border-top:1px solid var(--border); }
+        .pp-title { font-size:.72rem; font-weight:700; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; }
+        .pp-stats { display:flex; gap:16px; margin-bottom:10px; }
+        .pp-stat { text-align:center; }
+        .pp-num { font-size:1.4rem; font-weight:800; color:var(--navy); line-height:1; }
+        .pp-num.done { color:var(--green); } .pp-num.left { color:var(--amber); }
+        .pp-label { font-size:.68rem; color:var(--text-muted); margin-top:2px; }
+        .pp-track { height:8px; background:#e2e8f0; border-radius:8px; overflow:hidden; margin-bottom:4px; }
+        .pp-fill { height:100%; border-radius:8px; background:linear-gradient(90deg,#059669,#34d399);
+            transition:width .6s ease; width:0%; }
+        .pp-pct { font-size:.72rem; color:var(--text-muted); font-weight:600; }
+        .pp-loading { color:var(--text-muted); font-size:.8rem; padding:8px 0; }
+
+        .popup-bu-list { padding:14px 20px; }
+        .bu-item { display:flex; align-items:center; gap:10px; padding:8px 12px;
+            border-radius:8px; background:#fef3c7; border-left:3px solid #d97706;
+            margin-bottom:6px; font-size:.82rem; }
+        .bu-item .bu-date { font-weight:700; color:#92400e; min-width:80px; }
+        .bu-item .bu-meta { color:#78350f; }
+        .bu-empty { font-size:.82rem; color:var(--text-muted); text-align:center; padding:12px; }
+
         .popup-actions { padding:14px 20px 16px; display:flex; gap:8px; flex-wrap:wrap;
             border-top:1px solid var(--border); background:#fafbfc; }
         .popup-btn { flex:1; min-width:120px; padding:9px 12px; border-radius:10px;
             font-size:.82rem; font-weight:600; border:none; cursor:pointer;
             display:flex; align-items:center; justify-content:center; gap:6px; transition:.18s; }
         .popup-btn-leave  { background:#fef2f2; color:#dc2626; border:1.5px solid #fecaca; }
-        .popup-btn-leave:hover  { background:#dc2626; color:#fff; border-color:#dc2626; }
+        .popup-btn-leave:hover  { background:#dc2626; color:#fff; }
         .popup-btn-approve { background:#ecfdf5; color:#059669; border:1.5px solid #a7f3d0; }
-        .popup-btn-approve:hover { background:#059669; color:#fff; border-color:#059669; }
+        .popup-btn-approve:hover { background:#059669; color:#fff; }
         .popup-btn-makeup  { background:#eff6ff; color:#2563eb; border:1.5px solid #bfdbfe; }
-        .popup-btn-makeup:hover  { background:#2563eb; color:#fff; border-color:#2563eb; }
+        .popup-btn-makeup:hover  { background:#2563eb; color:#fff; }
+
+        /* Toast */
+        .toast-notify { position:fixed; bottom:24px; right:24px; min-width:280px;
+            background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,.18);
+            border:1px solid var(--border); padding:14px 18px; z-index:99999;
+            transform:translateY(20px); opacity:0; pointer-events:none;
+            transition:all .25s ease; display:flex; align-items:center; gap:10px; }
+        .toast-notify.show { transform:translateY(0); opacity:1; }
+        .toast-notify.success { border-left:4px solid var(--green); }
+        .toast-notify.error   { border-left:4px solid #dc2626; }
+        .toast-notify i { font-size:1.1rem; }
+        .toast-notify.success i { color:var(--green); }
+        .toast-notify.error   i { color:#dc2626; }
+        .toast-notify span { font-size:.88rem; font-weight:500; color:var(--text); }
+
+        @media (max-width:768px) {
+            .cal-grid { min-width:760px; }
+            .cal-grid td { height:120px; }
+        }
     </style>
 
     <!-- ── TABS ── -->
@@ -162,8 +241,7 @@
                     <option value="">— Chọn —</option>
                     <option th:each="gv : ${giangViens}"
                             th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
-                            th:selected="${gv.id == giangVienIdChon}">
-                    </option>
+                            th:selected="${gv.id == giangVienIdChon}"></option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -172,14 +250,14 @@
                     <option value="">— Chọn —</option>
                     <option th:each="hk : ${danhSachHocKy}"
                             th:value="${hk}" th:text="${hk}"
-                            th:selected="${hk == hocKyChon}">
-                    </option>
+                            th:selected="${hk == hocKyChon}"></option>
                 </select>
             </div>
             <div class="col-md-3">
                 <label class="form-label">Tháng / Năm</label>
                 <input type="month" name="ngay" class="form-control"
-                       th:value="${namHienTai != null ? namHienTai + '-' + #strings.leftPad('' + thangHienTai, 2, '0') : ''}"/>
+                       th:value="${namHienTai != null ?
+                       namHienTai + '-' + #numbers.formatInteger(thangHienTai,2) : ''}"/>
             </div>
             <div class="col-md-3">
                 <button type="submit" class="btn btn-primary w-100">
@@ -191,7 +269,7 @@
 
     <!-- ── WIDGET TÍN CHỈ ── -->
     <div th:if="${thongKeTinChi != null}" class="credit-bar-wrap">
-        <div class="credit-title"><i class="fas fa-graduation-cap me-2"></i>Tín chỉ học kỳ</div>
+        <div class="credit-title"><i class="fas fa-graduation-cap me-2"></i>Tín chỉ học kỳ — <span th:text="${hocKyChon}"></span></div>
         <div class="credit-stats">
             <div class="credit-stat">
                 <div class="credit-num" th:text="${thongKeTinChi['phanCong']}">0</div>
@@ -203,20 +281,18 @@
             </div>
             <div class="credit-stat">
                 <div class="credit-num left" th:text="${thongKeTinChi['conLai']}">0</div>
-                <div class="credit-label">Chưa xếp lịch</div>
+                <div class="credit-label">Chưa xếp</div>
             </div>
         </div>
         <div class="credit-progress">
             <div class="credit-fill"
                  th:style="'width:' + ${thongKeTinChi['phanCong'] > 0 ?
-                     (thongKeTinChi['daDay'] * 100 / thongKeTinChi['phanCong']) : 0} + '%'">
-            </div>
+                 (thongKeTinChi['daDay'] * 100 / thongKeTinChi['phanCong']) : 0} + '%'"></div>
         </div>
     </div>
 
     <!-- ── CALENDAR ── -->
     <div th:if="${thoiKhoaBieus != null}">
-
         <div th:if="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
             <div class="empty-state">
                 <i class="fas fa-calendar-times"></i>
@@ -228,36 +304,47 @@
         <div th:unless="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
             <div class="card-header">
                 <div class="d-flex align-items-center gap-3 flex-wrap">
-                    <span>
-                        <i class="fas fa-calendar me-2"></i>
-                        Tháng <span th:text="${thangHienTai}"></span> / <span th:text="${namHienTai}"></span>
-                        <span th:if="${giangVien != null}"> — <span th:text="${giangVien.hoTenVaHocVi}"></span></span>
-                        <span th:if="${sinhVien != null}"> — <span th:text="${sinhVien.hoTen}"></span></span>
-                    </span>
+                <span>
+                    <i class="fas fa-calendar me-2"></i>
+                    Tháng <span th:text="${thangHienTai}"></span> / <span th:text="${namHienTai}"></span>
+                    <span th:if="${giangVien != null}"> — <span th:text="${giangVien.hoTenVaHocVi}"></span></span>
+                </span>
                     <span class="tag tag-primary" th:text="${#lists.size(thoiKhoaBieus)} + ' buổi'"></span>
                 </div>
-                <div class="month-nav">
-                    <a th:href="@{/tkb/theo-thang(giangVienId=${giangVienIdChon},
-                       hocKy=${hocKyChon},
-                       ngay=${ngayChon != null ? ngayChon.minusMonths(1) : ''})}"
-                       class="month-btn">
-                        <i class="fas fa-chevron-left"></i> Trước
-                    </a>
-                    <a th:href="@{/tkb/theo-thang(giangVienId=${giangVienIdChon},
-                       hocKy=${hocKyChon},
-                       ngay=${ngayChon != null ? ngayChon.plusMonths(1) : ''})}"
-                       class="month-btn">
-                        Sau <i class="fas fa-chevron-right"></i>
-                    </a>
+                <div class="month-nav d-flex gap-2">
+                    <a th:href="@{/tkb/theo-thang(giangVienId=${giangVienIdChon},hocKy=${hocKyChon},ngay=${ngayChon != null ? ngayChon.minusMonths(1) : ''})}"
+                       class="month-btn"><i class="fas fa-chevron-left"></i> Trước</a>
+                    <a th:href="@{/tkb/theo-thang(giangVienId=${giangVienIdChon},hocKy=${hocKyChon},ngay=${ngayChon != null ? ngayChon.plusMonths(1) : ''})}"
+                       class="month-btn">Sau <i class="fas fa-chevron-right"></i></a>
                 </div>
+            </div>
+
+            <!-- Thanh tiến độ compact dưới header -->
+            <div th:if="${thongKeTinChi != null}" class="semester-progress-bar">
+                <span class="sp-label"><i class="fas fa-graduation-cap me-1"></i>Tiến độ học kỳ</span>
+                <div class="sp-track-wrap">
+                    <div class="sp-track">
+                        <div class="sp-fill"
+                             th:style="'width:' + ${thongKeTinChi['phanCong'] > 0 ?
+                             (thongKeTinChi['daDay'] * 100 / thongKeTinChi['phanCong']) : 0} + '%'"></div>
+                    </div>
+                    <div class="sp-pct"
+                         th:text="${thongKeTinChi['phanCong'] > 0 ?
+                         #numbers.formatDecimal(thongKeTinChi['daDay'] * 100.0 / thongKeTinChi['phanCong'],1,1) + '%' : '0%'}
+                         + ' tín chỉ đã xếp lịch'"></div>
+                </div>
+                <span class="sp-nums">
+                <strong th:text="${thongKeTinChi['daDay']}">0</strong>/<span th:text="${thongKeTinChi['phanCong']}">0</span> TC
+                <span class="warn ms-2" th:if="${thongKeTinChi['conLai'] > 0}"
+                      th:text="'· Còn ' + ${thongKeTinChi['conLai']} + ' TC'"></span>
+            </span>
             </div>
 
             <div class="card-body p-0">
                 <div class="cal-wrap">
-                    <!-- Dữ liệu TKB được xử lý bằng JS, inject qua JSON -->
-                    <div id="calendarData"
-                         th:attr="data-json=${calendarJson}"
-                         style="display:none"></div>
+                    <!-- JSON data lịch chính + lịch bù merged -->
+                    <div id="calendarData"    th:attr="data-json=${calendarJson}"    style="display:none"></div>
+                    <div id="calendarDataBu"  th:attr="data-json=${calendarJsonBu != null ? calendarJsonBu : '[]'}"  style="display:none"></div>
                     <div id="calendarGrid" style="padding:0"></div>
                 </div>
             </div>
@@ -281,75 +368,108 @@
                     <div class="popup-mon" id="popupMon">—</div>
                     <div class="popup-lhp" id="popupLhp">—</div>
                 </div>
-                <button class="popup-close" onclick="dongPopupBtn()">
-                    <i class="fas fa-times"></i>
+                <button class="popup-close" onclick="dongPopupBtn()"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="popup-tab-bar">
+                <button class="popup-tab active" onclick="chuyenTab('chi-tiet')">
+                    <i class="fas fa-info-circle me-1"></i>Chi tiết
+                </button>
+                <button class="popup-tab" onclick="chuyenTab('tien-do')">
+                    <i class="fas fa-tasks me-1"></i>Tiến độ
+                </button>
+                <button class="popup-tab" onclick="chuyenTab('lich-bu')">
+                    <i class="fas fa-calendar-plus me-1"></i>Lịch bù
                 </button>
             </div>
-            <div class="popup-body">
-                <div class="popup-row">
-                    <i class="fas fa-user-tie"></i>
-                    <span class="label">Giảng viên</span>
-                    <span class="value" id="popupGv">—</span>
+
+            <!-- PANE 1: Chi tiết -->
+            <div class="popup-pane show" id="pane-chi-tiet">
+                <div class="popup-body">
+                    <div class="popup-row">
+                        <i class="fas fa-user-tie"></i>
+                        <span class="label">Giảng viên</span>
+                        <span class="value" id="popupGv">—</span>
+                    </div>
+                    <div class="popup-row">
+                        <i class="fas fa-calendar-day"></i>
+                        <span class="label">Ngày học</span>
+                        <span class="value" id="popupNgay">—</span>
+                    </div>
+                    <div class="popup-row">
+                        <i class="fas fa-clock"></i>
+                        <span class="label">Tiết / Giờ</span>
+                        <span class="value" id="popupTiet">—</span>
+                    </div>
+                    <div class="popup-row">
+                        <i class="fas fa-door-open"></i>
+                        <span class="label">Phòng học</span>
+                        <span class="value" id="popupPhong">—</span>
+                    </div>
+                    <div class="popup-row">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span class="label">Tín chỉ</span>
+                        <span class="value" id="popupTc">—</span>
+                    </div>
+                    <div class="popup-row" id="popupLoaiRow" style="display:none">
+                        <i class="fas fa-sync-alt"></i>
+                        <span class="label">Loại lịch</span>
+                        <span class="value"><span class="bu-badge">DẠY BÙ</span></span>
+                    </div>
                 </div>
-                <div class="popup-row">
-                    <i class="fas fa-calendar-day"></i>
-                    <span class="label">Ngày học</span>
-                    <span class="value" id="popupNgay">—</span>
-                </div>
-                <div class="popup-row">
-                    <i class="fas fa-clock"></i>
-                    <span class="label">Tiết / Giờ</span>
-                    <span class="value" id="popupTiet">—</span>
-                </div>
-                <div class="popup-row">
-                    <i class="fas fa-door-open"></i>
-                    <span class="label">Phòng học</span>
-                    <span class="value" id="popupPhong">—</span>
-                </div>
-                <div class="popup-row">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span class="label">Tín chỉ</span>
-                    <span class="value" id="popupTc">—</span>
+                <div class="popup-actions" id="popupActions">
+                    <button id="btnXinNghi" class="popup-btn popup-btn-leave" onclick="diXinNghi()" style="display:none">
+                        <i class="fas fa-file-medical"></i> Xin nghỉ ngày này
+                    </button>
+                    <button id="btnDuyetDon" class="popup-btn popup-btn-approve" onclick="diDuyetDon()" style="display:none">
+                        <i class="fas fa-clipboard-check"></i> Xem đơn nghỉ
+                    </button>
+                    <button id="btnXepBu" class="popup-btn popup-btn-makeup" onclick="diXepBu()" style="display:none">
+                        <i class="fas fa-calendar-plus"></i> Xếp lịch dạy bù
+                    </button>
                 </div>
             </div>
-            <div class="popup-actions" id="popupActions">
-                <button id="btnXinNghi" class="popup-btn popup-btn-leave"
-                        onclick="diXinNghi()" style="display:none">
-                    <i class="fas fa-file-medical"></i> Xin nghỉ ngày này
-                </button>
-                <button id="btnDuyetDon" class="popup-btn popup-btn-approve"
-                        onclick="diDuyetDon()" style="display:none">
-                    <i class="fas fa-clipboard-check"></i> Xem đơn nghỉ
-                </button>
-                <button id="btnXepBu" class="popup-btn popup-btn-makeup"
-                        onclick="diXepBu()" style="display:none">
-                    <i class="fas fa-calendar-plus"></i> Xếp lịch dạy bù
-                </button>
+
+            <!-- PANE 2: Tiến độ -->
+            <div class="popup-pane" id="pane-tien-do">
+                <div class="popup-progress">
+                    <div class="pp-title"><i class="fas fa-chart-line me-1"></i>Tiến độ tiết dạy — môn này</div>
+                    <div id="ppContent"><div class="pp-loading">Đang tải...</div></div>
+                </div>
+            </div>
+
+            <!-- PANE 3: Lịch bù -->
+            <div class="popup-pane" id="pane-lich-bu">
+                <div class="popup-bu-list">
+                    <div class="pp-title" style="margin-bottom:10px">
+                        <i class="fas fa-calendar-alt me-1"></i>Lịch dạy bù — môn này
+                    </div>
+                    <div id="buContent"><div class="pp-loading">Đang tải...</div></div>
+                </div>
             </div>
         </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-notify" id="toastNotify">
+        <i class="fas fa-check-circle" id="toastIcon"></i>
+        <span id="toastMsg"></span>
     </div>
 
     <!-- Server meta -->
     <div id="serverMeta"
          th:attr="
-             data-is-admin=${#authorization.expression('hasRole(''ADMIN'')') ? 'true' : 'false'},
-             data-is-quan-ly=${isQuanLy != null and isQuanLy ? 'true' : 'false'},
-             data-current-nv-id=${currentNvId ?: ''},
-             data-thang=${thangHienTai},
-             data-nam=${namHienTai}
-         "
-         style="display:none">
-    </div>
+         data-is-admin=${#authorization.expression('hasRole(''ADMIN'')') ? 'true' : 'false'},
+         data-is-quan-ly=${isQuanLy != null and isQuanLy ? 'true' : 'false'},
+         data-current-nv-id=${currentNvId ?: ''},
+         data-thang=${thangHienTai},
+         data-nam=${namHienTai}
+     "
+         style="display:none"></div>
 
 </th:block></body></html>
 
 <script th:inline="javascript">
-    /* ═══════════════════════════════════════════════════════
-       RENDER CALENDAR GRID (JavaScript)
-       Dữ liệu TKB được Thymeleaf inject vào #calendarData
-       qua attribute data-json (JSON array).
-       ═══════════════════════════════════════════════════════ */
-
     const COLORS = [
         { bg:'#dbeafe', border:'#2563eb', text:'#1e40af' },
         { bg:'#d1fae5', border:'#059669', text:'#065f46' },
@@ -358,125 +478,131 @@
         { bg:'#fee2e2', border:'#dc2626', text:'#991b1b' },
         { bg:'#e0f2fe', border:'#0284c7', text:'#0c4a6e' },
     ];
+    const COLOR_BU = { bg:'#fef9c3', border:'#d97706', text:'#92400e' };
     const DAY_NAMES = ['CN','T2','T3','T4','T5','T6','T7'];
 
-    const meta    = document.getElementById('serverMeta');
+    const meta     = document.getElementById('serverMeta');
     const isAdmin  = meta?.dataset.isAdmin  === 'true';
     const isQuanLy = meta?.dataset.isQuanLy === 'true';
     const curNvId  = meta?.dataset.currentNvId || '';
     const thang    = parseInt(meta?.dataset.thang || '1');
     const nam      = parseInt(meta?.dataset.nam   || new Date().getFullYear());
 
-    let popupNgayIso = '', popupGvId = '', popupLhpId = '';
+    const overlay  = document.getElementById('tkbOverlay');
+    let currentLhpId   = '';
+    let currentGvId    = '';
+    let currentNgayIso = '';
 
-    /* ── Lấy JSON dữ liệu TKB ── */
-    const calDataEl = document.getElementById('calendarData');
+    /* ── Lấy data ── */
     let events = [];
-    if (calDataEl && calDataEl.dataset.json) {
-        try { events = JSON.parse(calDataEl.dataset.json); } catch(e) {}
-    }
+    let eventsBu = [];
+    try { events   = JSON.parse(document.getElementById('calendarData')?.dataset.json   || '[]'); } catch(e){}
+    try { eventsBu = JSON.parse(document.getElementById('calendarDataBu')?.dataset.json || '[]'); } catch(e){}
 
     /* ── Render calendar ── */
     function renderCalendar() {
         const grid = document.getElementById('calendarGrid');
         if (!grid) return;
-
-        const today = new Date();
+        const today    = new Date();
         const firstDay = new Date(nam, thang - 1, 1);
         const lastDay  = new Date(nam, thang, 0);
-        const startDow = firstDay.getDay(); // 0=CN
-
-        // Build event map: key = "YYYY-MM-DD" → list of events occurring on that weekday
-        // TKB là lịch lặp: mỗi tuần vào cùng thuTrongTuan trong khoảng tuanBatDau–tuanKetThuc
-        // Duyệt từng ngày trong tháng, xét TKB nào áp dụng
+        const startDow = firstDay.getDay();
 
         let html = `<table class="cal-grid">
-            <thead><tr>`;
-        DAY_NAMES.forEach(d => { html += `<th>${d}</th>`; });
-        html += `</tr></thead><tbody>`;
+        <thead><tr>${DAY_NAMES.map(d => `<th>${d}</th>`).join('')}</tr></thead><tbody>`;
 
         let dayCount = 1;
-        let row = `<tr>`;
-
-        // Padding ô trống đầu tháng
-        for (let i = 0; i < startDow; i++) row += `<td class="other-month"></td>`;
-
-        const totalCells = startDow + lastDay.getDate();
-        const totalRows  = Math.ceil(totalCells / 7);
-
-        let cell = startDow;
+        const totalRows = Math.ceil((startDow + lastDay.getDate()) / 7);
 
         for (let r = 0; r < totalRows; r++) {
-            if (r > 0) row = `<tr>`;
-            for (let c = (r === 0 ? startDow : 0); c < 7; c++) {
-                if (dayCount > lastDay.getDate()) {
-                    row += `<td class="other-month"></td>`;
-                } else {
-                    const dateObj   = new Date(nam, thang - 1, dayCount);
-                    const jsDow     = dateObj.getDay(); // 0=CN,1=Mon,...
-                    const thuServer = jsDow === 0 ? 8 : jsDow + 1; // 2=T2..7=T7, 8=CN
-                    const dateIso   = dateObj.toISOString().split('T')[0];
-                    const isToday   = dateObj.toDateString() === today.toDateString();
-
-                    // Lọc TKB áp dụng cho ngày này
-                    const dayEvents = events.filter(ev => {
-                        if (ev.thuTrongTuan !== thuServer) return false;
-                        const start = ev.tuanBatDau ? new Date(ev.tuanBatDau) : null;
-                        const end   = ev.tuanKetThuc ? new Date(ev.tuanKetThuc) : null;
-                        if (start && dateObj < start) return false;
-                        if (end   && dateObj > end)   return false;
-                        return true;
-                    });
-
-                    let evHtml = '';
-                    const MAX_SHOW = 2;
-                    dayEvents.slice(0, MAX_SHOW).forEach((ev, idx) => {
-                        const clr = COLORS[idx % COLORS.length];
-                        const label = ev.tenMon || '—';
-                        const phong = ev.phongHoc || '?';
-                        const gio   = ev.gioHoc   || '';
-                        const dataAttrs = [
-                            `data-mon="${escHtml(ev.tenMon)}"`,
-                            `data-lhp="${escHtml(ev.maLhp)}"`,
-                            `data-gv="${escHtml(ev.hoTenGv)}"`,
-                            `data-thu="${escHtml(ev.tenThu)}"`,
-                            `data-ngay="${formatNgay(dateIso)}"`,
-                            `data-ngay-iso="${dateIso}"`,
-                            `data-tiet="T${ev.tietBatDau} → T${ev.tietBatDau + ev.soTiet - 1}"`,
-                            `data-phong="${escHtml(ev.phongHoc)}"`,
-                            `data-tc="${ev.soTinChi}"`,
-                            `data-gio="${escHtml(ev.gioHoc)}"`,
-                            `data-lhp-id="${ev.lhpId}"`,
-                            `data-gv-id="${ev.gvId}"`,
-                        ].join(' ');
-                        evHtml += `<span class="cal-event"
-                            style="background:${clr.bg};color:${clr.text};border-left:3px solid ${clr.border}"
-                            ${dataAttrs}
-                            onclick="moPopup(this)">
-                            ${escHtml(label)} · P${phong}
-                        </span>`;
-                    });
-                    if (dayEvents.length > MAX_SHOW) {
-                        evHtml += `<div class="cal-more">+${dayEvents.length - MAX_SHOW} buổi nữa</div>`;
-                    }
-
-                    row += `<td class="${isToday ? 'today-cell' : ''}">
-                        <div class="day-num">${dayCount}</div>
-                        ${evHtml}
-                    </td>`;
-                    dayCount++;
+            html += '<tr>';
+            for (let c = 0; c < 7; c++) {
+                const cellIndex = r * 7 + c;
+                if (cellIndex < startDow || dayCount > lastDay.getDate()) {
+                    html += '<td class="other-month"></td>'; continue;
                 }
-            }
-            row += `</tr>`;
-            html += row;
-        }
+                const dateObj  = new Date(nam, thang - 1, dayCount);
+                const jsDow    = dateObj.getDay();
+                const thuSvr   = jsDow === 0 ? 8 : jsDow + 1;
+                const dateIso  = dateObj.toISOString().split('T')[0];
+                const isToday  = dateObj.toDateString() === today.toDateString();
 
-        html += `</tbody></table>`;
+                const inRange = (ev) => {
+                    if (ev.thuTrongTuan !== thuSvr) return false;
+                    const s = ev.tuanBatDau  ? new Date(ev.tuanBatDau)  : null;
+                    const e = ev.tuanKetThuc ? new Date(ev.tuanKetThuc) : null;
+                    if (s && dateObj < s) return false;
+                    if (e && dateObj > e) return false;
+                    return true;
+                };
+
+                const dayEvs   = events.filter(inRange);
+                const dayBuEvs = eventsBu.filter(ev => {
+                    // Lịch bù có ngayDayBu cụ thể
+                    return ev.ngayDayBu && ev.ngayDayBu === dateIso;
+                });
+
+                let evHtml = '';
+                const MAX = 3;
+                let shown = 0;
+
+                // Lịch chính
+                dayEvs.slice(0, MAX).forEach((ev, idx) => {
+                    const clr = COLORS[idx % COLORS.length];
+                    evHtml += buildEventHtml(ev, clr, false, dateIso);
+                    shown++;
+                });
+
+                // Lịch bù
+                dayBuEvs.slice(0, Math.max(0, MAX - shown)).forEach(ev => {
+                    evHtml += buildEventHtml(ev, COLOR_BU, true, dateIso);
+                    shown++;
+                });
+
+                const totalMore = (dayEvs.length - Math.min(dayEvs.length, MAX)) +
+                    (dayBuEvs.length - Math.min(dayBuEvs.length, MAX - Math.min(dayEvs.length, MAX)));
+                if (totalMore > 0) {
+                    evHtml += `<div class="cal-more">+${totalMore} buổi khác</div>`;
+                }
+
+                html += `<td class="${isToday ? 'today-cell' : ''}">
+                <div class="day-header">
+                    <div class="day-name">${DAY_NAMES[jsDow]}</div>
+                    <div class="day-num">${dayCount}</div>
+                </div>${evHtml}</td>`;
+                dayCount++;
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
         grid.innerHTML = html;
     }
 
+    function buildEventHtml(ev, clr, isBu, dateIso) {
+        const attrs = Object.entries({
+            'data-mon': ev.tenMon, 'data-lhp': ev.maLhp, 'data-gv': ev.hoTenGv,
+            'data-thu': ev.tenThu, 'data-ngay': formatNgay(dateIso), 'data-ngay-iso': dateIso,
+            'data-tiet': ev.tietBatDau ? `T${ev.tietBatDau} → T${ev.tietBatDau + ev.soTiet - 1}` : '',
+            'data-phong': ev.phongHoc, 'data-tc': ev.soTinChi,
+            'data-gio': ev.gioHoc, 'data-lhp-id': ev.lhpId, 'data-gv-id': ev.gvId,
+            'data-loai': isBu ? 'BU' : 'CHINH'
+        }).map(([k,v]) => `${k}="${escHtml(v)}"`).join(' ');
+
+        const buFlag = isBu ? '<div class="ev-bu-badge">DẠY BÙ</div>' : '';
+
+        return `<div class="cal-event ${isBu ? 'ev-bu' : ''}"
+             style="background:${clr.bg};border-left-color:${clr.border};color:${clr.text};
+                    ${isBu ? 'border-left-style:dashed;' : ''}"
+             ${attrs} onclick="moPopup(this)">
+        ${buFlag}
+        <div class="ev-mon">${escHtml(ev.tenMon || '---')}</div>
+        <div class="ev-meta"><i class="fas fa-door-open" style="font-size:.58rem;margin-right:3px"></i>P.${escHtml(ev.phongHoc || '?')}</div>
+        <div class="ev-meta"><i class="fas fa-clock" style="font-size:.58rem;margin-right:3px"></i>${escHtml(ev.gioHoc || '')}</div>
+    </div>`;
+    }
+
     function escHtml(s) {
-        if (!s) return '';
+        if (s == null) return '';
         return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
     function formatNgay(iso) {
@@ -487,38 +613,117 @@
 
     document.addEventListener('DOMContentLoaded', renderCalendar);
 
-    /* ══ POPUP ══ */
-    const overlay = document.getElementById('tkbOverlay');
-
+    /* ── Popup ── */
     function moPopup(el) {
         const d = el.dataset;
-        document.getElementById('popupMon').textContent  = d.mon  || '—';
-        document.getElementById('popupLhp').textContent  = d.lhp  || '—';
-        document.getElementById('popupGv').textContent   = d.gv   || '—';
+        currentLhpId   = d.lhpId   || '';
+        currentGvId    = d.gvId    || '';
+        currentNgayIso = d.ngayIso || '';
+
+        document.getElementById('popupMon').textContent  = d.mon   || '—';
+        document.getElementById('popupLhp').textContent  = d.lhp   || '—';
+        document.getElementById('popupGv').textContent   = d.gv    || '—';
         document.getElementById('popupNgay').textContent = (d.thu || '') + ', ' + (d.ngay || '—');
         document.getElementById('popupTiet').textContent = (d.tiet || '—') + (d.gio ? '  (' + d.gio + ')' : '');
         document.getElementById('popupPhong').textContent= 'Phòng ' + (d.phong || '?');
         document.getElementById('popupTc').textContent   = d.tc ? d.tc + ' tín chỉ' : '—';
 
-        popupNgayIso = d.ngayIso || '';
-        popupGvId    = d.gvId    || '';
-        popupLhpId   = d.lhpId  || '';
+        const isBu = d.loai === 'BU';
+        document.getElementById('popupLoaiRow').style.display = isBu ? '' : 'none';
 
-        const laMinhDang = curNvId && popupGvId && curNvId === popupGvId;
-        document.getElementById('btnXinNghi').style.display  = laMinhDang ? '' : 'none';
+        const laMinhDang = curNvId && currentGvId && curNvId === currentGvId;
+        document.getElementById('btnXinNghi').style.display  = (laMinhDang && !isBu) ? '' : 'none';
         document.getElementById('btnDuyetDon').style.display = (isAdmin || isQuanLy) ? '' : 'none';
         document.getElementById('btnXepBu').style.display    = (isAdmin || isQuanLy) ? '' : 'none';
         document.getElementById('popupActions').style.display =
             (laMinhDang || isAdmin || isQuanLy) ? '' : 'none';
 
+        chuyenTab('chi-tiet');
         overlay.classList.add('show');
+
+        if (currentLhpId) {
+            loadTienDo(currentLhpId);
+            loadLichBu(currentLhpId);
+        }
+    }
+
+    function chuyenTab(tabName) {
+        document.querySelectorAll('.popup-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.popup-pane').forEach(p => p.classList.remove('show'));
+        const btn = document.querySelector(`.popup-tab[onclick="chuyenTab('${tabName}')"]`);
+        if (btn) btn.classList.add('active');
+        const pane = document.getElementById('pane-' + tabName);
+        if (pane) pane.classList.add('show');
+    }
+
+    async function loadTienDo(lhpId) {
+        const el = document.getElementById('ppContent');
+        el.innerHTML = '<div class="pp-loading"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải...</div>';
+        try {
+            const res = await fetch(`/tkb/tien-do-mon?lhpId=${lhpId}`);
+            if (!res.ok) throw new Error();
+            const d = await res.json();
+            const pct = Math.min(100, d.phanTram || 0).toFixed(0);
+            el.innerHTML = `
+            <div class="pp-stats">
+                <div class="pp-stat">
+                    <div class="pp-num done">${d.tietDaDay}</div>
+                    <div class="pp-label">Đã xếp</div>
+                </div>
+                <div style="font-size:1.2rem;color:#e2e8f0;align-self:center">→</div>
+                <div class="pp-stat">
+                    <div class="pp-num">${d.tietCanDay}</div>
+                    <div class="pp-label">Tổng cần</div>
+                </div>
+                <div style="font-size:1.2rem;color:#e2e8f0;align-self:center">·</div>
+                <div class="pp-stat">
+                    <div class="pp-num left">${d.tietConLai}</div>
+                    <div class="pp-label">Còn lại</div>
+                </div>
+            </div>
+            <div class="pp-track"><div class="pp-fill" style="width:${pct}%"></div></div>
+            <div class="pp-pct">${pct}% tiết đã được xếp lịch</div>
+            ${d.tietConLai === 0
+                ? '<div style="font-size:.78rem;color:#059669;margin-top:6px;font-weight:600"><i class="fas fa-check-circle me-1"></i>Đã xếp đủ lịch cho môn này!</div>'
+                : `<div style="font-size:.78rem;color:#d97706;margin-top:6px;font-weight:600"><i class="fas fa-exclamation-circle me-1"></i>Còn thiếu ${d.tietConLai} tiết</div>`}
+        `;
+        } catch(e) {
+            el.innerHTML = '<div class="pp-loading">Không thể tải dữ liệu tiến độ.</div>';
+        }
+    }
+
+    async function loadLichBu(lhpId) {
+        const el = document.getElementById('buContent');
+        el.innerHTML = '<div class="pp-loading"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải...</div>';
+        try {
+            const res = await fetch(`/lich-day-bu/api/theo-lhp?lhpId=${lhpId}`);
+            if (!res.ok) throw new Error();
+            const list = await res.json();
+            if (!list.length) {
+                el.innerHTML = '<div class="bu-empty"><i class="fas fa-calendar-check me-1"></i>Chưa có lịch dạy bù cho môn này.</div>';
+                return;
+            }
+            el.innerHTML = list.map(b => `
+            <div class="bu-item">
+                <span class="bu-date">${b.ngayDayBu || '—'}</span>
+                <span class="bu-meta">P.${b.phongHoc || '?'} · T${b.tietBatDau}–${b.tietKetThuc}</span>
+            </div>`).join('');
+        } catch(e) {
+            el.innerHTML = '<div class="bu-empty">Không thể tải lịch dạy bù.</div>';
+        }
     }
 
     function dongPopup(e) { if (e.target === overlay) overlay.classList.remove('show'); }
     function dongPopupBtn() { overlay.classList.remove('show'); }
-    document.addEventListener('keydown', e => { if (e.key==='Escape') overlay.classList.remove('show'); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('show'); });
+    function diXinNghi()  { location.href = '/don-nghi/tao?ngayBatDau=' + currentNgayIso + '&ngayKetThuc=' + currentNgayIso; }
+    function diDuyetDon() { location.href = '/don-nghi/duyet?giangVienId=' + currentGvId; }
+    function diXepBu()    { location.href = '/lich-day-bu/xep?lhpId=' + currentLhpId + '&giangVienId=' + currentGvId + '&ngayNghiGoc=' + currentNgayIso; }
 
-    function diXinNghi()  { location.href = '/don-nghi/tao?ngayBatDau=' + popupNgayIso + '&ngayKetThuc=' + popupNgayIso; }
-    function diDuyetDon() { location.href = '/don-nghi/duyet?giangVienId=' + popupGvId; }
-    function diXepBu()    { location.href = '/lich-day-bu/xep?lhpId=' + popupLhpId + '&giangVienId=' + popupGvId + '&ngayNghiGoc=' + popupNgayIso; }
+    function showToast(type, msg) {
+        const t = document.getElementById('toastNotify');
+        document.getElementById('toastMsg').textContent = msg;
+        t.className = 'toast-notify ' + type + ' show';
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
 </script>

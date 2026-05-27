@@ -9,12 +9,20 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LichDayBuRepository extends JpaRepository<LichDayBu, Long> {
 
     // Tất cả lịch bù của một lớp học phần
     List<LichDayBu> findByLopHocPhanIdOrderByNgayDayBuAsc(Long lhpId);
+
+
+    List<LichDayBu> findByGiangVienIdAndNgayDayBuBetween(
+            Long giangVienId,
+            LocalDate from,
+            LocalDate to
+    );
 
     // Lịch bù của một giảng viên
     List<LichDayBu> findByGiangVienIdOrderByNgayDayBuAsc(Long giangVienId);
@@ -71,12 +79,30 @@ public interface LichDayBuRepository extends JpaRepository<LichDayBu, Long> {
             @Param("tietBatDau") int tietBatDau,
             @Param("tietKetThuc") int tietKetThuc,
             @Param("excludeId") Long excludeId);
-
-    // Lịch bù thuộc khoa (dùng cho TK/PTK dashboard)
+    // Tất cả lịch bù (có fetch eager để tránh LazyInitializationException)
     @Query("""
-            SELECT l FROM LichDayBu l
-            WHERE l.lopHocPhan.monHoc.khoa.id = :khoaId
-            ORDER BY l.ngayDayBu DESC
-            """)
+        SELECT l FROM LichDayBu l
+        JOIN FETCH l.lopHocPhan lhp
+        LEFT JOIN FETCH lhp.monHoc
+        JOIN FETCH l.giangVien
+        ORDER BY l.ngayDayBu DESC
+        """)
+    List<LichDayBu> findAllWithDetails();
+    @Query("""
+        SELECT l FROM LichDayBu l
+        JOIN FETCH l.lopHocPhan lhp
+        LEFT JOIN FETCH lhp.monHoc
+        JOIN FETCH l.giangVien
+        LEFT JOIN FETCH l.donNghiLienQuan
+        WHERE l.id = :id
+        """)
+    Optional<LichDayBu> findByIdWithDetails(@Param("id") Long id);
+    // Lịch bù thuộc khoa (dùng cho TK/PTK dashboard)
+
+    @Query("""
+        SELECT l FROM LichDayBu l
+        WHERE l.lopHocPhan.monHoc.khoa.id = :khoaId
+        ORDER BY l.ngayDayBu DESC
+        """)
     List<LichDayBu> findByKhoaId(@Param("khoaId") Long khoaId);
 }

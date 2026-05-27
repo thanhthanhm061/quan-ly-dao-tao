@@ -42,6 +42,23 @@ public interface LichDayBuService {
                       int thuTrongTuan, int tietBatDau, int soTiet,
                       String phongHoc, String ghiChu, Long nguoiXepId);
 
+    //
+    List<LichDayBu> findByGiangVienTuan(
+            Long gvId,
+            LocalDate ngayTrongTuan
+    );
+
+    List<LichDayBu> findByGiangVienThang(
+            Long gvId,
+            String hocKy,
+            LocalDate dauThang
+    );
+
+    List<LichDayBu> findByLhpId(Long lhpId);
+
+    // Lấy theo LHP
+
+
     /** Hủy lịch bù */
     void huy(Long lichBuId, Long nguoiXepId);
 

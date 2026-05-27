@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -29,25 +30,16 @@ public class LichDayBuServiceImpl implements LichDayBuService {
     private final NhanVienRepository nhanVienRepo;
     private final DonNghiRepository donNghiRepo;
 
-    // Mã chức vụ có quyền xếp lịch bù
     private static final Set<String> MA_CHUC_VU_XEP = Set.of("TK", "PTK", "TBM");
 
     /* =========================================================
        HELPER — kiểm tra quyền xếp lịch
+       nguoiXep = null nghĩa là Admin → luôn được phép
     ========================================================= */
-
-    /**
-     * Admin luôn được xếp.
-     * TK / PTK / TBM chỉ được xếp lịch bù cho lớp thuộc khoa mình.
-     */
     private void kiemTraQuyenXep(NhanVien nguoiXep, LopHocPhan lhp) {
 
-        // Admin
-        if (nguoiXep.getNguoiDung() != null
-                && nguoiXep.getNguoiDung().getVaiTro() != null
-                && nguoiXep.getNguoiDung().getVaiTro().name().equals("ADMIN")) {
-            return;
-        }
+        // ✅ Admin (nguoiXep == null) → bỏ qua mọi kiểm tra
+        if (nguoiXep == null) return;
 
         String maChucVu = nguoiXep.getChucVu() != null
                 ? nguoiXep.getChucVu().getMaChucVu()
@@ -60,7 +52,6 @@ public class LichDayBuServiceImpl implements LichDayBuService {
             );
         }
 
-        // Kiểm tra cùng khoa với lớp học phần
         Long khoaXep = nguoiXep.getKhoa() != null ? nguoiXep.getKhoa().getId() : null;
         Long khoaLhp  = lhp.getMonHoc() != null && lhp.getMonHoc().getKhoa() != null
                 ? lhp.getMonHoc().getKhoa().getId() : null;
@@ -75,14 +66,11 @@ public class LichDayBuServiceImpl implements LichDayBuService {
     /* =========================================================
        HELPER — kiểm tra trùng lịch
     ========================================================= */
-
     private void kiemTraTrungLich(Long giangVienId, String phongHoc,
                                   LocalDate ngayDayBu, int tietBatDau,
                                   int soTiet, Long excludeId) {
-
         int tietKetThuc = tietBatDau + soTiet;
 
-        // Trùng giảng viên
         if (lichBuRepo.existsTrungGiangVien(
                 giangVienId, ngayDayBu, tietBatDau, tietKetThuc, excludeId)) {
             throw new IllegalStateException(
@@ -91,7 +79,6 @@ public class LichDayBuServiceImpl implements LichDayBuService {
             );
         }
 
-        // Trùng phòng
         if (phongHoc != null && !phongHoc.isBlank()
                 && lichBuRepo.existsTrungPhong(
                 phongHoc, ngayDayBu, tietBatDau, tietKetThuc, excludeId)) {
@@ -103,19 +90,29 @@ public class LichDayBuServiceImpl implements LichDayBuService {
     }
 
     /* =========================================================
+       HELPER — load NhanVien từ ID, trả null nếu ID null (admin)
+    ========================================================= */
+    private NhanVien loadNguoiXep(Long nguoiXepId) {
+        if (nguoiXepId == null) return null; // admin
+        return nhanVienRepo.findById(nguoiXepId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Không tìm thấy người xếp lịch ID: " + nguoiXepId));
+    }
+
+    /* =========================================================
        CRUD
     ========================================================= */
 
     @Override
     @Transactional(readOnly = true)
     public List<LichDayBu> findAll() {
-        return lichBuRepo.findAll();
+        return lichBuRepo.findAllWithDetails();  // ← thành này
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<LichDayBu> findById(Long id) {
-        return lichBuRepo.findById(id);
+        return lichBuRepo.findByIdWithDetails(id);
     }
 
     @Override
@@ -124,37 +121,31 @@ public class LichDayBuServiceImpl implements LichDayBuService {
                              int thuTrongTuan, int tietBatDau, int soTiet,
                              String phongHoc, String ghiChu, Long nguoiXepId) {
 
-        // Load entities
         LopHocPhan lhp = lhpRepo.findById(lhpId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học phần"));
 
         NhanVien giangVien = nhanVienRepo.findById(giangVienId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giảng viên"));
 
-        NhanVien nguoiXep = nhanVienRepo.findById(nguoiXepId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người xếp lịch"));
+        // ✅ null nếu admin — không throw
+        NhanVien nguoiXep = loadNguoiXep(nguoiXepId);
 
-        // Kiểm tra quyền
+        // Kiểm tra quyền (null = admin → pass)
         kiemTraQuyenXep(nguoiXep, lhp);
 
         // Validate ngày
-        if (ngayDayBu == null) {
+        if (ngayDayBu == null)
             throw new IllegalArgumentException("Ngày dạy bù không được trống");
-        }
-        if (ngayNghiGoc != null && ngayDayBu.isBefore(ngayNghiGoc)) {
+        if (ngayNghiGoc != null && ngayDayBu.isBefore(ngayNghiGoc))
             throw new IllegalArgumentException("Ngày dạy bù phải sau hoặc bằng ngày nghỉ gốc");
-        }
 
         // Validate tiết
-        if (tietBatDau < 1 || tietBatDau > 12) {
+        if (tietBatDau < 1 || tietBatDau > 12)
             throw new IllegalArgumentException("Tiết bắt đầu phải từ 1 đến 12");
-        }
-        if (soTiet < 1) {
+        if (soTiet < 1)
             throw new IllegalArgumentException("Số tiết phải lớn hơn 0");
-        }
-        if (tietBatDau + soTiet - 1 > 12) {
+        if (tietBatDau + soTiet - 1 > 12)
             throw new IllegalArgumentException("Tiết kết thúc không được vượt quá tiết 12");
-        }
 
         // Kiểm tra trùng lịch
         kiemTraTrungLich(giangVienId, phongHoc, ngayDayBu, tietBatDau, soTiet, null);
@@ -177,7 +168,7 @@ public class LichDayBuServiceImpl implements LichDayBuService {
                 .soTiet(soTiet)
                 .phongHoc(phongHoc)
                 .ghiChu(ghiChu)
-                .nguoiXep(nguoiXep)
+                .nguoiXep(nguoiXep) // null nếu admin — đảm bảo DB cho phép nullable
                 .trangThai(TrangThaiLichBu.DA_XEP)
                 .build();
 
@@ -192,19 +183,15 @@ public class LichDayBuServiceImpl implements LichDayBuService {
         LichDayBu lichBu = lichBuRepo.findById(lichBuId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch dạy bù"));
 
-        if (lichBu.getTrangThai() == TrangThaiLichBu.HOAN_THANH) {
+        if (lichBu.getTrangThai() == TrangThaiLichBu.HOAN_THANH)
             throw new IllegalStateException("Không thể chỉnh sửa lịch bù đã hoàn thành");
-        }
-        if (lichBu.getTrangThai() == TrangThaiLichBu.HUY) {
+        if (lichBu.getTrangThai() == TrangThaiLichBu.HUY)
             throw new IllegalStateException("Không thể chỉnh sửa lịch bù đã hủy");
-        }
 
-        NhanVien nguoiXep = nhanVienRepo.findById(nguoiXepId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người xếp lịch"));
-
+        // ✅ null nếu admin
+        NhanVien nguoiXep = loadNguoiXep(nguoiXepId);
         kiemTraQuyenXep(nguoiXep, lichBu.getLopHocPhan());
 
-        // Kiểm tra trùng (loại trừ bản ghi hiện tại)
         kiemTraTrungLich(lichBu.getGiangVien().getId(), phongHoc,
                 ngayDayBu, tietBatDau, soTiet, lichBuId);
 
@@ -225,13 +212,11 @@ public class LichDayBuServiceImpl implements LichDayBuService {
         LichDayBu lichBu = lichBuRepo.findById(lichBuId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch dạy bù"));
 
-        if (lichBu.getTrangThai() == TrangThaiLichBu.HOAN_THANH) {
+        if (lichBu.getTrangThai() == TrangThaiLichBu.HOAN_THANH)
             throw new IllegalStateException("Không thể hủy lịch bù đã hoàn thành");
-        }
 
-        NhanVien nguoiXep = nhanVienRepo.findById(nguoiXepId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người xếp lịch"));
-
+        // ✅ null nếu admin
+        NhanVien nguoiXep = loadNguoiXep(nguoiXepId);
         kiemTraQuyenXep(nguoiXep, lichBu.getLopHocPhan());
 
         lichBu.setTrangThai(TrangThaiLichBu.HUY);
@@ -244,47 +229,79 @@ public class LichDayBuServiceImpl implements LichDayBuService {
         LichDayBu lichBu = lichBuRepo.findById(lichBuId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch dạy bù"));
 
-        if (lichBu.getTrangThai() != TrangThaiLichBu.DA_XEP) {
+        if (lichBu.getTrangThai() != TrangThaiLichBu.DA_XEP)
             throw new IllegalStateException(
-                    "Chỉ có thể đánh dấu hoàn thành lịch bù đang ở trạng thái Đã xếp"
-            );
-        }
+                    "Chỉ có thể đánh dấu hoàn thành lịch bù đang ở trạng thái Đã xếp");
 
         lichBu.setTrangThai(TrangThaiLichBu.HOAN_THANH);
         lichBuRepo.save(lichBu);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<LichDayBu> findByGiangVienTuan(
+            Long gvId,
+            LocalDate ngayTrongTuan
+    ) {
+        LocalDate thu2 = ngayTrongTuan.with(DayOfWeek.MONDAY);
+        LocalDate chuNhat = thu2.plusDays(6);
+
+        return lichBuRepo.findByGiangVienIdAndNgayDayBuBetween(
+                gvId,
+                thu2,
+                chuNhat
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LichDayBu> findByGiangVienThang(
+            Long gvId,
+            String hocKy,
+            LocalDate dauThang
+    ) {
+        LocalDate cuoiThang =
+                dauThang.withDayOfMonth(dauThang.lengthOfMonth());
+
+        return lichBuRepo.findByGiangVienIdAndNgayDayBuBetween(
+                gvId,
+                dauThang,
+                cuoiThang
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LichDayBu> findByLhpId(Long lhpId) {
+        return lichBuRepo
+                .findByLopHocPhanIdOrderByNgayDayBuAsc(lhpId);
     }
 
     /* =========================================================
        QUERY
     ========================================================= */
 
-    @Override
-    @Transactional(readOnly = true)
+    @Override @Transactional(readOnly = true)
     public List<LichDayBu> findByLopHocPhan(Long lhpId) {
         return lichBuRepo.findByLopHocPhanIdOrderByNgayDayBuAsc(lhpId);
     }
 
-    @Override
-    @Transactional(readOnly = true)
+    @Override @Transactional(readOnly = true)
     public List<LichDayBu> findByGiangVien(Long giangVienId) {
         return lichBuRepo.findByGiangVienIdOrderByNgayDayBuAsc(giangVienId);
     }
 
-    @Override
-    @Transactional(readOnly = true)
+    @Override @Transactional(readOnly = true)
     public List<LichDayBu> findByDonNghi(Long donNghiId) {
         return lichBuRepo.findByDonNghiLienQuanId(donNghiId);
     }
 
-    @Override
-    @Transactional(readOnly = true)
+    @Override @Transactional(readOnly = true)
     public List<LichDayBu> findByGiangVienAndKhoangNgay(Long giangVienId,
                                                         LocalDate from, LocalDate to) {
         return lichBuRepo.findByGiangVienAndKhoangNgay(giangVienId, from, to);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<LichDayBu> findByKhoa(Long khoaId) {
         return lichBuRepo.findByKhoaId(khoaId);
     }

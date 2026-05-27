@@ -72,6 +72,7 @@ public class NguoiDung {
     @ToString.Exclude
     private NhanVien nhanVien;
 
+
     @PrePersist
     public void prePersist() {
         ngayTao = LocalDateTime.now();

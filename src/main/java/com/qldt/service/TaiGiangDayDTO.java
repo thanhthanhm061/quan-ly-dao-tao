@@ -2,6 +2,7 @@ package com.qldt.service;
 
 // DTO thống kê
 public record TaiGiangDayDTO(
+
         Long giangVienId,
         String hoTen,
         int tongTiet,

@@ -80,9 +80,9 @@ public class SecurityConfig {
                                 "/don-nghi/*/tu-choi"
                         ).hasAnyRole(
                                 "ADMIN",
-                                "TRUONG_KHOA",
-                                "PHO_TRUONG_KHOA",
-                                "TRUONG_BO_MON"
+                                "TK",
+                                "CNTT",
+                                "TBM", "PTK","NHAN_VIEN"
                         )
 
                         // =====================================================
@@ -101,9 +101,10 @@ public class SecurityConfig {
                                 "/lich-day-bu/*/hoan-thanh"
                         ).hasAnyRole(
                                 "ADMIN",
-                                "TRUONG_KHOA",
-                                "PHO_TRUONG_KHOA",
-                                "TRUONG_BO_MON"
+                                "TK",
+                                "CNTT",
+                                "PTK",
+                                "TBM", "NHAN_VIEN"
                         )
 
                         // Danh sách + chi tiết lịch dạy bù
@@ -112,9 +113,10 @@ public class SecurityConfig {
                                 "/lich-day-bu/*"
                         ).hasAnyRole(
                                 "ADMIN",
-                                "TRUONG_KHOA",
-                                "PHO_TRUONG_KHOA",
-                                "TRUONG_BO_MON"
+                                "TK",
+                                "CNTT",
+                                "PTK",
+                                "TBM", "NHAN_VIEN"
                         )
 
                         // =====================================================

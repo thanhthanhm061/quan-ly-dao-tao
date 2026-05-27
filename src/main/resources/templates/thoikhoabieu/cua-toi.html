@@ -144,6 +144,16 @@
                        class="btn-week">
                         <i class="fas fa-calendar-alt"></i>Xem theo tuần
                     </a>
+                    <a th:if="${tenNguoiDung != null}"
+                       th:href="@{/tkb/theo-tuan(hocKy=${hocKyChon})}"
+                       class="btn-week">
+                        <i class="fas fa-calendar-alt"></i>Xem theo tuần
+                    </a>
+                    <a th:if="${hocKyChon != null}"
+                       th:href="@{/tkb/theo-thang(hocKy=${hocKyChon})}"
+                       class="btn-week">
+                        <i class="fas fa-calendar-alt"></i>Xem theo tháng
+                    </a>
                 </div>
 
                 <!-- Legend -->

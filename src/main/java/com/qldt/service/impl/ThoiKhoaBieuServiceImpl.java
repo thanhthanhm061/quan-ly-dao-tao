@@ -8,6 +8,7 @@ import com.qldt.repository.ThoiKhoaBieuRepository;
 import com.qldt.service.TKBNotificationService;
 import com.qldt.service.TaiGiangDayDTO;
 import com.qldt.service.ThoiKhoaBieuService;
+import com.qldt.service.TkbQuickUpdateDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,6 +108,65 @@ public class ThoiKhoaBieuServiceImpl implements ThoiKhoaBieuService {
         lhp.getThoiKhoaBieus().removeIf(t -> t.getId().equals(id));
         lhpRepo.save(lhp);
     }
+    @Override
+    @Transactional(readOnly = true)
+    public List<ThoiKhoaBieu> findByLopHocPhanId(Long lhpId) {
+        return tkbRepo.findByLopHocPhanId(lhpId);
+    }
+    public void capNhatNhanh(Long id, TkbQuickUpdateDTO dto) {
+        ThoiKhoaBieu tkb = tkbRepo.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Không tìm thấy lịch ID=" + id));
+
+        // Kiểm tra xung đột phòng
+        if (dto.phongHoc() != null && !dto.phongHoc().isBlank()) {
+
+            boolean trung = tkbRepo.existsConflict(
+                    dto.thuTrongTuan(),
+                    dto.tietBatDau(),
+                    dto.tietBatDau() + dto.soTiet() - 1,
+                    dto.phongHoc(),
+                    id
+            );
+
+            if (trung) {
+                throw new IllegalStateException(
+                        "Phòng " + dto.phongHoc()
+                                + " đã có lịch vào Thứ "
+                                + dto.thuTrongTuan()
+                                + " tiết "
+                                + dto.tietBatDau()
+                );
+            }
+        }
+
+        if (dto.thuTrongTuan() != null)
+            tkb.setThuTrongTuan(dto.thuTrongTuan());
+
+        if (dto.tietBatDau() != null)
+            tkb.setTietBatDau(dto.tietBatDau());
+
+        if (dto.soTiet() != null)
+            tkb.setSoTiet(dto.soTiet());
+
+        if (dto.phongHoc() != null)
+            tkb.setPhongHoc(dto.phongHoc());
+
+        if (dto.tuanBatDau() != null)
+            tkb.setTuanBatDau(dto.tuanBatDau());
+
+        if (dto.tuanKetThuc() != null)
+            tkb.setTuanKetThuc(dto.tuanKetThuc());
+
+        tkbRepo.save(tkb);
+    }
+    public int demTietByLhp(Long lhpId) {
+        return tkbRepo.findByLopHocPhanId(lhpId)
+                .stream()
+                .mapToInt(ThoiKhoaBieu::getSoTiet)
+                .sum();
+    }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -149,6 +209,7 @@ public class ThoiKhoaBieuServiceImpl implements ThoiKhoaBieuService {
     public Optional<ThoiKhoaBieu> findById(Long id) {
         return tkbRepo.findById(id);
     }
+
 
     @Override
     @Transactional(readOnly = true)

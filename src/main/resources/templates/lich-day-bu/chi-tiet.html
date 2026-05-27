@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::main}, 'Chi tiết lịch dạy bù')}">
+<head><title>Chi tiết lịch dạy bù</title></head>
+<body>
+<main>
+    <div class="page-body">
+
+        <div class="page-header-card">
+            <div class="d-flex align-items-center gap-3">
+                <span class="page-icon">📋</span>
+                <div>
+                    <h4 class="mb-0">Chi tiết lịch dạy bù</h4>
+                    <small class="text-muted">Thông tin chi tiết buổi dạy bù</small>
+                </div>
+            </div>
+            <a href="/lich-day-bu" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại
+            </a>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i><span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-circle me-2"></i><span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Thông tin chính -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Thông tin buổi dạy bù</h6>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+
+                            <dt class="col-sm-4 text-muted fw-normal">Lớp học phần</dt>
+                            <dd class="col-sm-8">
+                                <span class="fw-semibold" th:text="${lichBu.lopHocPhan.maLhp}"></span>
+                                <br>
+                                <small class="text-muted"
+                                       th:text="${lichBu.lopHocPhan.monHoc?.tenMon ?: ''}"></small>
+                            </dd>
+
+                            <dt class="col-sm-4 text-muted fw-normal">Giảng viên</dt>
+                            <dd class="col-sm-8"
+                                th:text="${lichBu.giangVien.hoTen ?: lichBu.giangVien.maNhanVien}"></dd>
+
+                            <dt class="col-sm-4 text-muted fw-normal">Ngày nghỉ gốc</dt>
+                            <dd class="col-sm-8"
+                                th:text="${lichBu.ngayNghiGoc != null
+                                    ? #temporals.format(lichBu.ngayNghiGoc, 'dd/MM/yyyy')
+                                    : '—'}"></dd>
+
+                            <dt class="col-sm-4 text-muted fw-normal">Ngày dạy bù</dt>
+                            <dd class="col-sm-8 fw-semibold"
+                                th:text="${#temporals.format(lichBu.ngayDayBu, 'dd/MM/yyyy')}"></dd>
+
+                            <dt class="col-sm-4 text-muted fw-normal">Thứ</dt>
+                            <dd class="col-sm-8" th:text="${lichBu.tenThu}"></dd>
+
+                            <dt class="col-sm-4 text-muted fw-normal">Tiết</dt>
+                            <dd class="col-sm-8"
+                                th:text="${lichBu.tietBatDau + '–' + lichBu.tietKetThuc}"></dd>
+
+                            <dt class="col-sm-4 text-muted fw-normal">Phòng học</dt>
+                            <dd class="col-sm-8" th:text="${lichBu.phongHoc ?: '—'}"></dd>
+
+                            <dt class="col-sm-4 text-muted fw-normal">Ghi chú</dt>
+                            <dd class="col-sm-8" th:text="${lichBu.ghiChu ?: '—'}"></dd>
+
+                            <dt class="col-sm-4 text-muted fw-normal">Trạng thái</dt>
+                            <dd class="col-sm-8">
+                                <span th:classappend="${lichBu.trangThai.name() == 'DA_XEP'     ? 'badge-primary'  :
+                                                       lichBu.trangThai.name() == 'HOAN_THANH' ? 'badge-success'  :
+                                                       'badge-secondary'}"
+                                      class="badge rounded-pill px-3 py-2"
+                                      th:text="${lichBu.trangThai.tenHienThi}"></span>
+                            </dd>
+
+                            <th:block th:if="${lichBu.donNghiLienQuan != null}">
+                                <dt class="col-sm-4 text-muted fw-normal">Đơn nghỉ liên quan</dt>
+                                <dd class="col-sm-8">
+                                    <a th:href="@{/don-nghi/{id}(id=${lichBu.donNghiLienQuan.id})}"
+                                       th:text="${'#' + lichBu.donNghiLienQuan.id}"></a>
+                                </dd>
+                            </th:block>
+
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thao tác -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Thao tác</h6>
+                    </div>
+                    <div class="card-body d-flex flex-column gap-2">
+
+                        <a th:if="${lichBu.trangThai.name() == 'DA_XEP'}"
+                           th:href="@{/lich-day-bu/{id}/sua(id=${lichBu.id})}"
+                           class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-pencil me-1"></i> Chỉnh sửa
+                        </a>
+
+                        <form th:if="${lichBu.trangThai.name() == 'DA_XEP'}"
+                              th:action="@{/lich-day-bu/{id}/hoan-thanh(id=${lichBu.id})}"
+                              method="post"
+                              onsubmit="return confirm('Đánh dấu buổi này đã hoàn thành?')">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-check-lg me-1"></i> Đánh dấu hoàn thành
+                            </button>
+                        </form>
+
+                        <form th:if="${lichBu.trangThai.name() == 'DA_XEP'}"
+                              th:action="@{/lich-day-bu/{id}/huy(id=${lichBu.id})}"
+                              method="post"
+                              onsubmit="return confirm('Hủy lịch dạy bù này?')">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-x-lg me-1"></i> Hủy lịch
+                            </button>
+                        </form>
+
+                        <div th:if="${lichBu.trangThai.name() != 'DA_XEP'}"
+                             class="text-muted text-center small py-2">
+                            Không có thao tác khả dụng
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+</body>
+</html>

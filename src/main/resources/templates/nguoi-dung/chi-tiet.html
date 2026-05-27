@@ -18,29 +18,41 @@
         <!-- Header -->
         <div class="d-flex align-items-center justify-content-between py-3 mb-3 border-bottom">
             <div class="d-flex align-items-center gap-3">
+
                 <a href="/admin/nguoi-dung" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-arrow-left"></i>
                 </a>
-                <!-- Avatar lớn -->
+
+                <!-- Avatar -->
                 <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white fs-3"
                      th:style="${nguoiDung.vaiTro.name() == 'ADMIN'} ?
-     'width:56px;height:56px;flex-shrink:0;background:#c0392b' :
-     (${nguoiDung.vaiTro.name() == 'GIANG_VIEN'} ?
-     'width:56px;height:56px;flex-shrink:0;background:#2d6a9f' :
-     (${nguoiDung.vaiTro.name() == 'NHAN_VIEN'} ?
-     'width:56px;height:56px;flex-shrink:0;background:#27ae60' :
-     'width:56px;height:56px;flex-shrink:0;background:#0c9c8c'))"
+             'width:56px;height:56px;flex-shrink:0;background:#c0392b' :
+             (${nguoiDung.vaiTro.name() == 'GIANG_VIEN'} ?
+             'width:56px;height:56px;flex-shrink:0;background:#2d6a9f' :
+             (${nguoiDung.vaiTro.name() == 'NHAN_VIEN'} ?
+             'width:56px;height:56px;flex-shrink:0;background:#27ae60' :
+             'width:56px;height:56px;flex-shrink:0;background:#0c9c8c'))"
                      th:text="${nguoiDung.chuCaiDau}">
                 </div>
-                    <h5 class="mb-0 fw-bold" th:text="${nguoiDung.hoTen}">Họ Tên</h5>
+
+                <!-- Info -->
+                <div>
+                    <h5 class="mb-0 fw-bold" th:text="${nguoiDung.hoTen}">
+                        Họ Tên
+                    </h5>
+
                     <div class="text-muted small">
                         <code th:text="${nguoiDung.username}"></code>
                         &nbsp;·&nbsp;
+
                         <span th:class="'badge bg-' + ${nguoiDung.vaiTro.mauSac} + '-subtle text-' + ${nguoiDung.vaiTro.mauSac} + ' border border-' + ${nguoiDung.vaiTro.mauSac} + '-subtle'"
-                              th:text="${nguoiDung.vaiTro.nhanHienThi}"></span>
+                              th:text="${nguoiDung.vaiTro.nhanHienThi}">
+                </span>
                     </div>
                 </div>
+
             </div>
+
             <div class="d-flex gap-2">
                 <a th:href="@{/admin/nguoi-dung/sua/{id}(id=${nguoiDung.id})}"
                    class="btn btn-warning btn-sm text-white">
@@ -48,7 +60,6 @@
                 </a>
             </div>
         </div>
-
         <div class="row g-4">
             <!-- Cột trái: Thông tin -->
             <div class="col-lg-5">
@@ -103,42 +114,58 @@
                 <!-- Hồ sơ liên kết -->
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white border-bottom">
-                        <span class="fw-semibold text-success"><i class="bi bi-link-45deg me-2"></i>Hồ Sơ Liên Kết</span>
+        <span class="fw-semibold text-success">
+            <i class="bi bi-link-45deg me-2"></i>Hồ Sơ Liên Kết
+        </span>
                     </div>
+
                     <div class="card-body">
-                        <div th:if="${nguoiDung.giangVien != null}" class="d-flex align-items-center gap-2 mb-2">
-                            <i class="bi bi-person-workspace text-primary fs-5"></i>
-                            <div>
-                                <div class="fw-semibold small">Giảng Viên</div>
-                                <a th:href="@{/admin/giang-vien/chi-tiet/{id}(id=${nguoiDung.giangVien.id})}"
-                                   class="text-primary text-decoration-none small"
-                                   th:text="${nguoiDung.giangVien.hoTen + ' (' + nguoiDung.giangVien.maGv + ')'}"></a>
-                            </div>
-                        </div>
-                        <div th:if="${nguoiDung.nhanVien != null}" class="d-flex align-items-center gap-2 mb-2">
+
+                        <!-- Nhân viên -->
+                        <div th:if="${nguoiDung.nhanVien != null}"
+                             class="d-flex align-items-center gap-2 mb-2">
+
                             <i class="bi bi-person-badge text-success fs-5"></i>
+
                             <div>
-                                <div class="fw-semibold small">Nhân Viên</div>
+                                <div class="fw-semibold small"
+                                     th:text="${nguoiDung.nhanVien.isGiangVien()} ? 'Giảng Viên' : 'Nhân Viên'">
+                                    Nhân Viên
+                                </div>
+
                                 <a th:href="@{/admin/nhan-vien/chi-tiet/{id}(id=${nguoiDung.nhanVien.id})}"
                                    class="text-success text-decoration-none small"
-                                   th:text="${nguoiDung.nhanVien.hoTen + ' (' + nguoiDung.nhanVien.maNhanVien + ')'}"></a>
+                                   th:text="${nguoiDung.nhanVien.hoTen + ' (' + nguoiDung.nhanVien.maNhanVien + ')'}">
+                                </a>
                             </div>
                         </div>
-                        <div th:if="${nguoiDung.sinhVien != null}" class="d-flex align-items-center gap-2">
+
+                        <!-- Sinh viên -->
+                        <div th:if="${nguoiDung.sinhVien != null}"
+                             class="d-flex align-items-center gap-2">
+
                             <i class="bi bi-mortarboard text-info fs-5"></i>
+
                             <div>
                                 <div class="fw-semibold small">Sinh Viên</div>
-                                <span class="text-muted small" th:text="${nguoiDung.sinhVien.hoTen}"></span>
+
+                                <span class="text-muted small"
+                                      th:text="${nguoiDung.sinhVien.hoTen}">
+                </span>
                             </div>
                         </div>
-                        <div th:if="${nguoiDung.giangVien == null and nguoiDung.nhanVien == null and nguoiDung.sinhVien == null}"
+
+                        <!-- Không có -->
+                        <div th:if="${nguoiDung.nhanVien == null and nguoiDung.sinhVien == null}"
                              class="text-muted small text-center py-2">
-                            <i class="bi bi-dash-circle me-1"></i>Chưa liên kết hồ sơ
+
+                            <i class="bi bi-dash-circle me-1"></i>
+                            Chưa liên kết hồ sơ
                         </div>
+
                     </div>
                 </div>
             </div>
-
             <!-- Cột phải: Thao tác nâng cao -->
             <div class="col-lg-7">
 

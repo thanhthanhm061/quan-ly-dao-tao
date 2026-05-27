@@ -22,6 +22,11 @@ public interface ThoiKhoaBieuService {
 
     List<ThoiKhoaBieu> findByGiangVienThang(Long gvId, String hocKy, LocalDate ngayTrongThang);
     List<ThoiKhoaBieu> findBySinhVienThang(Long svId, String hocKy, LocalDate ngayTrongThang);
-    Map<String, Integer> thongKeTinChi(Long nhanVienId, String hocKy); // {daDay, phanCong, conLai}
+    Map<String, Integer> thongKeTinChi(Long nhanVienId, String hocKy);// {daDay, phanCong, conLai}
 
+    //demTietByLhp
+        int demTietByLhp(Long lhpId);
+    // Lấy tất cả TKB của 1 LHP
+    List<ThoiKhoaBieu> findByLopHocPhanId(Long lhpId);
+    void capNhatNhanh(Long id, TkbQuickUpdateDTO dto);
 }

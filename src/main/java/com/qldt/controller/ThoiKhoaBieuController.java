@@ -1,5 +1,6 @@
 package com.qldt.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.qldt.model.*;
 import com.qldt.model.enums.*;
 import com.qldt.repository.NguoiDungRepository;
@@ -11,6 +12,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -26,6 +28,7 @@ import java.awt.Font;
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -528,11 +531,8 @@ public class ThoiKhoaBieuController {
     private final NguoiDungRepository nguoiDungRepo;
     private final PhongHocService phongHocService;
     private final TimeSlotService timeSlotService;
-    private boolean isQuanLy(NhanVien nv) {
-        if (nv == null || nv.getChucVu() == null) return false;
-        String ma = nv.getChucVu().getMaChucVu().toUpperCase();
-        return ma.equals("TK") || ma.equals("PTK") || ma.equals("TBM");
-    }
+    private final ObjectMapper objectMapper;
+    private final LichDayBuService lichDayBuService;
 
 
     // ── Xem TKB (Admin / GV chọn giảng viên) ───────────────────────────
@@ -559,7 +559,81 @@ public class ThoiKhoaBieuController {
         }
         return "thoikhoabieu/xem";
     }
+    private String buildCalendarJsonBu(List<LichDayBu> list, Map<Integer, TimeSlot> tietMap) {
+        if (list == null || list.isEmpty()) return "[]";
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (LichDayBu b : list) {
+            Map<String, Object> ev = new java.util.LinkedHashMap<>();
+            var lhp = b.getLopHocPhan();
+            var mon = lhp != null ? lhp.getMonHoc() : null;
+            var gv  = lhp != null ? lhp.getGiangVien() : null;
+            ev.put("loai",       "BU");
+            ev.put("ngayDayBu",  b.getNgayDayBu() != null ? b.getNgayDayBu().toString() : null);
+            ev.put("tietBatDau", b.getTietBatDau());
+            ev.put("soTiet",     b.getSoTiet());
+            ev.put("phongHoc",   b.getPhongHoc());
+            ev.put("tenMon",  mon != null ? mon.getTenMon() : "---");
+            ev.put("maLhp",   lhp != null ? lhp.getMaLhp() : "---");
+            ev.put("lhpId",   lhp != null ? lhp.getId() : null);
+            ev.put("hoTenGv", gv  != null ? gv.getHoTen() : "---");
+            ev.put("gvId",    gv  != null ? gv.getId() : null);
+            ev.put("soTinChi", mon != null ? mon.getSoTinChi() : 0);
+            // Giờ học
+            // Nếu là Integer (wrapper) — giữ nguyên check null, viết gọn hơn:
+            String gioHoc = "";
+            if (tietMap != null) {
+                int tietBD = b.getTietBatDau();
+                var ts = tietMap.get(tietBD);
+                if (ts != null) {
+                    var ts2 = tietMap.get(tietBD + b.getSoTiet() - 1);
+                    gioHoc = ts.getGioBatDau().toString().substring(0, 5)
+                            + " – " + (ts2 != null ? ts2.getGioKetThuc().toString().substring(0, 5) : "?");
+                }
+            }
+            ev.put("gioHoc", gioHoc);
+            result.add(ev);
+        }
+        try { return objectMapper.writeValueAsString(result); }
+        catch (Exception e) { return "[]"; }
+    }
 
+    private String buildCalendarJson(List<ThoiKhoaBieu> list, Map<Integer, TimeSlot> tietMap) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (ThoiKhoaBieu t : list) {
+            Map<String, Object> ev = new java.util.LinkedHashMap<>();
+            ev.put("thuTrongTuan",  t.getThuTrongTuan());
+            ev.put("tietBatDau",    t.getTietBatDau());
+            ev.put("soTiet",        t.getSoTiet());
+            ev.put("phongHoc",      t.getPhongHoc());
+            ev.put("tuanBatDau",    t.getTuanBatDau() != null ? t.getTuanBatDau().toString() : null);
+            ev.put("tuanKetThuc",   t.getTuanKetThuc() != null ? t.getTuanKetThuc().toString() : null);
+            ev.put("tenThu",        t.getTenThu());
+
+            var lhp = t.getLopHocPhan();
+            var mon = lhp != null ? lhp.getMonHoc() : null;
+            var gv  = lhp != null ? lhp.getGiangVien() : null;
+
+            ev.put("tenMon",  mon != null ? mon.getTenMon() : "---");
+            ev.put("maLhp",   lhp != null ? lhp.getMaLhp() : "---");
+            ev.put("lhpId",   lhp != null ? lhp.getId() : null);
+            ev.put("hoTenGv", gv  != null ? gv.getHoTen() : "---");
+            ev.put("gvId",    gv  != null ? gv.getId() : null);
+            ev.put("soTinChi", mon != null ? mon.getSoTinChi() : 0);
+
+            // Giờ học
+            String gioHoc = "";
+            if (tietMap != null && tietMap.get(t.getTietBatDau()) != null) {
+                var ts  = tietMap.get(t.getTietBatDau());
+                var ts2 = tietMap.get(t.getTietBatDau() + t.getSoTiet() - 1);
+                gioHoc = ts.getGioBatDau().toString().substring(0,5)
+                        + " – " + (ts2 != null ? ts2.getGioKetThuc().toString().substring(0,5) : "?");
+            }
+            ev.put("gioHoc", gioHoc);
+            result.add(ev);
+        }
+        try { return objectMapper.writeValueAsString(result); }
+        catch (Exception e) { return "[]"; }
+    }
     // ── TKB của tôi ─────────────────────────────────────────────────────
     @GetMapping("/cua-toi")
     @PreAuthorize("hasAnyRole('ADMIN', 'NHAN_VIEN', 'SINH_VIEN')")
@@ -622,6 +696,8 @@ public class ThoiKhoaBieuController {
                         tkbService.findByGiangVienTuan(giangVienId, hocKy, ngay));
                 model.addAttribute("giangVien",
                         nhanVienService.findById(giangVienId).orElse(null));
+                model.addAttribute("thongKeTinChi",
+                        tkbService.thongKeTinChi(giangVienId, hocKy));
             }
 
         } else if (nd.getVaiTro() == VaiTro.NHAN_VIEN) {
@@ -630,6 +706,8 @@ public class ThoiKhoaBieuController {
                 model.addAttribute("thoiKhoaBieus",
                         tkbService.findByGiangVienTuan(nv.getId(), hocKy, ngay));
                 model.addAttribute("giangVien", nv);
+                model.addAttribute("thongKeTinChi",
+                        tkbService.thongKeTinChi(giangVienId, hocKy));
             }
 
         } else if (nd.getVaiTro() == VaiTro.SINH_VIEN) {
@@ -638,12 +716,24 @@ public class ThoiKhoaBieuController {
                 model.addAttribute("thoiKhoaBieus",
                         tkbService.findBySinhVienTuan(sv.getId(), hocKy, ngay));
                 model.addAttribute("sinhVien", sv);
+
+            }
+        }
+        if (nd.getVaiTro() == VaiTro.NHAN_VIEN) {
+            NhanVien nv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
+            if (nv != null) {
+                model.addAttribute("currentNvId", nv.getId());
+                // isQuanLy = true nếu chức vụ là Trưởng khoa / Phó khoa / Tổ trưởng bộ môn
+                boolean isQL = nv.getChucVu() != null &&
+                        List.of("Trưởng khoa","Phó khoa","Tổ trưởng BM").contains(nv.getChucVu().getTenChucVu());
+                model.addAttribute("isQuanLy", isQL);
+                model.addAttribute("thongKeTinChi",
+                        tkbService.thongKeTinChi(giangVienId, hocKy));
             }
         }
 
         return "thoikhoabieu/theo-tuan";
     }
-
     // ── TKB theo tháng ──────────────────────────────────────────────────────────
     @GetMapping("/theo-thang")
     @PreAuthorize("hasAnyRole('ADMIN', 'NHAN_VIEN', 'SINH_VIEN')")
@@ -651,107 +741,237 @@ public class ThoiKhoaBieuController {
             @RequestParam(required = false) Long giangVienId,
             @RequestParam(required = false) String hocKy,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay,
+            @DateTimeFormat(pattern = "yyyy-MM")
+            YearMonth ngay,
             Authentication auth, Model model) {
 
-        if (ngay == null) ngay = LocalDate.now();
-        LocalDate dauThang  = ngay.withDayOfMonth(1);
-        LocalDate cuoiThang = ngay.withDayOfMonth(ngay.lengthOfMonth());
+        if (ngay == null) ngay = YearMonth.now();
+
+        LocalDate dauThang  = ngay.atDay(1);
+        LocalDate cuoiThang = ngay.atEndOfMonth();
 
         model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
-        model.addAttribute("hocKyChon",     hocKy);
-        model.addAttribute("ngayChon",      ngay);
-        model.addAttribute("dauThang",      dauThang);
-        model.addAttribute("cuoiThang",     cuoiThang);
-        model.addAttribute("thangHienTai",  ngay.getMonthValue());
-        model.addAttribute("namHienTai",    ngay.getYear());
+        model.addAttribute("hocKyChon", hocKy);
+        model.addAttribute("ngayChon", ngay);
 
-        Map<Integer, TimeSlot> tietMap = timeSlotService.buildTietMap(); // ← giữ ref local
+        model.addAttribute("dauThang", dauThang);
+        model.addAttribute("cuoiThang", cuoiThang);
+
+        model.addAttribute("thangHienTai", ngay.getMonthValue());
+        model.addAttribute("namHienTai", ngay.getYear());
+
+        Map<Integer, TimeSlot> tietMap = timeSlotService.buildTietMap();
+
         model.addAttribute("tietMap", tietMap);
 
-        List<LocalDate> ngayTrongThang = dauThang.datesUntil(cuoiThang.plusDays(1)).toList();
+        model.addAttribute("calendarJsonBu",
+                (giangVienId != null && hocKy != null)
+                        ? buildCalendarJsonBu(
+                        lichDayBuService.findByGiangVienThang(giangVienId, hocKy, dauThang),
+                        tietMap)
+                        : "[]");
+
+
+        List<LocalDate> ngayTrongThang =
+                dauThang.datesUntil(cuoiThang.plusDays(1)).toList();
+
         model.addAttribute("ngayTrongThang", ngayTrongThang);
 
-        NguoiDung nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
+        NguoiDung nd =
+                nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
 
-        List<ThoiKhoaBieu> thoiKhoaBieus = null; // ← gom lại để build JSON 1 lần
+        if (nd.getVaiTro() == VaiTro.NHAN_VIEN) {
+            NhanVien nv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
+            if (nv != null) {
+                model.addAttribute("currentNvId", nv.getId());
+                // isQuanLy = true nếu chức vụ là Trưởng khoa / Phó khoa / Tổ trưởng bộ môn
+                boolean isQL = nv.getChucVu() != null &&
+                        List.of("Trưởng khoa","Phó khoa","Tổ trưởng BM").contains(nv.getChucVu().getTenChucVu());
+                model.addAttribute("isQuanLy", isQL);
 
+            }
+        }
+        // ───────────────── ADMIN ─────────────────
         if (nd.getVaiTro() == VaiTro.ADMIN) {
-            model.addAttribute("giangViens",      nhanVienService.findAllGiangVien());
+
+            model.addAttribute("giangViens",
+                    nhanVienService.findAllGiangVien());
+
             model.addAttribute("giangVienIdChon", giangVienId);
+
             if (giangVienId != null && hocKy != null) {
-                thoiKhoaBieus = tkbService.findByGiangVienThang(giangVienId, hocKy, ngay);
-                model.addAttribute("thoiKhoaBieus", thoiKhoaBieus);
+
+                List<ThoiKhoaBieu> ds =
+                        tkbService.findByGiangVienThang(
+                                giangVienId,
+                                hocKy,
+                                dauThang
+                        );
+
+                model.addAttribute("thoiKhoaBieus", ds);
+
+                model.addAttribute("calendarJson",
+                        buildCalendarJson(ds, tietMap));
+
                 model.addAttribute("giangVien",
                         nhanVienService.findById(giangVienId).orElse(null));
+
                 model.addAttribute("thongKeTinChi",
                         tkbService.thongKeTinChi(giangVienId, hocKy));
+
+                model.addAttribute("lichDayBuTuan",
+                        lichDayBuService.findByGiangVienTuan(giangVienId, ngay.atDay(1)));
             }
+
+            // ───────────────── NHÂN VIÊN ─────────────────
         } else if (nd.getVaiTro() == VaiTro.NHAN_VIEN) {
-            NhanVien nv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
+
+            NhanVien nv =
+                    nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
+
             if (nv != null && hocKy != null) {
-                thoiKhoaBieus = tkbService.findByGiangVienThang(nv.getId(), hocKy, ngay);
-                model.addAttribute("thoiKhoaBieus", thoiKhoaBieus);
+
+                List<ThoiKhoaBieu> ds =
+                        tkbService.findByGiangVienThang(
+                                nv.getId(),
+                                hocKy,
+                                dauThang
+                        );
+
+                model.addAttribute("thoiKhoaBieus", ds);
+
+                model.addAttribute("calendarJson",
+                        buildCalendarJson(ds, tietMap));
+
                 model.addAttribute("giangVien", nv);
+
                 model.addAttribute("thongKeTinChi",
                         tkbService.thongKeTinChi(nv.getId(), hocKy));
+                model.addAttribute("lichDayBuTuan",
+                        lichDayBuService.findByGiangVienTuan(giangVienId, ngay.atDay(1)));
             }
+
+            // ───────────────── SINH VIÊN ─────────────────
         } else if (nd.getVaiTro() == VaiTro.SINH_VIEN) {
             SinhVien sv = svService.findByNguoiDungId(nd.getId()).orElse(null);
             if (sv != null && hocKy != null) {
-                thoiKhoaBieus = tkbService.findBySinhVienThang(sv.getId(), hocKy, ngay);
-                model.addAttribute("thoiKhoaBieus", thoiKhoaBieus);
+                List<ThoiKhoaBieu> ds = tkbService.findBySinhVienThang(sv.getId(), hocKy, dauThang);
+                model.addAttribute("thoiKhoaBieus", ds);
+                model.addAttribute("calendarJson", buildCalendarJson(ds, tietMap));
                 model.addAttribute("sinhVien", sv);
+                // Sinh viên không xem lịch dạy bù của GV → bỏ dòng lichDayBuTuan
             }
-        }
-
-        // ── Build calendarJson (sau khi có thoiKhoaBieus từ bất kỳ role nào) ──
-        if (thoiKhoaBieus != null && !thoiKhoaBieus.isEmpty()) {
-            List<Map<String, Object>> calJson = thoiKhoaBieus.stream().map(tkb -> {
-                Map<String, Object> m = new java.util.LinkedHashMap<>();
-                m.put("thuTrongTuan", tkb.getThuTrongTuan());
-                m.put("tietBatDau",   tkb.getTietBatDau());
-                m.put("soTiet",       tkb.getSoTiet());
-                m.put("tenMon",       tkb.getLopHocPhan() != null && tkb.getLopHocPhan().getMonHoc() != null
-                        ? tkb.getLopHocPhan().getMonHoc().getTenMon() : "");
-                m.put("maLhp",        tkb.getLopHocPhan() != null ? tkb.getLopHocPhan().getMaLhp() : "");
-                m.put("lhpId",        tkb.getLopHocPhan() != null ? tkb.getLopHocPhan().getId() : null);
-                m.put("hoTenGv",      tkb.getLopHocPhan() != null && tkb.getLopHocPhan().getGiangVien() != null
-                        ? tkb.getLopHocPhan().getGiangVien().getHoTen() : "");
-                m.put("gvId",         tkb.getLopHocPhan() != null && tkb.getLopHocPhan().getGiangVien() != null
-                        ? tkb.getLopHocPhan().getGiangVien().getId() : null);
-                m.put("phongHoc",     tkb.getPhongHoc());
-                m.put("soTinChi",     tkb.getLopHocPhan() != null && tkb.getLopHocPhan().getMonHoc() != null
-                        ? tkb.getLopHocPhan().getMonHoc().getSoTinChi() : 0);
-                m.put("tenThu",       tkb.getTenThu());
-                m.put("tuanBatDau",   tkb.getTuanBatDau() != null ? tkb.getTuanBatDau().toString() : null);
-                m.put("tuanKetThuc",  tkb.getTuanKetThuc() != null ? tkb.getTuanKetThuc().toString() : null);
-
-                // Giờ học từ tietMap
-                if (tietMap != null && tietMap.get(tkb.getTietBatDau()) != null) {
-                    var ts  = tietMap.get(tkb.getTietBatDau());
-                    var ts2 = tietMap.get(tkb.getTietBatDau() + tkb.getSoTiet() - 1);
-                    String gio = ts.getGioBatDau().toString().substring(0, 5)
-                            + " – " + (ts2 != null ? ts2.getGioKetThuc().toString().substring(0, 5) : "?");
-                    m.put("gioHoc", gio);
-                } else {
-                    m.put("gioHoc", "");
-                }
-                return m;
-            }).collect(java.util.stream.Collectors.toList());
-
-            try {
-                String json = new com.fasterxml.jackson.databind.ObjectMapper()
-                        .writeValueAsString(calJson);
-                model.addAttribute("calendarJson", json);
-            } catch (Exception e) {
-                model.addAttribute("calendarJson", "[]");
-            }
-        } else {
-            model.addAttribute("calendarJson", "[]"); // luôn có attr để Thymeleaf không lỗi
         }
 
         return "thoikhoabieu/theo-thang";
+    }
+    // ════════════════════════════════════════════════════════════════════════
+//  ENDPOINT: Tín chỉ còn lại (AJAX → trả JSON)
+//  Công thức: tổng TC các môn trong kỳ — số tiết đã xếp / 15
+// ════════════════════════════════════════════════════════════════════════
+    @GetMapping("/tin-chi-con-lai")
+    @PreAuthorize("hasAnyRole('ADMIN','NHAN_VIEN')")
+    @ResponseBody
+    public TinChiConLaiDTO tinChiConLai(
+            @RequestParam Long giangVienId,
+            @RequestParam String hocKy) {
+
+        List<ThoiKhoaBieu> ds = tkbService.findByGiangVien(giangVienId, hocKy);
+
+        // Tổng tín chỉ = tổng TC các môn không trùng lặp trong các LHP
+        int tongTinChi = ds.stream()
+                .map(t -> t.getLopHocPhan())
+                .filter(l -> l.getMonHoc() != null)
+                .collect(java.util.stream.Collectors.toMap(
+                        l -> l.getMonHoc().getId(), l -> l,
+                        (a, b) -> a))
+                .values().stream()
+                .mapToInt(l -> l.getMonHoc().getSoTinChi())
+                .sum();
+
+        // Tổng tiết đã xếp
+        int tongTietDaXep = ds.stream().mapToInt(ThoiKhoaBieu::getSoTiet).sum();
+
+        // Tiết cần (mỗi TC = 15 tiết/kỳ)
+        int tongTietCanDay = tongTinChi * 15;
+        int tietConLai     = Math.max(0, tongTietCanDay - tongTietDaXep);
+        int tcConLai       = (int) Math.ceil(tietConLai / 15.0);
+        double phanTram    = tongTietCanDay > 0
+                ? (double) tongTietDaXep / tongTietCanDay * 100 : 0;
+
+        return new TinChiConLaiDTO(tongTinChi, tongTietDaXep, tongTietCanDay,
+                tietConLai, tcConLai, Math.min(100, (int) phanTram));
+    }
+
+    // ── Cập nhật nhanh (Inline Edit — Admin only) ────────────────────
+    @PatchMapping("/cap-nhat/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> capNhatNhanh(
+            @PathVariable Long id,
+            @RequestBody TkbQuickUpdateDTO dto) {
+        try {
+            tkbService.capNhatNhanh(id, dto);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Cập nhật thành công!"));
+        } catch (IllegalStateException e) {
+            // Xung đột lịch
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "Lỗi hệ thống: " + e.getMessage()));
+        }
+    }
+
+    // ── Tiến độ tiết dạy theo LHP (AJAX) ────────────────────────────
+    @GetMapping("/tien-do-mon")
+    @PreAuthorize("hasAnyRole('ADMIN','NHAN_VIEN','SINH_VIEN')")
+    @ResponseBody
+    public TienDoMonDTO tienDoMon(@RequestParam Long lhpId) {
+        int tietDaDay  = tkbService.demTietByLhp(lhpId);
+        LopHocPhan lhp = lhpService.findById(lhpId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy LHP"));
+        int soTinChi   = lhp.getMonHoc() != null ? lhp.getMonHoc().getSoTinChi() : 0;
+        int tietCanDay = soTinChi * 15;         // 1 TC = 15 tiết/kỳ, chỉnh theo quy định trường
+        int tietConLai = Math.max(0, tietCanDay - tietDaDay);
+        double phanTram = tietCanDay > 0 ? (double) tietDaDay / tietCanDay * 100 : 0;
+        return new TienDoMonDTO(tietDaDay, tietCanDay, tietConLai, phanTram);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+//  ENDPOINT: Chi tiết 1 ô lịch (AJAX popup)
+// ════════════════════════════════════════════════════════════════════════
+    @GetMapping("/chi-tiet/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','NHAN_VIEN','SINH_VIEN')")
+    @ResponseBody
+    public TkbCellDetailDTO chiTietLich(@PathVariable Long id) {
+        ThoiKhoaBieu tkb = tkbService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch"));
+
+        var lhp = tkb.getLopHocPhan();
+        var mon = lhp != null ? lhp.getMonHoc() : null;
+        var gv  = lhp != null ? lhp.getGiangVien() : null;
+
+        return new TkbCellDetailDTO(
+                tkb.getId(),
+                mon  != null ? mon.getTenMon()       : "---",
+                mon  != null ? mon.getMaMon()         : "---",
+                mon  != null ? mon.getSoTinChi()      : 0,
+                gv   != null ? gv.getHoTenVaHocVi()  : "---",
+                gv   != null ? gv.getId()             : null,
+                lhp  != null ? lhp.getMaLhp()         : "---",
+                lhp  != null ? lhp.getId()            : null,
+                tkb.getTenThu(),
+                tkb.getThuTrongTuan(),
+                tkb.getTietBatDau(),
+                tkb.getTietBatDau() + tkb.getSoTiet() - 1,
+                tkb.getSoTiet(),
+                tkb.getPhongHoc(),
+                tkb.getTuanBatDau()  != null ? tkb.getTuanBatDau().toString()  : null,
+                tkb.getTuanKetThuc() != null ? tkb.getTuanKetThuc().toString() : null,
+                lhp  != null ? lhp.getSiSoHienTai()  : 0,
+                lhp  != null ? lhp.getSiSoMax()       : 0
+        );
     }
     // ── Thống kê tải giảng dạy ─────────────────────────────────────────
     @GetMapping("/thong-ke")

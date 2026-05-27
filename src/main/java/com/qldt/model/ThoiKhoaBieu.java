@@ -30,7 +30,8 @@ public class ThoiKhoaBieu {
 
     @Column(name = "thu_trong_tuan")
     @Min(2) @Max(7)
-    private int thuTrongTuan; // 2=Thứ 2, ..., 7=Thứ 7
+    private int thuTrongTuan;// 2=Thứ 2, ..., 7=Thứ 7
+
 
     @Column(name = "tiet_bat_dau")
     @Min(1) @Max(12)
@@ -106,6 +107,12 @@ public class ThoiKhoaBieu {
 
     public boolean trungLich(ThoiKhoaBieu other) {
         if (this.thuTrongTuan != other.thuTrongTuan) return false;
+        // THÊM: check tuần có overlap không
+        if (this.tuanBatDau != null && this.tuanKetThuc != null
+                && other.tuanBatDau != null && other.tuanKetThuc != null) {
+            if (this.tuanKetThuc.isBefore(other.tuanBatDau)) return false;
+            if (other.tuanKetThuc.isBefore(this.tuanBatDau)) return false;
+        }
         int end1 = this.tietBatDau + this.soTiet;
         int end2 = other.tietBatDau + other.soTiet;
         return this.tietBatDau < end2 && other.tietBatDau < end1;

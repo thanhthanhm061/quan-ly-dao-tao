@@ -5,14 +5,15 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
-
         :root {
             --navy:#0f2542; --navy-light:#1e3a5f; --blue:#2563eb;
             --surface:#f8fafc; --border:#e2e8f0; --text:#0f172a; --text-muted:#64748b;
             --radius:10px; --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.06);
+            --green:#059669; --amber:#d97706; --rose:#dc2626; --violet:#7c3aed;
         }
         body { font-family:'Be Vietnam Pro',sans-serif; background:#f1f5f9; }
 
+        /* ── Tabs ── */
         .tkb-tabs { display:flex; gap:4px; background:#fff; border-radius:12px; padding:5px;
             box-shadow:var(--shadow); margin-bottom:22px; border:none; }
         .tkb-tabs .nav-item { flex:1; }
@@ -21,9 +22,9 @@
         .tkb-tabs .nav-link:hover { background:var(--surface); color:var(--navy); }
         .tkb-tabs .nav-link.active { background:var(--navy); color:#fff; }
 
+        /* ── Filter ── */
         .filter-card { border:1.5px solid var(--border); border-radius:var(--radius);
-            background:#fff; padding:18px 22px; margin-bottom:20px;
-            box-shadow:0 1px 4px rgba(0,0,0,.05); }
+            background:#fff; padding:18px 22px; margin-bottom:20px; box-shadow:0 1px 4px rgba(0,0,0,.05); }
         .form-label { font-size:.82rem; font-weight:600; color:var(--text-muted);
             text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; }
         .form-select,.form-control { border:1.5px solid var(--border); border-radius:8px;
@@ -31,22 +32,37 @@
         .form-select:focus,.form-control:focus { border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; }
         .btn-primary { background:var(--navy); border-color:var(--navy); border-radius:8px;
             font-weight:600; font-size:.88rem; }
-        .btn-outline-secondary { border-radius:8px; font-size:.82rem; font-weight:500; }
 
-        .week-nav { display:flex; align-items:center; gap:10px; }
-        .week-label { font-size:.92rem; font-weight:600; color:#334155; }
-        .week-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 12px;
-            border:1.5px solid var(--border); border-radius:8px; background:#fff;
-            font-size:.82rem; font-weight:500; color:var(--text-muted); text-decoration:none;
-            transition:.2s; }
-        .week-btn:hover { background:var(--navy); color:#fff; border-color:var(--navy); }
-
+        /* ── Card ── */
         .card { border:1px solid var(--border); border-radius:var(--radius);
             box-shadow:var(--shadow); background:#fff; }
         .card-header { background:var(--navy); color:#fff;
             border-radius:var(--radius) var(--radius) 0 0 !important;
             padding:14px 20px; font-weight:600; border:none;
             display:flex; align-items:center; justify-content:space-between; }
+
+        /* ── Thanh tiến độ học kỳ compact ── */
+        .semester-progress-bar {
+            padding:10px 18px 11px; background:#f8fafc;
+            border-bottom:1px solid var(--border);
+            display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+        }
+        .sp-label { font-size:.78rem; font-weight:700; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+        .sp-nums { font-size:.82rem; color:var(--text-muted); white-space:nowrap; }
+        .sp-nums strong { color:var(--navy); font-weight:800; }
+        .sp-nums .warn { color:var(--amber); font-weight:700; }
+        .sp-track-wrap { flex:1; min-width:100px; }
+        .sp-track { height:5px; background:#e2e8f0; border-radius:5px; overflow:hidden; }
+        .sp-fill { height:100%; border-radius:5px;
+            background:linear-gradient(90deg,#059669,#34d399); transition:width .6s ease; }
+        .sp-pct { font-size:.72rem; color:var(--text-muted); margin-top:3px; font-weight:600; }
+
+        /* ── Grid ── */
+        .week-nav .week-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 12px;
+            border:1.5px solid rgba(255,255,255,.3); border-radius:8px; color:#fff;
+            font-size:.82rem; font-weight:500; text-decoration:none; transition:.2s; }
+        .week-nav .week-btn:hover { background:rgba(255,255,255,.2); color:#fff; }
 
         .tkb-grid-wrap { overflow-x:auto; }
         .tkb-grid { width:100%; min-width:760px; border-collapse:collapse; table-layout:fixed; }
@@ -60,102 +76,146 @@
             color:var(--text-muted); text-align:center; vertical-align:middle; }
         .tkb-grid td.today-col { background:#f0f6ff; }
 
-        /* ── Cell có thể click ── */
         .tkb-cell { position:absolute; z-index:2; left:2px; right:2px; top:2px;
             border-radius:6px; overflow:hidden; display:flex; flex-direction:column;
-            justify-content:center; padding:5px 7px;
-            cursor:pointer;   /* đổi từ cursor:default */
-            transition:transform .15s,box-shadow .15s; }
+            justify-content:center; padding:5px 7px; cursor:pointer;
+            transition:transform .15s, box-shadow .15s; }
         .tkb-cell:hover { transform:scale(1.03); z-index:10; box-shadow:0 4px 20px rgba(0,0,0,.18); }
         .tkb-cell .mon { font-size:.73rem; font-weight:700; line-height:1.25; }
         .tkb-cell .meta { font-size:.66rem; opacity:.75; margin-top:2px; }
-        .click-hint { font-size:.6rem; opacity:.5; margin-top:2px; }
+        .click-hint { font-size:.6rem; opacity:.45; margin-top:2px; }
+
+        /* Lịch dạy bù — viền đứt */
+        .tkb-cell.cell-bu {
+            border-style: dashed !important;
+            border-width: 1.5px !important;
+            border-color: currentColor !important;
+            opacity: .88;
+        }
+        .bu-badge { display:inline-block; font-size:.58rem; font-weight:800; letter-spacing:.03em;
+            background:#fef3c7; color:#92400e; padding:1px 5px; border-radius:4px;
+            margin-bottom:2px; }
 
         .tag { display:inline-flex; align-items:center; font-size:.75rem;
             padding:3px 10px; border-radius:20px; font-weight:600; }
         .tag-primary { background:#dbeafe; color:#1e40af; }
+        .today-badge { background:#dbeafe; color:#1e40af; font-size:.68rem; font-weight:700;
+            padding:1px 6px; border-radius:4px; margin-top:2px; display:inline-block; }
 
         .empty-state { text-align:center; padding:56px 20px; color:var(--text-muted); }
         .empty-state i { font-size:3rem; opacity:.25; display:block; margin-bottom:14px; }
         .empty-state h5 { font-weight:600; color:#334155; }
 
-        .today-badge { background:#dbeafe; color:#1e40af; font-size:.7rem; font-weight:700;
-            padding:1px 6px; border-radius:4px; margin-top:2px; display:inline-block; }
-
-        /* ════════════════════════════════════
-           POPUP / MODAL CHI TIẾT LỊCH
-           ════════════════════════════════════ */
-        .tkb-overlay {
-            position:fixed; inset:0; background:rgba(15,37,66,.45);
+        /* ══════════════════════════════════════
+           POPUP NÂNG CẤP
+        ══════════════════════════════════════ */
+        .tkb-overlay { position:fixed; inset:0; background:rgba(15,37,66,.45);
             z-index:5000; display:flex; align-items:center; justify-content:center;
-            opacity:0; pointer-events:none;
-            transition:opacity .2s ease;
-        }
+            opacity:0; pointer-events:none; transition:opacity .2s ease; }
         .tkb-overlay.show { opacity:1; pointer-events:auto; }
-
-        .tkb-popup {
-            background:#fff; border-radius:16px; width:420px; max-width:95vw;
+        .tkb-popup { background:#fff; border-radius:16px; width:480px; max-width:96vw;
             box-shadow:0 24px 80px rgba(0,0,0,.25);
-            transform:translateY(16px) scale(.97);
-            transition:transform .22s ease, opacity .2s ease;
-            overflow:hidden;
-        }
+            transform:translateY(16px) scale(.97); transition:transform .22s ease;
+            overflow:hidden; max-height:92vh; overflow-y:auto; }
         .tkb-overlay.show .tkb-popup { transform:translateY(0) scale(1); }
 
-        .popup-header {
-            padding:16px 20px 14px;
+        .popup-header { padding:16px 20px 14px;
             display:flex; align-items:flex-start; justify-content:space-between;
-            border-bottom:1px solid var(--border);
-        }
+            border-bottom:1px solid var(--border); }
         .popup-mon { font-size:1rem; font-weight:700; color:var(--navy); }
         .popup-lhp { font-size:.8rem; color:var(--text-muted); margin-top:2px; }
-        .popup-close {
-            width:28px; height:28px; border:none; background:#f1f5f9; border-radius:8px;
+        .popup-close { width:28px; height:28px; border:none; background:#f1f5f9; border-radius:8px;
             display:flex; align-items:center; justify-content:center; cursor:pointer;
-            color:var(--text-muted); font-size:.85rem; flex-shrink:0;
-            transition:.15s;
-        }
+            color:var(--text-muted); font-size:.85rem; flex-shrink:0; transition:.15s; }
         .popup-close:hover { background:#e2e8f0; }
 
+        /* Tabs trong popup */
+        .popup-tab-bar { display:flex; border-bottom:2px solid var(--border); background:#fafbfc; }
+        .popup-tab { flex:1; padding:10px; text-align:center; font-size:.8rem; font-weight:600;
+            color:var(--text-muted); cursor:pointer; border:none; background:none;
+            border-bottom:2px solid transparent; margin-bottom:-2px; transition:.18s; }
+        .popup-tab.active { color:var(--navy); border-bottom-color:var(--navy); }
+        .popup-tab:hover:not(.active) { background:#f1f5f9; color:var(--navy); }
+
+        .popup-pane { display:none; }
+        .popup-pane.show { display:block; }
+
         .popup-body { padding:16px 20px; }
-        .popup-row {
-            display:flex; align-items:center; gap:10px;
-            padding:7px 0; border-bottom:1px solid #f0f4f8; font-size:.88rem;
-        }
+        .popup-row { display:flex; align-items:center; gap:10px; padding:7px 0;
+            border-bottom:1px solid #f0f4f8; font-size:.88rem; }
         .popup-row:last-child { border-bottom:none; }
         .popup-row i { width:18px; color:var(--text-muted); flex-shrink:0; }
         .popup-row .label { color:var(--text-muted); min-width:90px; font-size:.8rem; }
         .popup-row .value { font-weight:600; color:var(--text); }
 
-        .popup-actions {
-            padding:14px 20px 16px;
-            display:flex; gap:8px; flex-wrap:wrap;
-            border-top:1px solid var(--border);
-            background:#fafbfc;
-        }
-        .popup-btn {
-            flex:1; min-width:120px; padding:9px 12px; border-radius:10px;
-            font-size:.82rem; font-weight:600; border:none; cursor:pointer;
-            display:flex; align-items:center; justify-content:center; gap:6px;
-            transition:.18s;
-        }
-        .popup-btn-leave {
-            background:#fef2f2; color:#dc2626; border:1.5px solid #fecaca;
-        }
-        .popup-btn-leave:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
-        .popup-btn-approve {
-            background:#ecfdf5; color:#059669; border:1.5px solid #a7f3d0;
-        }
-        .popup-btn-approve:hover { background:#059669; color:#fff; border-color:#059669; }
-        .popup-btn-makeup {
-            background:#eff6ff; color:#2563eb; border:1.5px solid #bfdbfe;
-        }
-        .popup-btn-makeup:hover { background:#2563eb; color:#fff; border-color:#2563eb; }
+        /* Progress trong popup */
+        .popup-progress { padding:14px 20px; background:#f8fafc; border-top:1px solid var(--border); }
+        .pp-title { font-size:.72rem; font-weight:700; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; }
+        .pp-stats { display:flex; gap:16px; margin-bottom:10px; }
+        .pp-stat { text-align:center; }
+        .pp-num { font-size:1.4rem; font-weight:800; color:var(--navy); line-height:1; }
+        .pp-num.done { color:var(--green); }
+        .pp-num.left { color:var(--amber); }
+        .pp-label { font-size:.68rem; color:var(--text-muted); margin-top:2px; }
+        .pp-track { height:8px; background:#e2e8f0; border-radius:8px; overflow:hidden; margin-bottom:4px; }
+        .pp-fill { height:100%; border-radius:8px;
+            background:linear-gradient(90deg,#059669,#34d399); transition:width .6s ease; width:0%; }
+        .pp-pct { font-size:.72rem; color:var(--text-muted); font-weight:600; }
+        .pp-loading { color:var(--text-muted); font-size:.8rem; }
 
-        .popup-badge {
-            display:inline-flex; align-items:center; gap:4px; font-size:.72rem;
-            padding:2px 8px; border-radius:12px; font-weight:600;
-        }
+        /* Lịch bù trong popup */
+        .popup-bu-list { padding:14px 20px; }
+        .bu-item { display:flex; align-items:center; gap:10px; padding:8px 12px;
+            border-radius:8px; background:#fef3c7; border-left:3px solid #d97706;
+            margin-bottom:6px; font-size:.82rem; }
+        .bu-item:last-child { margin-bottom:0; }
+        .bu-item .bu-date { font-weight:700; color:#92400e; min-width:80px; }
+        .bu-item .bu-meta { color:#78350f; }
+        .bu-empty { font-size:.82rem; color:var(--text-muted); text-align:center; padding:12px; }
+
+        /* Form chỉnh sửa */
+        .edit-form-body { padding:16px 20px; }
+        .edit-row { margin-bottom:14px; }
+        .edit-row label { font-size:.78rem; font-weight:700; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.04em; display:block; margin-bottom:4px; }
+        .edit-row .form-control, .edit-row .form-select {
+            border:1.5px solid var(--border); border-radius:8px; font-size:.88rem; padding:8px 10px; }
+        .edit-row .form-control:focus, .edit-row .form-select:focus {
+            border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; outline:none; }
+        .edit-conflict { background:#fef2f2; color:#dc2626; border:1px solid #fecaca;
+            border-radius:8px; padding:8px 12px; font-size:.8rem; margin-bottom:10px; display:none; }
+        .edit-conflict.show { display:block; }
+
+        .popup-actions { padding:14px 20px 16px; display:flex; gap:8px; flex-wrap:wrap;
+            border-top:1px solid var(--border); background:#fafbfc; }
+        .popup-btn { flex:1; min-width:120px; padding:9px 12px; border-radius:10px;
+            font-size:.82rem; font-weight:600; border:none; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; gap:6px; transition:.18s; }
+        .popup-btn-leave { background:#fef2f2; color:#dc2626; border:1.5px solid #fecaca; }
+        .popup-btn-leave:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+        .popup-btn-approve { background:#ecfdf5; color:#059669; border:1.5px solid #a7f3d0; }
+        .popup-btn-approve:hover { background:#059669; color:#fff; }
+        .popup-btn-makeup { background:#eff6ff; color:#2563eb; border:1.5px solid #bfdbfe; }
+        .popup-btn-makeup:hover { background:#2563eb; color:#fff; }
+        .popup-btn-edit { background:var(--navy); color:#fff; border:1.5px solid var(--navy); }
+        .popup-btn-edit:hover { background:var(--navy-light); }
+        .popup-btn-save { background:var(--green); color:#fff; border:1.5px solid var(--green); }
+        .popup-btn-save:hover { opacity:.9; }
+
+        /* Toast thông báo */
+        .toast-notify { position:fixed; bottom:24px; right:24px; min-width:280px;
+            background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,.18);
+            border:1px solid var(--border); padding:14px 18px; z-index:99999;
+            transform:translateY(20px); opacity:0; pointer-events:none;
+            transition:all .25s ease; display:flex; align-items:center; gap:10px; }
+        .toast-notify.show { transform:translateY(0); opacity:1; pointer-events:auto; }
+        .toast-notify.success { border-left:4px solid var(--green); }
+        .toast-notify.error   { border-left:4px solid var(--rose); }
+        .toast-notify i { font-size:1.1rem; }
+        .toast-notify.success i { color:var(--green); }
+        .toast-notify.error   i { color:var(--rose); }
+        .toast-notify span { font-size:.88rem; font-weight:500; color:var(--text); }
     </style>
 
     <!-- ── TABS ── -->
@@ -179,8 +239,7 @@
                     <option value="">— Chọn —</option>
                     <option th:each="gv : ${giangViens}"
                             th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
-                            th:selected="${gv.id == giangVienIdChon}">
-                    </option>
+                            th:selected="${gv.id == giangVienIdChon}"></option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -189,14 +248,12 @@
                     <option value="">— Chọn —</option>
                     <option th:each="hk : ${danhSachHocKy}"
                             th:value="${hk}" th:text="${hk}"
-                            th:selected="${hk == hocKyChon}">
-                    </option>
+                            th:selected="${hk == hocKyChon}"></option>
                 </select>
             </div>
             <div class="col-md-3">
                 <label class="form-label">Chọn ngày trong tuần</label>
-                <input type="date" name="ngay" class="form-control"
-                       th:value="${ngayChon}"/>
+                <input type="date" name="ngay" class="form-control" th:value="${ngayChon}"/>
             </div>
             <div class="col-md-3">
                 <button type="submit" class="btn btn-primary w-100">
@@ -220,31 +277,46 @@
         <div th:unless="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
             <div class="card-header">
                 <div class="d-flex align-items-center gap-3 flex-wrap">
-                    <span>
-                        <i class="fas fa-calendar-week me-2"></i>
-                        <span th:if="${giangVien != null}" th:text="${giangVien.hoTenVaHocVi}"></span>
-                        <span th:if="${sinhVien != null}" th:text="${sinhVien.hoTen}"></span>
-                    </span>
-                    <span class="opacity-75" style="font-weight:400; font-size:.88rem"
+                <span>
+                    <i class="fas fa-calendar-week me-2"></i>
+                    <span th:if="${giangVien != null}" th:text="${giangVien.hoTenVaHocVi}"></span>
+                    <span th:if="${sinhVien != null}" th:text="${sinhVien.hoTen}"></span>
+                </span>
+                    <span class="opacity-75" style="font-weight:400;font-size:.88rem"
                           th:if="${thuTrongTuan != null and !#lists.isEmpty(thuTrongTuan)}"
                           th:text="'Tuần ' + ${#temporals.format(thuTrongTuan[0],'dd/MM')} + ' – ' + ${#temporals.format(thuTrongTuan[5],'dd/MM/yyyy')}">
-                    </span>
+                </span>
                     <span class="tag tag-primary" th:text="${#lists.size(thoiKhoaBieus)} + ' buổi'"></span>
                 </div>
-                <div class="week-nav">
-                    <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},
-                       hocKy=${hocKyChon},
-                       ngay=${ngayChon != null ? ngayChon.minusWeeks(1) : ''})}"
-                       class="week-btn">
-                        <i class="fas fa-chevron-left"></i> Trước
-                    </a>
-                    <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},
-                       hocKy=${hocKyChon},
-                       ngay=${ngayChon != null ? ngayChon.plusWeeks(1) : ''})}"
-                       class="week-btn">
-                        Sau <i class="fas fa-chevron-right"></i>
-                    </a>
+                <div class="week-nav d-flex gap-2">
+                    <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},hocKy=${hocKyChon},ngay=${ngayChon != null ? ngayChon.minusWeeks(1) : ''})}"
+                       class="week-btn"><i class="fas fa-chevron-left"></i> Trước</a>
+                    <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},hocKy=${hocKyChon},ngay=${ngayChon != null ? ngayChon.plusWeeks(1) : ''})}"
+                       class="week-btn">Sau <i class="fas fa-chevron-right"></i></a>
                 </div>
+            </div>
+
+            <!-- ── Thanh tiến độ học kỳ ── -->
+            <div th:if="${thongKeTinChi != null}" class="semester-progress-bar">
+                <span class="sp-label"><i class="fas fa-graduation-cap me-1"></i>Tiến độ học kỳ</span>
+                <div class="sp-track-wrap">
+                    <div class="sp-track">
+                        <div class="sp-fill"
+                             th:style="'width:' + ${thongKeTinChi['phanCong'] > 0 ?
+                             (thongKeTinChi['daDay'] * 100 / thongKeTinChi['phanCong']) : 0} + '%'"></div>
+                    </div>
+                    <div class="sp-pct"
+                         th:text="${thongKeTinChi['phanCong'] > 0 ?
+                         #numbers.formatDecimal(thongKeTinChi['daDay'] * 100.0 / thongKeTinChi['phanCong'],1,1) + '%' : '0%'}
+                         + ' đã xếp lịch'">
+                    </div>
+                </div>
+                <span class="sp-nums">
+                <strong th:text="${thongKeTinChi['daDay']}">0</strong> /
+                <span th:text="${thongKeTinChi['phanCong']}">0</span> TC
+                <span th:if="${thongKeTinChi['conLai'] > 0}" class="warn ms-2"
+                      th:text="'· Còn ' + ${thongKeTinChi['conLai']} + ' TC chưa xếp'"></span>
+            </span>
             </div>
 
             <div class="card-body p-0">
@@ -258,6 +330,7 @@
                         <tr>
                             <th>Tiết</th>
                             <th th:each="ngay,i : ${thuTrongTuan}"
+                                th:id="'th-' + ${i.index+2}"
                                 th:classappend="${ngay.equals(#temporals.createToday()) ? ' today-col' : ''}">
                                 <div th:text="'Thứ ' + ${i.index + 2}"></div>
                                 <span class="date-sub" th:text="${#temporals.format(ngay,'dd/MM')}"></span>
@@ -270,58 +343,92 @@
                             <td class="tiet-label" th:text="'T' + ${tiet}"></td>
                             <td th:each="thuIdx,iter : ${thuTrongTuan}"
                                 th:classappend="${thuIdx.equals(#temporals.createToday()) ? ' today-col' : ''}">
+                                <!-- Lịch chính -->
                                 <th:block th:each="tkb,i : ${thoiKhoaBieus}">
                                     <div th:if="${tkb.thuTrongTuan eq (iter.index + 2) and tkb.tietBatDau eq tiet}"
                                          class="tkb-cell"
                                          th:style="'height:' + ${tkb.soTiet*52-4} + 'px;' +
-                                             'background:' + ${i.index%6==0?'#dbeafe':i.index%6==1?'#d1fae5':
-                                               i.index%6==2?'#fef3c7':i.index%6==3?'#ede9fe':
-                                               i.index%6==4?'#fee2e2':'#e0f2fe'} +
-                                             ';border-left:3px solid ' +
-                                             ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':
-                                               i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':
-                                               i.index%6==4?'#dc2626':'#0284c7'}"
+                                         'background:' + ${i.index%6==0?'#dbeafe':i.index%6==1?'#d1fae5':
+                                           i.index%6==2?'#fef3c7':i.index%6==3?'#ede9fe':
+                                           i.index%6==4?'#fee2e2':'#e0f2fe'} +
+                                         ';border-left:3px solid ' +
+                                         ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':
+                                           i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':
+                                           i.index%6==4?'#dc2626':'#0284c7'}"
                                          th:attr="
-                                             data-mon=${tkb.lopHocPhan?.monHoc?.tenMon},
-                                             data-lhp=${tkb.lopHocPhan?.maLhp},
-                                             data-gv=${tkb.lopHocPhan?.giangVien?.hoTen},
-                                             data-thu=${tkb.tenThu},
-                                             data-ngay=${#temporals.format(thuTrongTuan[iter.index],'dd/MM/yyyy')},
-                                             data-ngay-iso=${#temporals.format(thuTrongTuan[iter.index],'yyyy-MM-dd')},
-                                             data-tiet=${'T' + tkb.tietBatDau + ' → T' + (tkb.tietBatDau+tkb.soTiet-1)},
-                                             data-phong=${tkb.phongHoc ?: '?'},
-                                             data-tc=${tkb.lopHocPhan?.monHoc?.soTinChi},
-                                             data-gio=${tietMap != null and tietMap[tkb.tietBatDau] != null ?
-                                                 #temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm') + ' – ' +
-                                                 (tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
-                                                  #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?') : ''},
-                                             data-lhp-id=${tkb.lopHocPhan?.id},
-                                             data-gv-id=${tkb.lopHocPhan?.giangVien?.id}
-                                         "
+                                         data-id=${tkb.id},
+                                         data-mon=${tkb.lopHocPhan?.monHoc?.tenMon},
+                                         data-lhp=${tkb.lopHocPhan?.maLhp},
+                                         data-gv=${tkb.lopHocPhan?.giangVien?.hoTen},
+                                         data-thu=${tkb.tenThu},
+                                         data-thu-num=${tkb.thuTrongTuan},
+                                         data-ngay=${#temporals.format(thuTrongTuan[iter.index],'dd/MM/yyyy')},
+                                         data-ngay-iso=${#temporals.format(thuTrongTuan[iter.index],'yyyy-MM-dd')},
+                                         data-tiet-bd=${tkb.tietBatDau},
+                                         data-so-tiet=${tkb.soTiet},
+                                         data-tiet=${'T' + tkb.tietBatDau + ' → T' + (tkb.tietBatDau+tkb.soTiet-1)},
+                                         data-phong=${tkb.phongHoc ?: '?'},
+                                         data-tc=${tkb.lopHocPhan?.monHoc?.soTinChi},
+                                         data-tuan-bat-dau=${tkb.tuanBatDau},
+                                         data-tuan-ket-thuc=${tkb.tuanKetThuc},
+                                         data-gio=${tietMap != null and tietMap[tkb.tietBatDau] != null ?
+                                             #temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm') + ' – ' +
+                                             (tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
+                                              #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?') : ''},
+                                         data-lhp-id=${tkb.lopHocPhan?.id},
+                                         data-gv-id=${tkb.lopHocPhan?.giangVien?.id}
+                                     "
                                          onclick="moPopupTKB(this)">
-
-                                        <span class="mon"
-                                              th:style="'color:' + ${i.index%6==0?'#1e40af':i.index%6==1?'#065f46':
-                                                i.index%6==2?'#92400e':i.index%6==3?'#5b21b6':
-                                                i.index%6==4?'#991b1b':'#0c4a6e'}"
-                                              th:text="${tkb.lopHocPhan?.monHoc?.tenMon ?: '---'}"></span>
+                                    <span class="mon"
+                                          th:style="'color:' + ${i.index%6==0?'#1e40af':i.index%6==1?'#065f46':
+                                            i.index%6==2?'#92400e':i.index%6==3?'#5b21b6':
+                                            i.index%6==4?'#991b1b':'#0c4a6e'}"
+                                          th:text="${tkb.lopHocPhan?.monHoc?.tenMon ?: '---'}"></span>
                                         <span class="meta text-muted"
                                               th:text="'P.' + ${tkb.phongHoc ?: '?'} + ' · T' +
-                                                 ${tkb.tietBatDau} + '–' + ${tkb.tietBatDau+tkb.soTiet-1}"></span>
-                                        <span class="meta text-muted"
-                                              th:if="${tkb.lopHocPhan?.monHoc?.soTinChi != null}"
-                                              th:text="${tkb.lopHocPhan.monHoc.soTinChi} + ' TC'"></span>
+                                             ${tkb.tietBatDau} + '–' + ${tkb.tietBatDau+tkb.soTiet-1}"></span>
                                         <span class="meta text-muted"
                                               th:if="${tkb.lopHocPhan?.giangVien != null}"
                                               th:text="${tkb.lopHocPhan.giangVien.hoTen}"></span>
                                         <span class="meta text-muted"
                                               th:if="${tietMap != null and tietMap[tkb.tietBatDau] != null}"
                                               th:text="${#temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm')}
-                                                       + ' – ' +
-                                                       ${tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
-                                                         #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?'}">
-                                        </span>
+                                                   + ' – ' +
+                                                   ${tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
+                                                     #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?'}">
+                                    </span>
                                         <span class="click-hint">↗ Nhấn để xem chi tiết</span>
+                                    </div>
+                                </th:block>
+
+                                <!-- Lịch dạy bù (nếu có trong tuần này) -->
+                                <th:block th:if="${lichDayBuTuan != null}"
+                                          th:each="bu,bi : ${lichDayBuTuan}">
+                                    <div th:if="${bu.thuTrongTuan eq (iter.index + 2) and bu.tietBatDau eq tiet}"
+                                         class="tkb-cell cell-bu"
+                                         th:style="'height:' + ${bu.soTiet*52-4} + 'px;' +
+                                         'background:#fef3c7;border-left:3px dashed #d97706;color:#92400e'"
+                                         th:attr="
+                                         data-id=${bu.id},
+                                         data-mon=${bu.lopHocPhan?.monHoc?.tenMon},
+                                         data-lhp=${bu.lopHocPhan?.maLhp},
+                                         data-gv=${bu.lopHocPhan?.giangVien?.hoTen},
+                                         data-thu=${bu.tenThu},
+                                         data-ngay=${#temporals.format(thuTrongTuan[iter.index],'dd/MM/yyyy')},
+                                         data-ngay-iso=${#temporals.format(thuTrongTuan[iter.index],'yyyy-MM-dd')},
+                                         data-tiet=${'T' + bu.tietBatDau + ' → T' + (bu.tietBatDau+bu.soTiet-1)},
+                                         data-phong=${bu.phongHoc ?: '?'},
+                                         data-tc=${bu.lopHocPhan?.monHoc?.soTinChi},
+                                         data-lhp-id=${bu.lopHocPhan?.id},
+                                         data-gv-id=${bu.lopHocPhan?.giangVien?.id},
+                                         data-loai=BU
+                                     "
+                                         onclick="moPopupTKB(this)">
+                                        <span class="bu-badge">DẠY BÙ</span>
+                                        <span class="mon" style="color:#92400e"
+                                              th:text="${bu.lopHocPhan?.monHoc?.tenMon ?: '---'}"></span>
+                                        <span class="meta" style="opacity:.75"
+                                              th:text="'P.' + ${bu.phongHoc ?: '?'}"></span>
                                     </div>
                                 </th:block>
                             </td>
@@ -342,188 +449,395 @@
         </div>
     </div>
 
-    <!-- ════════════════════════════════════════════════════════════
-         POPUP CHI TIẾT LỊCH
-         ════════════════════════════════════════════════════════════ -->
+    <!-- ══════════════════════════════════════════════════════════
+         POPUP CHI TIẾT + CHỈNH SỬA NÂNG CẤP
+    ══════════════════════════════════════════════════════════ -->
     <div class="tkb-overlay" id="tkbOverlay" onclick="dongPopup(event)">
-        <div class="tkb-popup" id="tkbPopup">
+        <div class="tkb-popup">
 
             <div class="popup-header">
                 <div>
                     <div class="popup-mon" id="popupMon">—</div>
                     <div class="popup-lhp" id="popupLhp">—</div>
                 </div>
-                <button class="popup-close" onclick="dongPopupBtn()">
-                    <i class="fas fa-times"></i>
+                <button class="popup-close" onclick="dongPopupBtn()"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Tab bar -->
+            <div class="popup-tab-bar" id="popupTabBar">
+                <button class="popup-tab active" onclick="chuyenTab('chi-tiet')">
+                    <i class="fas fa-info-circle me-1"></i>Chi tiết
+                </button>
+                <button class="popup-tab" onclick="chuyenTab('tien-do')">
+                    <i class="fas fa-tasks me-1"></i>Tiến độ
+                </button>
+                <button class="popup-tab" onclick="chuyenTab('lich-bu')">
+                    <i class="fas fa-calendar-plus me-1"></i>Lịch bù
+                </button>
+                <button class="popup-tab" id="tabEdit" onclick="chuyenTab('chinh-sua')"
+                        style="display:none" sec:authorize="hasRole('ADMIN')">
+                    <i class="fas fa-edit me-1"></i>Chỉnh sửa
                 </button>
             </div>
 
-            <div class="popup-body">
-                <div class="popup-row">
-                    <i class="fas fa-user-tie"></i>
-                    <span class="label">Giảng viên</span>
-                    <span class="value" id="popupGv">—</span>
+            <!-- PANE 1: Chi tiết -->
+            <div class="popup-pane show" id="pane-chi-tiet">
+                <div class="popup-body">
+                    <div class="popup-row">
+                        <i class="fas fa-user-tie"></i>
+                        <span class="label">Giảng viên</span>
+                        <span class="value" id="popupGv">—</span>
+                    </div>
+                    <div class="popup-row">
+                        <i class="fas fa-calendar-day"></i>
+                        <span class="label">Ngày học</span>
+                        <span class="value" id="popupNgay">—</span>
+                    </div>
+                    <div class="popup-row">
+                        <i class="fas fa-clock"></i>
+                        <span class="label">Tiết / Giờ</span>
+                        <span class="value" id="popupTiet">—</span>
+                    </div>
+                    <div class="popup-row">
+                        <i class="fas fa-door-open"></i>
+                        <span class="label">Phòng học</span>
+                        <span class="value" id="popupPhong">—</span>
+                    </div>
+                    <div class="popup-row">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span class="label">Tín chỉ</span>
+                        <span class="value" id="popupTc">—</span>
+                    </div>
+                    <div class="popup-row" id="popupLoaiRow" style="display:none">
+                        <i class="fas fa-sync-alt"></i>
+                        <span class="label">Loại lịch</span>
+                        <span class="value"><span class="bu-badge">DẠY BÙ</span></span>
+                    </div>
                 </div>
-                <div class="popup-row">
-                    <i class="fas fa-calendar-day"></i>
-                    <span class="label">Ngày học</span>
-                    <span class="value" id="popupNgay">—</span>
-                </div>
-                <div class="popup-row">
-                    <i class="fas fa-clock"></i>
-                    <span class="label">Tiết / Giờ</span>
-                    <span class="value" id="popupTiet">—</span>
-                </div>
-                <div class="popup-row">
-                    <i class="fas fa-door-open"></i>
-                    <span class="label">Phòng học</span>
-                    <span class="value" id="popupPhong">—</span>
-                </div>
-                <div class="popup-row">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span class="label">Tín chỉ</span>
-                    <span class="value" id="popupTc">—</span>
+                <div class="popup-actions" id="popupActions">
+                    <button id="btnXinNghi" class="popup-btn popup-btn-leave" onclick="diXinNghi()" style="display:none">
+                        <i class="fas fa-file-medical"></i> Xin nghỉ ngày này
+                    </button>
+                    <button id="btnDuyetDon" class="popup-btn popup-btn-approve" onclick="diDuyetDon()" style="display:none">
+                        <i class="fas fa-clipboard-check"></i> Xem đơn nghỉ
+                    </button>
+                    <button id="btnXepBu" class="popup-btn popup-btn-makeup" onclick="diXepBu()" style="display:none">
+                        <i class="fas fa-calendar-plus"></i> Xếp lịch dạy bù
+                    </button>
                 </div>
             </div>
 
-            <!-- Actions — hiển thị theo role (ẩn/hiện bằng JS dựa vào data attribute -->
-            <div class="popup-actions" id="popupActions">
-                <!-- Nút xin nghỉ (GV xem lịch của chính mình) -->
-                <button id="btnXinNghi"
-                        class="popup-btn popup-btn-leave"
-                        onclick="diXinNghi()"
-                        style="display:none">
-                    <i class="fas fa-file-medical"></i> Xin nghỉ ngày này
-                </button>
-
-                <!-- Nút duyệt đơn (Admin/TK/PTK/TBM) -->
-                <button id="btnDuyetDon"
-                        class="popup-btn popup-btn-approve"
-                        onclick="diDuyetDon()"
-                        style="display:none">
-                    <i class="fas fa-clipboard-check"></i> Xem đơn nghỉ
-                </button>
-
-                <!-- Nút xếp lịch bù (Admin/TK/PTK/TBM) -->
-                <button id="btnXepBu"
-                        class="popup-btn popup-btn-makeup"
-                        onclick="diXepBu()"
-                        style="display:none">
-                    <i class="fas fa-calendar-plus"></i> Xếp lịch dạy bù
-                </button>
+            <!-- PANE 2: Tiến độ tiết dạy -->
+            <div class="popup-pane" id="pane-tien-do">
+                <div class="popup-progress">
+                    <div class="pp-title"><i class="fas fa-chart-line me-1"></i>Tiến độ tiết dạy — môn này</div>
+                    <div id="ppContent">
+                        <div class="pp-loading"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải...</div>
+                    </div>
+                </div>
             </div>
 
-        </div>
+            <!-- PANE 3: Lịch dạy bù -->
+            <div class="popup-pane" id="pane-lich-bu">
+                <div class="popup-bu-list">
+                    <div class="pp-title" style="margin-bottom:10px">
+                        <i class="fas fa-calendar-alt me-1"></i>Lịch dạy bù — môn này
+                    </div>
+                    <div id="buContent">
+                        <div class="pp-loading"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANE 4: Chỉnh sửa (Admin only) -->
+            <div class="popup-pane" id="pane-chinh-sua">
+                <div class="edit-form-body">
+                    <div class="edit-conflict" id="editConflict">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <span id="editConflictMsg">Xung đột lịch!</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6 edit-row">
+                            <label>Thứ</label>
+                            <select id="editThu" class="form-select">
+                                <option value="2">Thứ 2</option>
+                                <option value="3">Thứ 3</option>
+                                <option value="4">Thứ 4</option>
+                                <option value="5">Thứ 5</option>
+                                <option value="6">Thứ 6</option>
+                                <option value="7">Thứ 7</option>
+                            </select>
+                        </div>
+                        <div class="col-6 edit-row">
+                            <label>Tiết bắt đầu</label>
+                            <input type="number" id="editTietBd" min="1" max="12" class="form-control">
+                        </div>
+                        <div class="col-6 edit-row">
+                            <label>Số tiết</label>
+                            <input type="number" id="editSoTiet" min="1" max="6" class="form-control">
+                        </div>
+                        <div class="col-6 edit-row">
+                            <label>Phòng học</label>
+                            <input type="text" id="editPhong" class="form-control" placeholder="VD: A101">
+                        </div>
+                        <div class="col-6 edit-row">
+                            <label>Từ ngày</label>
+                            <input type="date" id="editTuanBd" class="form-control">
+                        </div>
+                        <div class="col-6 edit-row">
+                            <label>Đến ngày</label>
+                            <input type="date" id="editTuanKt" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="popup-actions">
+                    <button class="popup-btn popup-btn-leave" style="max-width:120px" onclick="dongPopupBtn()">
+                        <i class="fas fa-times me-1"></i>Hủy
+                    </button>
+                    <button class="popup-btn popup-btn-save" onclick="luuChinhSua()">
+                        <i class="fas fa-save me-1"></i>Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+
+        </div><!-- .tkb-popup -->
+    </div><!-- .tkb-overlay -->
+
+    <!-- Toast thông báo -->
+    <div class="toast-notify" id="toastNotify">
+        <i class="fas fa-check-circle" id="toastIcon"></i>
+        <span id="toastMsg">Thông báo</span>
     </div>
 
-    <!-- Truyền thông tin quyền từ server sang JS -->
+    <!-- Server meta -->
     <div id="serverMeta"
          th:attr="
-             data-is-admin=${#authorization.expression('hasRole(''ADMIN'')') ? 'true' : 'false'},
-             data-is-quan-ly=${isQuanLy != null and isQuanLy ? 'true' : 'false'},
-             data-gv-id-chon=${giangVienIdChon ?: ''},
-             data-current-nv-id=${currentNvId ?: ''}
-         "
-         style="display:none">
-    </div>
+         data-is-admin=${#authorization.expression('hasRole(''ADMIN'')') ? 'true' : 'false'},
+         data-is-quan-ly=${isQuanLy != null and isQuanLy ? 'true' : 'false'},
+         data-current-nv-id=${currentNvId ?: ''},
+         data-gv-id-chon=${giangVienIdChon ?: ''},
+         data-hoc-ky=${hocKyChon ?: ''}
+     "
+         style="display:none"></div>
 
 </th:block></body></html>
 
 <script th:inline="javascript">
-    /* ═══════════════════════════════════════════════════════════
-       HIGHLIGHT HÔM NAY
-       ═══════════════════════════════════════════════════════════ */
-    (function () {
-        const today = new Date();
-        const dow = today.getDay();
-        const diffToMon = (dow === 0) ? -6 : 1 - dow;
-        const monday = new Date(today);
-        monday.setDate(today.getDate() + diffToMon);
+    /* ═══════════════════════════════════════════════════
+       BIẾN TOÀN CỤC
+    ═══════════════════════════════════════════════════ */
+    const overlay  = document.getElementById('tkbOverlay');
+    const meta     = document.getElementById('serverMeta');
 
-        for (let i = 0; i < 6; i++) {
-            const d = new Date(monday);
-            d.setDate(monday.getDate() + i);
-            const dd = String(d.getDate()).padStart(2, '0');
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const th = document.getElementById('th-' + (i + 2));
-            if (!th) continue;
-            const sub = th.querySelector('.date-sub');
-            if (sub) sub.textContent = dd + '/' + mm;
-            if (d.toDateString() === today.toDateString()) th.classList.add('today-col');
-        }
-    })();
+    const isAdmin  = meta?.dataset.isAdmin  === 'true';
+    const isQuanLy = meta?.dataset.isQuanLy === 'true';
+    const curNvId  = meta?.dataset.currentNvId || '';
+    const hocKy    = meta?.dataset.hocKy || '';
 
-    /* ═══════════════════════════════════════════════════════════
-       POPUP LOGIC
-       ═══════════════════════════════════════════════════════════ */
-    const overlay = document.getElementById('tkbOverlay');
-    const meta    = document.getElementById('serverMeta');
+    let currentId      = null;
+    let currentLhpId   = null;
+    let currentGvId    = null;
+    let currentNgayIso = '';
+    let currentTabData = {};
 
-    const isAdmin   = meta ? meta.dataset.isAdmin   === 'true' : false;
-    const isQuanLy  = meta ? meta.dataset.isQuanLy  === 'true' : false;
-    const gvIdChon  = meta ? meta.dataset.gvIdChon  : '';
-    const curNvId   = meta ? meta.dataset.currentNvId : '';
-
-    let popupNgayIso  = '';
-    let popupGvId     = '';
-    let popupLhpId    = '';
-
+    /* ═══════════════════════════════════════════════════
+       MỞ POPUP
+    ═══════════════════════════════════════════════════ */
     function moPopupTKB(el) {
         const d = el.dataset;
+        currentId      = d.id;
+        currentLhpId   = d.lhpId   || '';
+        currentGvId    = d.gvId    || '';
+        currentNgayIso = d.ngayIso || '';
 
-        document.getElementById('popupMon').textContent   = d.mon   || '—';
-        document.getElementById('popupLhp').textContent   = d.lhp   || '—';
-        document.getElementById('popupGv').textContent    = d.gv    || '—';
-        document.getElementById('popupNgay').textContent  = d.thu + ', ' + (d.ngay || '—');
+        // Fill tab Chi tiết
+        document.getElementById('popupMon').textContent   = d.mon  || '—';
+        document.getElementById('popupLhp').textContent   = d.lhp  || '—';
+        document.getElementById('popupGv').textContent    = d.gv   || '—';
+        document.getElementById('popupNgay').textContent  = (d.thu || '') + ', ' + (d.ngay || '—');
         document.getElementById('popupTiet').textContent  = (d.tiet || '—') + (d.gio ? '  (' + d.gio + ')' : '');
         document.getElementById('popupPhong').textContent = 'Phòng ' + (d.phong || '?');
         document.getElementById('popupTc').textContent    = d.tc ? d.tc + ' tín chỉ' : '—';
 
-        popupNgayIso = d.ngayIso || '';
-        popupGvId    = d.gvId    || '';
-        popupLhpId   = d.lhpId   || '';
+        // Nhãn dạy bù
+        const loaiRow = document.getElementById('popupLoaiRow');
+        loaiRow.style.display = d.loai === 'BU' ? '' : 'none';
 
-        // ── Quyết định hiển thị nút ──────────────────────────
-        const btnXinNghi  = document.getElementById('btnXinNghi');
-        const btnDuyetDon = document.getElementById('btnDuyetDon');
-        const btnXepBu    = document.getElementById('btnXepBu');
-
-        // GV xem lịch của mình → có nút Xin nghỉ
-        const laMinhDang = curNvId && popupGvId && curNvId === popupGvId;
-        btnXinNghi.style.display  = laMinhDang ? '' : 'none';
-
-        // Admin / Quản lý → có nút Xem đơn nghỉ + Xếp bù
-        btnDuyetDon.style.display = (isAdmin || isQuanLy) ? '' : 'none';
-        btnXepBu.style.display    = (isAdmin || isQuanLy) ? '' : 'none';
-
-        // Nếu không có action nào → ẩn cả actions bar
+        // Buttons quyền
+        const laMinhDang = curNvId && currentGvId && curNvId === currentGvId;
+        const isBu = d.loai === 'BU';
+        document.getElementById('btnXinNghi').style.display  = (laMinhDang && !isBu) ? '' : 'none';
+        document.getElementById('btnDuyetDon').style.display = (isAdmin || isQuanLy) ? '' : 'none';
+        document.getElementById('btnXepBu').style.display    = (isAdmin || isQuanLy) ? '' : 'none';
         document.getElementById('popupActions').style.display =
             (laMinhDang || isAdmin || isQuanLy) ? '' : 'none';
 
+        // Tab Chỉnh sửa — chỉ Admin, chỉ lịch chính
+        const tabEdit = document.getElementById('tabEdit');
+        if (tabEdit) {
+            tabEdit.style.display = (isAdmin && !isBu) ? '' : 'none';
+        }
+
+        // Pre-fill form chỉnh sửa
+        if (isAdmin && !isBu) {
+            document.getElementById('editThu').value    = d.thuNum  || '2';
+            document.getElementById('editTietBd').value = d.tietBd  || '1';
+            document.getElementById('editSoTiet').value = d.soTiet  || '3';
+            document.getElementById('editPhong').value  = d.phong   || '';
+            document.getElementById('editTuanBd').value = d.tuanBatDau  || '';
+            document.getElementById('editTuanKt').value = d.tuanKetThuc || '';
+        }
+
+        // Reset tabs
+        chuyenTab('chi-tiet');
         overlay.classList.add('show');
+
+        // Load tiến độ + lịch bù background
+        if (currentLhpId) {
+            loadTienDo(currentLhpId);
+            loadLichBu(currentLhpId);
+        }
     }
 
-    function dongPopup(e) {
-        if (e.target === overlay) overlay.classList.remove('show');
+    /* ═══════════════════════════════════════════════════
+       CHUYỂN TAB
+    ═══════════════════════════════════════════════════ */
+    function chuyenTab(tabName) {
+        document.querySelectorAll('.popup-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.popup-pane').forEach(p => p.classList.remove('show'));
+
+        const btn = document.querySelector(`.popup-tab[onclick="chuyenTab('${tabName}')"]`);
+        if (btn) btn.classList.add('active');
+        const pane = document.getElementById('pane-' + tabName);
+        if (pane) pane.classList.add('show');
     }
+
+    /* ═══════════════════════════════════════════════════
+       LOAD TIẾN ĐỘ TIẾT DẠY (AJAX)
+    ═══════════════════════════════════════════════════ */
+    async function loadTienDo(lhpId) {
+        const el = document.getElementById('ppContent');
+        el.innerHTML = '<div class="pp-loading"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải...</div>';
+        try {
+            const res = await fetch(`/tkb/tien-do-mon?lhpId=${lhpId}`);
+            if (!res.ok) throw new Error();
+            const d = await res.json();
+            const pct = Math.min(100, d.phanTram || 0).toFixed(0);
+            el.innerHTML = `
+            <div class="pp-stats">
+                <div class="pp-stat">
+                    <div class="pp-num done">${d.tietDaDay}</div>
+                    <div class="pp-label">Tiết đã xếp</div>
+                </div>
+                <div style="font-size:1.2rem;color:#e2e8f0;align-self:center">→</div>
+                <div class="pp-stat">
+                    <div class="pp-num">${d.tietCanDay}</div>
+                    <div class="pp-label">Tổng tiết cần</div>
+                </div>
+                <div style="font-size:1.2rem;color:#e2e8f0;align-self:center">·</div>
+                <div class="pp-stat">
+                    <div class="pp-num left">${d.tietConLai}</div>
+                    <div class="pp-label">Còn lại</div>
+                </div>
+            </div>
+            <div class="pp-track"><div class="pp-fill" style="width:${pct}%"></div></div>
+            <div class="pp-pct">${pct}% tiết đã được xếp lịch</div>
+            ${d.tietConLai === 0
+                ? '<div style="font-size:.78rem;color:var(--green);margin-top:6px;font-weight:600"><i class="fas fa-check-circle me-1"></i>Đã xếp đủ lịch cho môn này!</div>'
+                : `<div style="font-size:.78rem;color:var(--amber);margin-top:6px;font-weight:600"><i class="fas fa-exclamation-circle me-1"></i>Còn thiếu ${d.tietConLai} tiết cần xếp</div>`}
+        `;
+        } catch(e) {
+            el.innerHTML = '<div class="pp-loading">Không thể tải dữ liệu tiến độ.</div>';
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       LOAD LỊCH DẠY BÙ (AJAX)
+    ═══════════════════════════════════════════════════ */
+    async function loadLichBu(lhpId) {
+        const el = document.getElementById('buContent');
+        el.innerHTML = '<div class="pp-loading"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải...</div>';
+        try {
+            const res = await fetch(`/lich-day-bu/api/theo-lhp?lhpId=${lhpId}`);
+            if (!res.ok) throw new Error();
+            const list = await res.json();
+            if (!list.length) {
+                el.innerHTML = '<div class="bu-empty"><i class="fas fa-calendar-check me-1"></i>Chưa có lịch dạy bù cho môn này.</div>';
+                return;
+            }
+            el.innerHTML = list.map(b => `
+            <div class="bu-item">
+                <span class="bu-date">${b.ngayDayBu || '—'}</span>
+                <span class="bu-meta">P.${b.phongHoc || '?'} · T${b.tietBatDau}–${b.tietKetThuc}</span>
+                ${b.ghiChu ? `<span style="font-size:.76rem;color:#78350f;margin-left:auto">${b.ghiChu}</span>` : ''}
+            </div>
+        `).join('');
+        } catch(e) {
+            el.innerHTML = '<div class="bu-empty">Không thể tải lịch dạy bù.</div>';
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       LƯU CHỈNH SỬA (AJAX PATCH)
+    ═══════════════════════════════════════════════════ */
+    async function luuChinhSua() {
+        if (!currentId) return;
+        const payload = {
+            thuTrongTuan : parseInt(document.getElementById('editThu').value),
+            tietBatDau   : parseInt(document.getElementById('editTietBd').value),
+            soTiet       : parseInt(document.getElementById('editSoTiet').value),
+            phongHoc     : document.getElementById('editPhong').value.trim(),
+            tuanBatDau   : document.getElementById('editTuanBd').value || null,
+            tuanKetThuc  : document.getElementById('editTuanKt').value || null
+        };
+
+        // Lấy CSRF token từ meta tag (Spring Security)
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+        try {
+            const res = await fetch(`/tkb/cap-nhat/${currentId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {})
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                document.getElementById('editConflictMsg').textContent = data.message || 'Có lỗi xảy ra!';
+                document.getElementById('editConflict').classList.add('show');
+                return;
+            }
+            document.getElementById('editConflict').classList.remove('show');
+            dongPopupBtn();
+            showToast('success', 'Cập nhật lịch học thành công!');
+            setTimeout(() => location.reload(), 1200);
+        } catch(e) {
+            showToast('error', 'Lỗi kết nối. Vui lòng thử lại.');
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       ĐÓNG POPUP & ĐIỀU HƯỚNG
+    ═══════════════════════════════════════════════════ */
+    function dongPopup(e) { if (e.target === overlay) overlay.classList.remove('show'); }
     function dongPopupBtn() { overlay.classList.remove('show'); }
     document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('show'); });
+    function diXinNghi()  { location.href = '/don-nghi/tao?ngayBatDau=' + currentNgayIso + '&ngayKetThuc=' + currentNgayIso; }
+    function diDuyetDon() { location.href = '/don-nghi/duyet?giangVienId=' + currentGvId; }
+    function diXepBu()    { location.href = '/lich-day-bu/xep?lhpId=' + currentLhpId + '&giangVienId=' + currentGvId + '&ngayNghiGoc=' + currentNgayIso; }
 
-    /* ─── Nút Xin nghỉ → chuyển tới /don-nghi/tao?ngayBatDau=... ─── */
-    function diXinNghi() {
-        if (!popupNgayIso) return;
-        location.href = '/don-nghi/tao?ngayBatDau=' + popupNgayIso + '&ngayKetThuc=' + popupNgayIso;
-    }
-
-    /* ─── Nút Xem đơn nghỉ → /don-nghi/duyet?giangVienId=... ─── */
-    function diDuyetDon() {
-        location.href = '/don-nghi/duyet?giangVienId=' + popupGvId;
-    }
-
-    /* ─── Nút Xếp lịch bù → /lich-day-bu/xep?lhpId=...&giangVienId=...&ngayNghiGoc=... ─── */
-    function diXepBu() {
-        location.href = '/lich-day-bu/xep?lhpId=' + popupLhpId
-            + '&giangVienId=' + popupGvId
-            + '&ngayNghiGoc=' + popupNgayIso;
+    /* ═══════════════════════════════════════════════════
+       TOAST THÔNG BÁO
+    ═══════════════════════════════════════════════════ */
+    function showToast(type, msg) {
+        const t = document.getElementById('toastNotify');
+        const icon = document.getElementById('toastIcon');
+        document.getElementById('toastMsg').textContent = msg;
+        t.className = 'toast-notify ' + type + ' show';
+        icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+        setTimeout(() => t.classList.remove('show'), 3000);
     }
 </script>

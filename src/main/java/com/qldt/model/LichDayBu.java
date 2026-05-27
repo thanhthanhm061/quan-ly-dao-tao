@@ -79,7 +79,7 @@ public class LichDayBu {
 
     // ── Người xếp lịch (Admin hoặc Trưởng khoa/bộ môn) ──────────────────────
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "nguoi_xep_id")
+    @JoinColumn(name = "nguoi_xep_id" ,  nullable = true)
     private NhanVien nguoiXep;
 
     // ── Audit ─────────────────────────────────────────────────────────────────

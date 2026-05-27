@@ -22,7 +22,12 @@ public class GlobalControllerAdvice {
     private final DonNghiService donNghiService;
     private final NhanVienRepository nhanVienRepo;
     private final NguoiDungRepository nguoiDungRepo;
-
+    // Helper method trong controller hoặc tách ra util
+    private boolean isQuanLy(NhanVien nv) {
+        if (nv == null || nv.getChucVu() == null) return false;
+        String ma = nv.getChucVu().getMaChucVu().toUpperCase();
+        return ma.equals("TK") || ma.equals("PTK") || ma.equals("TBM") || ma.equals("CNTT");
+    }
     /**
      * Đếm số đơn nghỉ đang chờ duyệt — hiển thị badge sidebar
      */
@@ -37,9 +42,10 @@ public class GlobalControllerAdvice {
                 .anyMatch(a -> {
                     String role = a.getAuthority();
                     return role.equals("ROLE_ADMIN")
-                            || role.equals("ROLE_TRUONG_KHOA")
-                            || role.equals("ROLE_PHO_TRUONG_KHOA")
-                            || role.equals("ROLE_TRUONG_BO_MON");
+                            || role.equals("ROLE_TK")
+                            || role.equals("ROLE_PTK")
+                            || role.equals("ROLE_TBM")
+                            || role.equals("ROLE_CNTT");
                 });
 
         if (!coQuyenDuyet) {
@@ -103,14 +109,15 @@ public class GlobalControllerAdvice {
 
                     boolean isQuanLy =
                             nv.getChucVu() != null
-                                    && List.of("TK", "PTK", "TBM")
+                                    && List.of("TK", "PTK", "TBM" , "CNTT", "ADMIN")
                                     .contains(
                                             nv.getChucVu()
                                                     .getMaChucVu()
                                                     .toUpperCase()
                                     );
 
-                    model.addAttribute("isQuanLy", isQuanLy);
+                    model.addAttribute("isQuanLy", isQuanLy(nv));
+
                 }
             }
         }

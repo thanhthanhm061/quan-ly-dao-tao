@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/don-nghi")
@@ -25,7 +26,15 @@ public class DonNghiController {
     private final NhanVienRepository nhanVienRepo;
 
     /* =========================================================
-       HELPER — lấy NhanVien từ session
+       HELPER — kiểm tra role admin
+    ========================================================= */
+    private boolean isAdmin(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    }
+
+    /* =========================================================
+       HELPER — lấy NhanVien từ session (chỉ gọi khi KHÔNG phải admin)
     ========================================================= */
     private NhanVien getNhanVienHienTai(Authentication auth) {
         String username = auth.getName();
@@ -35,15 +44,19 @@ public class DonNghiController {
     }
 
     /* =========================================================
+       HELPER — lấy NhanVien nếu có, trả về Optional (an toàn cho admin)
+    ========================================================= */
+    private Optional<NhanVien> getNhanVienOptional(Authentication auth) {
+        return nhanVienRepo.findByNguoiDungUsername(auth.getName());
+    }
+
+    /* =========================================================
        DANH SÁCH — nhân viên xem đơn của mình
     ========================================================= */
     @GetMapping
     public String danhSach(Model model, Authentication auth) {
 
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        if (isAdmin) {
+        if (isAdmin(auth)) {
             model.addAttribute("danhSach", donNghiService.findAll());
             model.addAttribute("nhanVien", null);
         } else {
@@ -66,15 +79,13 @@ public class DonNghiController {
             Model model, Authentication auth) {
 
         List<DonNghi> danhSach;
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        if (isAdmin) {
+        if (isAdmin(auth)) {
             danhSach = (trangThai != null)
                     ? donNghiService.findByTrangThai(trangThai)
                     : donNghiService.findAll();
         } else {
-            NhanVien nv = getNhanVienHienTai(auth); // chỉ gọi khi không phải admin
+            NhanVien nv = getNhanVienHienTai(auth);
             Long khoaId = nv.getKhoa() != null ? nv.getKhoa().getId() : null;
             if (khoaId == null) {
                 model.addAttribute("error", "Bạn chưa được gán vào khoa nào.");
@@ -95,6 +106,7 @@ public class DonNghiController {
 
     /* =========================================================
        FORM TẠO ĐƠN
+       Admin cũng được tạo đơn — dùng NhanVien đầu tiên hoặc null
     ========================================================= */
     @GetMapping("/tao")
     public String formTao(
@@ -104,26 +116,24 @@ public class DonNghiController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngayKetThuc,
             Model model, Authentication auth, RedirectAttributes ra) {
 
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        if (isAdmin) {
-            ra.addFlashAttribute("error", "Tài khoản admin không thể tạo đơn xin nghỉ.");
-            return "redirect:/don-nghi";
+        NhanVien nv = null;
+        if (!isAdmin(auth)) {
+            nv = getNhanVienHienTai(auth);
         }
+        // Admin: nv = null, template tự xử lý (ẩn thông tin nhân viên hoặc hiện dropdown)
 
-        NhanVien nv = getNhanVienHienTai(auth);
         model.addAttribute("nhanVien", nv);
         model.addAttribute("loaiNghiList", List.of(
-                "Nghỉ phép", "Nghỉ bệnh", "Nghỉ không lương",
-                "Nghỉ việc riêng", "Nghỉ thai sản"));
-
-        // Pre-fill ngày nếu được truyền từ popup TKB
+                "Nghỉ phép",
+                "Nghỉ bệnh",
+                "Nghỉ không lương",
+                "Nghỉ việc riêng",
+                "Nghỉ thai sản"));
         model.addAttribute("ngayBatDauDefault",
                 ngayBatDau != null ? ngayBatDau.toString() : "");
         model.addAttribute("ngayKetThucDefault",
                 ngayKetThuc != null ? ngayKetThuc.toString() : "");
-
+        model.addAttribute("isAdmin", isAdmin(auth));
         model.addAttribute("activePage", "don-nghi");
         return "don-nghi/tao-don";
     }
@@ -135,12 +145,21 @@ public class DonNghiController {
             @RequestParam String lyDo,
             @RequestParam(required = false) String loaiNghi,
             @RequestParam(required = false) String fileDinhKem,
+            @RequestParam(required = false) Long nhanVienId, // admin truyền nhanVienId qua form
             Authentication auth,
             RedirectAttributes ra) {
 
         try {
-            NhanVien nv = getNhanVienHienTai(auth);
-            donNghiService.taoMoi(nv.getId(), ngayBatDau, ngayKetThuc,
+            Long nguoiNopId;
+            if (isAdmin(auth)) {
+                if (nhanVienId == null) {
+                    throw new IllegalArgumentException("Admin cần chọn nhân viên để tạo đơn.");
+                }
+                nguoiNopId = nhanVienId;
+            } else {
+                nguoiNopId = getNhanVienHienTai(auth).getId();
+            }
+            donNghiService.taoMoi(nguoiNopId, ngayBatDau, ngayKetThuc,
                     lyDo, loaiNghi, fileDinhKem);
             ra.addFlashAttribute("success", "Tạo đơn xin nghỉ thành công! Chờ phê duyệt.");
         } catch (Exception e) {
@@ -159,11 +178,8 @@ public class DonNghiController {
         DonNghi don = donNghiService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn nghỉ"));
 
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
         // Admin xem thẳng, không cần hồ sơ nhân viên
-        if (isAdmin) {
+        if (isAdmin(auth)) {
             model.addAttribute("don", don);
             model.addAttribute("laNguoiNop", false);
             model.addAttribute("isAdmin", true);
@@ -192,20 +208,16 @@ public class DonNghiController {
         return "don-nghi/chi-tiet";
     }
 
-    private void ra(Model model) {
-        model.addAttribute("error", "Bạn không có quyền xem đơn này.");
-    }
-
     /* =========================================================
        HỦY ĐƠN
     ========================================================= */
     @PostMapping("/{id}/huy")
     public String huy(@PathVariable Long id, Authentication auth, RedirectAttributes ra) {
         try {
-            boolean isAdmin = auth.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-            if (isAdmin) {
-                ra.addFlashAttribute("error", "Admin không thực hiện thao tác này.");
+            // Admin hủy thẳng không cần kiểm tra nhân viên
+            if (isAdmin(auth)) {
+                donNghiService.huyByAdmin(id);
+                ra.addFlashAttribute("success", "Admin đã hủy đơn nghỉ.");
                 return "redirect:/don-nghi";
             }
             NhanVien nv = getNhanVienHienTai(auth);
@@ -221,18 +233,34 @@ public class DonNghiController {
        DUYỆT
     ========================================================= */
     @PostMapping("/{id}/duyet")
-    public String duyet(@PathVariable Long id, Authentication auth, RedirectAttributes ra) {
+    public String duyet(@PathVariable Long id,
+                        Authentication auth,
+                        RedirectAttributes ra) {
         try {
-            boolean isAdmin = auth.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-            NhanVien nv = isAdmin ? null : getNhanVienHienTai(auth);
-            donNghiService.duyet(id, nv != null ? nv.getId() : null);
+            boolean coQuyenDuyet = auth.getAuthorities().stream()
+                    .anyMatch(a -> List.of(
+                            "ROLE_ADMIN", "ROLE_TK", "ROLE_PTK", "ROLE_TBM", "ROLE_CNTT"
+                    ).contains(a.getAuthority()));
+
+            if (!coQuyenDuyet) {
+                ra.addFlashAttribute("error", "Bạn không có quyền duyệt đơn nghỉ.");
+                return "redirect:/don-nghi";
+            }
+
+            // Admin duyệt không cần hồ sơ nhân viên — truyền null
+            Long nguoiDuyetId = isAdmin(auth)
+                    ? null
+                    : getNhanVienHienTai(auth).getId();
+
+            donNghiService.duyet(id, nguoiDuyetId);
             ra.addFlashAttribute("success", "Đã duyệt đơn nghỉ thành công.");
+
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/don-nghi/duyet";
     }
+
     /* =========================================================
        TỪ CHỐI
     ========================================================= */
@@ -242,10 +270,12 @@ public class DonNghiController {
                          Authentication auth,
                          RedirectAttributes ra) {
         try {
-            boolean isAdmin = auth.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-            NhanVien nv = isAdmin ? null : getNhanVienHienTai(auth);
-            donNghiService.tuChoi(id, nv != null ? nv.getId() : null, lyDoTuChoi);
+            // Admin từ chối không cần hồ sơ nhân viên — truyền null
+            Long nguoiTuChoiId = isAdmin(auth)
+                    ? null
+                    : getNhanVienHienTai(auth).getId();
+
+            donNghiService.tuChoi(id, nguoiTuChoiId, lyDoTuChoi);
             ra.addFlashAttribute("success", "Đã từ chối đơn nghỉ.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());

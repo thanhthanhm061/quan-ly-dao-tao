@@ -45,7 +45,14 @@
                                 <option value="">-- Chọn lớp học phần --</option>
                                 <option th:each="lhp : ${danhSachLhp}"
                                         th:value="${lhp.id}"
-                                        th:text="${lhp.maLhp + ' — ' + lhp.monHoc?.tenMon}"
+                                        th:text="${lhp.maLhp
+                                            + ' - '
+                                            + lhp.monHoc.tenMon
+                                            + ' | GV: '
+                                            + lhp.giangVien.hoTen
+                                            + ' | '
+                                            + lhp.monHoc.soTinChi
+                                            + ' tín'}"
                                         th:selected="${lhpChon != null and lhpChon.id == lhp.id}">
                                 </option>
                             </select>
@@ -57,7 +64,8 @@
                                 <option value="">-- Chọn giảng viên --</option>
                                 <option th:each="gv : ${danhSachGV}"
                                         th:value="${gv.id}"
-                                        th:text="${gv.hoTen + ' (' + gv.maNhanVien + ')'}">
+                                        th:text="${gv.hoTen + ' (' + gv.maNhanVien + ')'}"
+                                        th:selected="${giangVienChon != null and giangVienChon.id == gv.id}">
                                 </option>
                             </select>
                         </div>
@@ -103,9 +111,24 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Phòng học</label>
-                            <input type="text" name="phongHoc" class="form-control"
-                                   maxlength="20" placeholder="Ví dụ: A101, B205..."/>
+                            <label class="form-label fw-semibold">
+                                Phòng học
+                            </label>
+
+                            <select name="phongHoc" class="form-select">
+                                <option value="">
+                                    -- Chọn phòng học --
+                                </option>
+
+                                <option th:each="p : ${danhSachPhong}"
+                                        th:value="${p.maPhong}"
+                                        th:text="${p.maPhong
+                    + ' | '
+                    + p.loaiPhong
+                    + ' | Sức chứa: '
+                    + p.sucChua}">
+                                </option>
+                            </select>
                         </div>
 
                         <div class="col-md-6">

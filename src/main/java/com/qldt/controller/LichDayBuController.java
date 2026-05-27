@@ -2,12 +2,16 @@ package com.qldt.controller;
 
 import com.qldt.model.LichDayBu;
 import com.qldt.model.NhanVien;
+import com.qldt.model.PhongHoc;
 import com.qldt.repository.LopHocPhanRepository;
 import com.qldt.repository.NhanVienRepository;
 import com.qldt.service.DonNghiService;
+import com.qldt.service.LichDayBuApiDTO;
 import com.qldt.service.LichDayBuService;
+import com.qldt.service.PhongHocService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +32,7 @@ public class LichDayBuController {
     private final DonNghiService donNghiService;
     private final NhanVienRepository nhanVienRepo;
     private final LopHocPhanRepository lhpRepo;
+    private final PhongHocService phongHocService;
 
     private boolean isAdmin(Authentication auth) {
         return auth.getAuthorities().stream()
@@ -86,7 +92,10 @@ public class LichDayBuController {
         model.addAttribute("danhSachGV", nhanVienRepo.findByChucVuMaChucVu("GVC"));
         model.addAttribute("thuList", List.of(2, 3, 4, 5, 6, 7));
         model.addAttribute("activePage", "lich-day-bu");
-
+        model.addAttribute("danhSachPhong", phongHocService.findAll()
+                        .stream()
+                        .filter(PhongHoc::isHoatDong)
+                        .toList());
         // Pre-fill từ đơn nghỉ (ưu tiên ngayNghiGoc từ đơn nếu có)
         if (donNghiId != null) {
             donNghiService.findById(donNghiId).ifPresent(don -> {
@@ -114,6 +123,34 @@ public class LichDayBuController {
                     .ifPresent(gv -> model.addAttribute("giangVienChon", gv));
         }
 
+        // ===== Đơn nghỉ =====
+        if (donNghiId != null && donNghiId > 0) {
+
+            donNghiService.findById(donNghiId).ifPresent(don -> {
+
+                model.addAttribute("donNghi", don);
+
+                if (ngayNghiGoc == null) {
+                    model.addAttribute("ngayNghiGoc", don.getNgayBatDau());
+                }
+            });
+        }
+
+        // ===== Lớp học phần =====
+        if (lhpId != null && lhpId > 0) {
+
+            lhpRepo.findById(lhpId)
+                    .ifPresent(lhp ->
+                            model.addAttribute("lhpChon", lhp));
+        }
+
+        // ===== Giảng viên =====
+        if (giangVienId != null && giangVienId > 0) {
+
+            nhanVienRepo.findById(giangVienId)
+                    .ifPresent(gv ->
+                            model.addAttribute("giangVienChon", gv));
+        }
         return "lich-day-bu/xep-lich";
     }
 
@@ -145,7 +182,23 @@ public class LichDayBuController {
         }
         return "redirect:/lich-day-bu";
     }
-
+    @GetMapping("/api/theo-lhp")
+    @PreAuthorize("hasAnyRole('ADMIN','NHAN_VIEN','SINH_VIEN')")
+    @ResponseBody
+    public List<LichDayBuApiDTO> lichBuTheoLhp(@RequestParam Long lhpId) {
+        return lichDayBuService.findByLhpId(lhpId)
+                .stream()
+                .map(b -> new LichDayBuApiDTO(
+                        b.getNgayDayBu() != null
+                                ? b.getNgayDayBu().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                                : null,
+                        b.getPhongHoc(),
+                        b.getTietBatDau(),
+                        b.getTietKetThuc(),
+                        b.getGhiChu()
+                ))
+                .toList();
+    }
     @GetMapping("/{id}")
     public String chiTiet(@PathVariable Long id, Model model) {
         LichDayBu lichBu = lichDayBuService.findById(id)

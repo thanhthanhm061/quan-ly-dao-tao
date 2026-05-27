@@ -1,4 +1,4 @@
-package com.qldt.security;
+package com.qldt.config;
 
 import com.qldt.model.NhanVien;
 import com.qldt.model.NguoiDung;
@@ -30,6 +30,6 @@ public class SecurityService {
         if (nv == null || nv.getChucVu() == null) return false;
 
         String ma = nv.getChucVu().getMaChucVu().toUpperCase();
-        return ma.equals("TK") || ma.equals("PTK") || ma.equals("TBM");
+        return ma.equals("TK") || ma.equals("PTK") || ma.equals("TBM") || ma.equals("CNTT");
     }
 }

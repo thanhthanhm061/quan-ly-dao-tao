@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DonNghiRepository extends JpaRepository<DonNghi, Long> {
@@ -50,4 +51,53 @@ public interface DonNghiRepository extends JpaRepository<DonNghi, Long> {
 
     // Đếm đơn chờ duyệt toàn hệ thống (dùng cho Admin dashboard)
     long countByTrangThai(TrangThaiDonNghi trangThai);
+
+    // ── Query mới có JOIN FETCH (dùng để render Thymeleaf) ───────────────────
+    @Query("""
+            SELECT d FROM DonNghi d
+            JOIN FETCH d.nguoiNop
+            LEFT JOIN FETCH d.nguoiDuyet
+            ORDER BY d.ngayTao DESC
+            """)
+    List<DonNghi> findAllWithNhanVien();
+
+    @Query("""
+            SELECT d FROM DonNghi d
+            JOIN FETCH d.nguoiNop
+            LEFT JOIN FETCH d.nguoiDuyet
+            WHERE d.id = :id
+            """)
+    Optional<DonNghi> findByIdWithNhanVien(@Param("id") Long id);
+
+    @Query("""
+            SELECT d FROM DonNghi d
+            JOIN FETCH d.nguoiNop
+            LEFT JOIN FETCH d.nguoiDuyet
+            WHERE d.nguoiNop.id = :nguoiNopId
+            ORDER BY d.ngayTao DESC
+            """)
+    List<DonNghi> findByNguoiNopWithNhanVien(@Param("nguoiNopId") Long nguoiNopId);
+
+    @Query("""
+            SELECT d FROM DonNghi d
+            JOIN FETCH d.nguoiNop
+            LEFT JOIN FETCH d.nguoiDuyet
+            WHERE d.trangThai = :trangThai
+            ORDER BY d.ngayTao DESC
+            """)
+    List<DonNghi> findByTrangThaiWithNhanVien(@Param("trangThai") TrangThaiDonNghi trangThai);
+
+    @Query("""
+            SELECT d FROM DonNghi d
+            JOIN FETCH d.nguoiNop
+            LEFT JOIN FETCH d.nguoiDuyet
+            WHERE d.trangThai = com.qldt.model.enums.TrangThaiDonNghi.CHO_DUYET
+              AND d.nguoiNop.khoa.id = :khoaId
+            ORDER BY d.ngayTao DESC
+            """)
+    List<DonNghi> findChoDuyetTheoKhoaWithNhanVien(@Param("khoaId") Long khoaId);
+    // Đếm đơn chờ duyệt theo khoa (badge sidebar cho TK/PTK/TBM)
+    long countByTrangThaiAndNguoiNop_Khoa_Id(
+            TrangThaiDonNghi trangThai, Long khoaId);
+
 }

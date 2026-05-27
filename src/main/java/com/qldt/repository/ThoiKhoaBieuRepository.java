@@ -159,7 +159,7 @@ public interface ThoiKhoaBieuRepository
 
     // ── Thống kê tín chỉ đã dạy theo GV ────────────────────────────────────────
     @Query("""
-    SELECT COALESCE(SUM(l.monHoc.soTinChi), 0)
+    SELECT COALESCE(SUM(DISTINCT l.monHoc.soTinChi), 0)
     FROM ThoiKhoaBieu t
     JOIN t.lopHocPhan l
     WHERE l.giangVien.id = :nhanVienId
@@ -182,27 +182,23 @@ public interface ThoiKhoaBieuRepository
             @Param("hocKy") String hocKy
     );
 
-    // =========================
-    // THỐNG KÊ TẢI GIẢNG DẠY
-    // Đổi: l.giangVien → NhanVien, field hoTen vẫn tên hoTen
-    // =========================
-
     @Query("""
-        SELECT l.giangVien.id,
-               l.giangVien.hoTen,
-               SUM(t.soTiet) as tongTiet,
-               COUNT(DISTINCT l.id) as soLop,
-               SUM(DISTINCT l.monHoc.soTinChi) as tongTinChi
-        FROM ThoiKhoaBieu t
-        JOIN t.lopHocPhan l
-        WHERE l.hocKy = :hocKy
-        GROUP BY l.giangVien.id, l.giangVien.hoTen
-        ORDER BY tongTiet DESC
-    """)
+    SELECT
+        gv.id,
+        gv.hoTen,
+        COALESCE(SUM(t.soTiet), 0),
+        COUNT(DISTINCT l.id),
+        COALESCE(SUM(l.monHoc.soTinChi), 0)
+    FROM ThoiKhoaBieu t
+    JOIN t.lopHocPhan l
+    JOIN l.giangVien gv
+    WHERE l.hocKy = :hocKy
+    GROUP BY gv.id, gv.hoTen
+    ORDER BY SUM(t.soTiet) DESC
+""")
     List<Object[]> thongKeTaiGiangDay(
             @Param("hocKy") String hocKy
     );
-
     // =========================
     // PHÒNG ĐANG BẬN
     // =========================
@@ -224,6 +220,23 @@ public interface ThoiKhoaBieuRepository
             @Param("tietBatDau") int tietBatDau,
             @Param("tietKetThuc") int tietKetThuc
     );
+    // Kiểm tra xung đột phòng học (cùng thứ, tiết giao nhau, khác ID)
+    @Query("""
+        SELECT COUNT(t) > 0 FROM ThoiKhoaBieu t
+        WHERE t.thuTrongTuan = :thu
+          AND t.phongHoc = :phong
+          AND t.id <> :excludeId
+          AND t.tietBatDau < :tietKt + 1
+          AND t.tietBatDau + t.soTiet - 1 >= :tietBd
+    """)
+    boolean existsConflict(
+            @Param("thu") int thu,
+            @Param("tietBd") int tietBd,
+            @Param("tietKt") int tietKt,
+            @Param("phong") String phong,
+            @Param("excludeId") Long excludeId
+    );
+
 
     // =========================
     // TÌM PHÒNG TRỐNG

@@ -9,6 +9,8 @@ import java.util.Optional;
 
 public interface DonNghiService {
 
+    long demChoDuyetTheoKhoa(Long khoaId);
+
     // ── CRUD cơ bản ──────────────────────────────────────────────────────────
 
     /** Lấy tất cả đơn (Admin) */
@@ -24,15 +26,23 @@ public interface DonNghiService {
     /** Hủy đơn (chỉ người nộp, khi còn CHO_DUYET) */
     void huy(Long donNghiId, Long nguoiNopId);
 
+    /**
+     * Hủy đơn bởi Admin — không kiểm tra người nộp,
+     * có thể hủy ở bất kỳ trạng thái nào.
+     *
+     * @param donNghiId ID đơn cần hủy
+     */
+    void huyByAdmin(Long donNghiId);
+
     // ── Duyệt / Từ chối ──────────────────────────────────────────────────────
 
     /**
      * Duyệt đơn nghỉ.
      * Người duyệt phải có chức vụ TK / PTK / TBM (cùng khoa)
-     * hoặc là Admin.
+     * hoặc là Admin (nguoiDuyetId = null).
      *
-     * @param donNghiId  ID đơn cần duyệt
-     * @param nguoiDuyetId  ID nhân viên duyệt
+     * @param donNghiId    ID đơn cần duyệt
+     * @param nguoiDuyetId ID nhân viên duyệt, null nếu là Admin
      */
     void duyet(Long donNghiId, Long nguoiDuyetId);
 
@@ -40,7 +50,7 @@ public interface DonNghiService {
      * Từ chối đơn nghỉ.
      *
      * @param donNghiId    ID đơn
-     * @param nguoiDuyetId ID nhân viên từ chối
+     * @param nguoiDuyetId ID nhân viên từ chối, null nếu là Admin
      * @param lyDoTuChoi   Lý do bắt buộc
      */
     void tuChoi(Long donNghiId, Long nguoiDuyetId, String lyDoTuChoi);

@@ -75,13 +75,19 @@ public class DonNghiServiceImpl implements DonNghiService {
     @Override
     @Transactional(readOnly = true)
     public List<DonNghi> findAll() {
-        return donNghiRepo.findAll();
+        return donNghiRepo.findAllWithNhanVien(); // ← sửa
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<DonNghi> findById(Long id) {
-        return donNghiRepo.findById(id);
+        return donNghiRepo.findByIdWithNhanVien(id); // ← sửa
+    }
+
+    @Override
+    public long demChoDuyetTheoKhoa(Long khoaId) {
+        return donNghiRepo.countByTrangThaiAndNguoiNop_Khoa_Id(
+                TrangThaiDonNghi.CHO_DUYET, khoaId);
     }
 
     @Override
@@ -161,14 +167,16 @@ public class DonNghiServiceImpl implements DonNghiService {
             );
         }
 
-        NhanVien nguoiDuyet = nhanVienRepo.findById(nguoiDuyetId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người duyệt"));
-
-        // Kiểm tra quyền
-        kiemTraQuyenDuyet(nguoiDuyet, don.getNguoiNop());
+        // Admin (nguoiDuyetId == null) → bỏ qua kiểm tra quyền
+        if (nguoiDuyetId != null) {
+            NhanVien nguoiDuyet = nhanVienRepo.findById(nguoiDuyetId)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người duyệt"));
+            kiemTraQuyenDuyet(nguoiDuyet, don.getNguoiNop());
+            don.setNguoiDuyet(nguoiDuyet);
+        }
+        // nguoiDuyetId == null → Admin thuần túy, không set nguoiDuyet (hoặc set theo nhu cầu)
 
         don.setTrangThai(TrangThaiDonNghi.DA_DUYET);
-        don.setNguoiDuyet(nguoiDuyet);
         don.setNgayDuyet(java.time.LocalDateTime.now());
 
         donNghiRepo.save(don);
@@ -191,18 +199,21 @@ public class DonNghiServiceImpl implements DonNghiService {
             );
         }
 
-        NhanVien nguoiDuyet = nhanVienRepo.findById(nguoiDuyetId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người duyệt"));
-
-        kiemTraQuyenDuyet(nguoiDuyet, don.getNguoiNop());
+        // Admin (nguoiDuyetId == null) → bỏ qua kiểm tra quyền
+        if (nguoiDuyetId != null) {
+            NhanVien nguoiDuyet = nhanVienRepo.findById(nguoiDuyetId)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người duyệt"));
+            kiemTraQuyenDuyet(nguoiDuyet, don.getNguoiNop());
+            don.setNguoiDuyet(nguoiDuyet);
+        }
 
         don.setTrangThai(TrangThaiDonNghi.TU_CHOI);
-        don.setNguoiDuyet(nguoiDuyet);
         don.setNgayDuyet(java.time.LocalDateTime.now());
         don.setLyDoTuChoi(lyDoTuChoi.trim());
 
         donNghiRepo.save(don);
     }
+
 
     /* =========================================================
        QUERY
@@ -211,20 +222,30 @@ public class DonNghiServiceImpl implements DonNghiService {
     @Override
     @Transactional(readOnly = true)
     public List<DonNghi> findByNguoiNop(Long nguoiNopId) {
-        return donNghiRepo.findByNguoiNopIdOrderByNgayTaoDesc(nguoiNopId);
+        return donNghiRepo.findByNguoiNopWithNhanVien(nguoiNopId); // ← sửa
+    }
+
+    @Override
+    public void huyByAdmin(Long donNghiId) {
+        DonNghi don = donNghiRepo.findById(donNghiId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Không tìm thấy đơn nghỉ ID: " + donNghiId));
+        don.setTrangThai(TrangThaiDonNghi.DA_HUY);
+        donNghiRepo.save(don);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<DonNghi> findByTrangThai(TrangThaiDonNghi trangThai) {
-        return donNghiRepo.findByTrangThaiOrderByNgayTaoDesc(trangThai);
+        return donNghiRepo.findByTrangThaiWithNhanVien(trangThai); // ← sửa
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<DonNghi> findChoDuyetTheoKhoa(Long khoaId) {
-        return donNghiRepo.findByTrangThaiAndKhoaId(TrangThaiDonNghi.CHO_DUYET, khoaId);
+        return donNghiRepo.findChoDuyetTheoKhoaWithNhanVien(khoaId); // ← sửa
     }
+
 
     @Override
     @Transactional(readOnly = true)
