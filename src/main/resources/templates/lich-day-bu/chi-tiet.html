@@ -4,143 +4,287 @@
 <head><title>Chi tiết lịch dạy bù</title></head>
 <body>
 <main>
-    <div class="page-body">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        :root{
+          --brand:#0f766e;--brand-light:#f0fdfa;--brand-dark:#0d9488;
+          --surface:#fff;--bg:#f1f5f9;--text:#0f172a;--text-muted:#64748b;
+          --border:#e2e8f0;--radius:14px;--radius-sm:8px;
+          --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.05);
+          --shadow-lg:0 8px 32px rgba(0,0,0,.14);
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--text)}
 
-        <div class="page-header-card">
-            <div class="d-flex align-items-center gap-3">
-                <span class="page-icon">📋</span>
-                <div>
-                    <h4 class="mb-0">Chi tiết lịch dạy bù</h4>
-                    <small class="text-muted">Thông tin chi tiết buổi dạy bù</small>
-                </div>
-            </div>
-            <a href="/lich-day-bu" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Quay lại
-            </a>
-        </div>
+        .back-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+        .back-btn{display:inline-flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;
+          color:var(--text-muted);text-decoration:none;padding:8px 14px;border-radius:var(--radius-sm);
+          border:1px solid var(--border);background:var(--surface);transition:all .15s}
+        .back-btn:hover{color:var(--brand);border-color:var(--brand);background:var(--brand-light)}
+        .page-title{font-size:1.15rem;font-weight:700;color:var(--text)}
+        .page-sub{font-size:.78rem;color:var(--text-muted);margin-top:2px}
 
-        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+        .layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+        @media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+        .card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
+          box-shadow:var(--shadow);overflow:hidden}
+        .card-head{padding:15px 22px;border-bottom:1px solid var(--border);
+          display:flex;align-items:center;gap:8px}
+        .card-head h6{font-size:.88rem;font-weight:700;color:var(--text);margin:0}
+        .card-head i{color:var(--brand);font-size:.95rem}
+        .card-body{padding:22px}
+
+        .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+        .info-row{display:contents}
+        .info-lbl{padding:12px 16px 12px 0;font-size:.78rem;font-weight:600;
+          text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);
+          border-bottom:1px solid #f1f5f9}
+        .info-val{padding:12px 0;font-size:.875rem;color:var(--text);
+          border-bottom:1px solid #f1f5f9;font-weight:500}
+        .info-row:last-child .info-lbl,
+        .info-row:last-child .info-val{border-bottom:none}
+
+        .lhp-code{font-weight:700;font-size:.9rem;color:var(--text)}
+        .lhp-name{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+        .tiet-pill{background:#f0fdfa;color:#0f766e;border-radius:6px;
+          padding:3px 10px;font-size:.78rem;font-weight:600;display:inline-block}
+
+        .badge{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;
+          font-weight:600;border-radius:20px;padding:5px 13px}
+        .badge::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+        .b-daxep{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+        .b-daxep::before{background:#3b82f6}
+        .b-hoanthanh{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+        .b-hoanthanh::before{background:#22c55e}
+        .b-huy{background:#f8fafc;color:#64748b;border:1px solid #e2e8f0}
+        .b-huy::before{background:#94a3b8}
+
+        .don-link{color:var(--brand);font-weight:600;text-decoration:none;
+          padding:3px 10px;background:var(--brand-light);border-radius:6px;font-size:.82rem}
+        .don-link:hover{text-decoration:underline}
+
+        /* ACTION CARD */
+        .act-card .card-body{display:flex;flex-direction:column;gap:10px}
+        .act-btn{width:100%;padding:10px 16px;border-radius:var(--radius-sm);
+          font-size:.875rem;font-weight:600;font-family:inherit;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;gap:7px;
+          text-decoration:none;transition:all .15s;border:1px solid transparent}
+        .act-btn.edit{background:var(--surface);color:#374151;border-color:var(--border)}
+        .act-btn.edit:hover{background:#f8fafc;border-color:#94a3b8}
+        .act-btn.done{background:#16a34a;color:#fff;border-color:#16a34a}
+        .act-btn.done:hover{background:#15803d}
+        .act-btn.cancel{background:var(--surface);color:#e11d48;border-color:#fecdd3}
+        .act-btn.cancel:hover{background:#fff1f2}
+        .no-act{text-align:center;font-size:.82rem;color:var(--text-muted);padding:8px 0}
+
+        /* MODAL */
+        .ldb-overlay{display:none;position:fixed;inset:0;
+          background:rgba(15,23,42,.52);backdrop-filter:blur(3px);
+          z-index:9999;align-items:center;justify-content:center}
+        .ldb-mbox{background:var(--surface);border-radius:20px;
+          padding:32px 28px 24px;width:390px;max-width:92vw;
+          text-align:center;box-shadow:var(--shadow-lg);
+          animation:mUp .2s cubic-bezier(.34,1.4,.64,1)}
+        @keyframes mUp{from{transform:translateY(18px);opacity:0}to{transform:translateY(0);opacity:1}}
+        .m-ico{width:58px;height:58px;border-radius:50%;
+          display:flex;align-items:center;justify-content:center;
+          margin:0 auto 18px;font-size:1.4rem}
+        .ldb-mbox h5{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:8px}
+        .ldb-mbox p{font-size:.82rem;color:var(--text-muted);line-height:1.7;margin-bottom:24px}
+        .m-acts{display:flex;gap:10px}
+        .m-cancel-btn{flex:1;padding:10px;border-radius:var(--radius-sm);
+          border:1px solid var(--border);background:var(--surface);
+          color:var(--text);font-size:.83rem;font-weight:500;font-family:inherit;cursor:pointer}
+        .m-cancel-btn:hover{background:#f8fafc}
+        .m-confirm-btn{flex:1;padding:10px;border-radius:var(--radius-sm);border:none;color:#fff;
+          font-size:.83rem;font-weight:600;font-family:inherit;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;gap:6px;
+          transition:opacity .12s,transform .12s;width:100%}
+        .m-confirm-btn:hover{opacity:.9;transform:translateY(-1px)}
+        .btn-green{background:#16a34a}
+        .btn-red{background:#e11d48}
+    </style>
+
+    <div>
+        <!-- Flash -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show mb-3">
             <i class="bi bi-check-circle me-2"></i><span th:text="${success}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-3">
             <i class="bi bi-exclamation-circle me-2"></i><span th:text="${error}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
-        <div class="row g-4">
-
-            <!-- Thông tin chính -->
-            <div class="col-lg-8">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Thông tin buổi dạy bù</h6>
-                    </div>
-                    <div class="card-body">
-                        <dl class="row mb-0">
-
-                            <dt class="col-sm-4 text-muted fw-normal">Lớp học phần</dt>
-                            <dd class="col-sm-8">
-                                <span class="fw-semibold" th:text="${lichBu.lopHocPhan.maLhp}"></span>
-                                <br>
-                                <small class="text-muted"
-                                       th:text="${lichBu.lopHocPhan.monHoc?.tenMon ?: ''}"></small>
-                            </dd>
-
-                            <dt class="col-sm-4 text-muted fw-normal">Giảng viên</dt>
-                            <dd class="col-sm-8"
-                                th:text="${lichBu.giangVien.hoTen ?: lichBu.giangVien.maNhanVien}"></dd>
-
-                            <dt class="col-sm-4 text-muted fw-normal">Ngày nghỉ gốc</dt>
-                            <dd class="col-sm-8"
-                                th:text="${lichBu.ngayNghiGoc != null
-                                    ? #temporals.format(lichBu.ngayNghiGoc, 'dd/MM/yyyy')
-                                    : '—'}"></dd>
-
-                            <dt class="col-sm-4 text-muted fw-normal">Ngày dạy bù</dt>
-                            <dd class="col-sm-8 fw-semibold"
-                                th:text="${#temporals.format(lichBu.ngayDayBu, 'dd/MM/yyyy')}"></dd>
-
-                            <dt class="col-sm-4 text-muted fw-normal">Thứ</dt>
-                            <dd class="col-sm-8" th:text="${lichBu.tenThu}"></dd>
-
-                            <dt class="col-sm-4 text-muted fw-normal">Tiết</dt>
-                            <dd class="col-sm-8"
-                                th:text="${lichBu.tietBatDau + '–' + lichBu.tietKetThuc}"></dd>
-
-                            <dt class="col-sm-4 text-muted fw-normal">Phòng học</dt>
-                            <dd class="col-sm-8" th:text="${lichBu.phongHoc ?: '—'}"></dd>
-
-                            <dt class="col-sm-4 text-muted fw-normal">Ghi chú</dt>
-                            <dd class="col-sm-8" th:text="${lichBu.ghiChu ?: '—'}"></dd>
-
-                            <dt class="col-sm-4 text-muted fw-normal">Trạng thái</dt>
-                            <dd class="col-sm-8">
-                                <span th:classappend="${lichBu.trangThai.name() == 'DA_XEP'     ? 'badge-primary'  :
-                                                       lichBu.trangThai.name() == 'HOAN_THANH' ? 'badge-success'  :
-                                                       'badge-secondary'}"
-                                      class="badge rounded-pill px-3 py-2"
-                                      th:text="${lichBu.trangThai.tenHienThi}"></span>
-                            </dd>
-
-                            <th:block th:if="${lichBu.donNghiLienQuan != null}">
-                                <dt class="col-sm-4 text-muted fw-normal">Đơn nghỉ liên quan</dt>
-                                <dd class="col-sm-8">
-                                    <a th:href="@{/don-nghi/{id}(id=${lichBu.donNghiLienQuan.id})}"
-                                       th:text="${'#' + lichBu.donNghiLienQuan.id}"></a>
-                                </dd>
-                            </th:block>
-
-                        </dl>
-                    </div>
-                </div>
+        <!-- Back bar -->
+        <div class="back-bar">
+            <div>
+                <div class="page-title">Chi tiết lịch dạy bù</div>
+                <div class="page-sub">Thông tin chi tiết buổi dạy bù</div>
             </div>
+            <a href="/lich-day-bu" class="back-btn">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+        </div>
 
-            <!-- Thao tác -->
-            <div class="col-lg-4">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Thao tác</h6>
-                    </div>
-                    <div class="card-body d-flex flex-column gap-2">
+        <div class="layout">
+            <!-- LEFT: Info card -->
+            <div class="card">
+                <div class="card-head">
+                    <i class="bi bi-info-circle"></i>
+                    <h6>Thông tin buổi dạy bù</h6>
+                </div>
+                <div class="card-body" style="padding:0 22px">
+                    <div class="info-grid">
 
-                        <a th:if="${lichBu.trangThai.name() == 'DA_XEP'}"
-                           th:href="@{/lich-day-bu/{id}/sua(id=${lichBu.id})}"
-                           class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-pencil me-1"></i> Chỉnh sửa
-                        </a>
-
-                        <form th:if="${lichBu.trangThai.name() == 'DA_XEP'}"
-                              th:action="@{/lich-day-bu/{id}/hoan-thanh(id=${lichBu.id})}"
-                              method="post"
-                              onsubmit="return confirm('Đánh dấu buổi này đã hoàn thành?')">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <button type="submit" class="btn btn-success w-100">
-                                <i class="bi bi-check-lg me-1"></i> Đánh dấu hoàn thành
-                            </button>
-                        </form>
-
-                        <form th:if="${lichBu.trangThai.name() == 'DA_XEP'}"
-                              th:action="@{/lich-day-bu/{id}/huy(id=${lichBu.id})}"
-                              method="post"
-                              onsubmit="return confirm('Hủy lịch dạy bù này?')">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <button type="submit" class="btn btn-outline-danger w-100">
-                                <i class="bi bi-x-lg me-1"></i> Hủy lịch
-                            </button>
-                        </form>
-
-                        <div th:if="${lichBu.trangThai.name() != 'DA_XEP'}"
-                             class="text-muted text-center small py-2">
-                            Không có thao tác khả dụng
+                        <div class="info-row">
+                            <div class="info-lbl">Lớp học phần</div>
+                            <div class="info-val">
+                                <div class="lhp-code" th:text="${lichBu.lopHocPhan.maLhp}"></div>
+                                <div class="lhp-name" th:text="${lichBu.lopHocPhan.monHoc?.tenMon ?: ''}"></div>
+                            </div>
                         </div>
 
+                        <div class="info-row">
+                            <div class="info-lbl">Giảng viên</div>
+                            <div class="info-val" th:text="${lichBu.giangVien.hoTen ?: lichBu.giangVien.maNhanVien}"></div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-lbl">Ngày nghỉ gốc</div>
+                            <div class="info-val td-m"
+                                 th:text="${lichBu.ngayNghiGoc != null ? #temporals.format(lichBu.ngayNghiGoc,'dd/MM/yyyy') : '—'}"></div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-lbl">Ngày dạy bù</div>
+                            <div class="info-val" style="font-weight:700;color:var(--brand)"
+                                 th:text="${#temporals.format(lichBu.ngayDayBu,'dd/MM/yyyy')}"></div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-lbl">Thứ</div>
+                            <div class="info-val" th:text="${lichBu.tenThu}"></div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-lbl">Tiết học</div>
+                            <div class="info-val">
+                                <span class="tiet-pill" th:text="${lichBu.tietBatDau + '–' + lichBu.tietKetThuc}"></span>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-lbl">Phòng học</div>
+                            <div class="info-val" th:text="${lichBu.phongHoc ?: '—'}"></div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-lbl">Ghi chú</div>
+                            <div class="info-val" style="color:var(--text-muted)" th:text="${lichBu.ghiChu ?: '—'}"></div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-lbl">Trạng thái</div>
+                            <div class="info-val">
+              <span th:classappend="${lichBu.trangThai.name() == 'DA_XEP'     ? 'b-daxep'    :
+                                     lichBu.trangThai.name() == 'HOAN_THANH' ? 'b-hoanthanh': 'b-huy'}"
+                    class="badge" th:text="${lichBu.trangThai.tenHienThi}"></span>
+                            </div>
+                        </div>
+
+                        <th:block th:if="${lichBu.donNghiLienQuan != null}">
+                            <div class="info-row">
+                                <div class="info-lbl">Đơn nghỉ liên quan</div>
+                                <div class="info-val">
+                                    <a class="don-link"
+                                       th:href="@{/don-nghi/{id}(id=${lichBu.donNghiLienQuan.id})}"
+                                       th:text="${'#' + lichBu.donNghiLienQuan.id}"></a>
+                                </div>
+                            </div>
+                        </th:block>
+
                     </div>
                 </div>
             </div>
 
+            <!-- RIGHT: Action card -->
+            <div class="card act-card">
+                <div class="card-head">
+                    <i class="bi bi-gear"></i>
+                    <h6>Thao tác</h6>
+                </div>
+                <div class="card-body">
+                    <a th:if="${lichBu.trangThai.name() == 'DA_XEP'}"
+                       th:href="@{/lich-day-bu/{id}/sua(id=${lichBu.id})}"
+                       class="act-btn edit">
+                        <i class="bi bi-pencil"></i> Chỉnh sửa
+                    </a>
+                    <button th:if="${lichBu.trangThai.name() == 'DA_XEP'}"
+                            type="button" class="act-btn done"
+                            th:onclick="|moModal('modalHoanThanh','/lich-day-bu/${lichBu.id}/hoan-thanh')|">
+                        <i class="bi bi-check-lg"></i> Đánh dấu hoàn thành
+                    </button>
+                    <button th:if="${lichBu.trangThai.name() == 'DA_XEP'}"
+                            type="button" class="act-btn cancel"
+                            th:onclick="|moModal('modalHuy','/lich-day-bu/${lichBu.id}/huy')|">
+                        <i class="bi bi-x-lg"></i> Hủy lịch
+                    </button>
+                    <div th:if="${lichBu.trangThai.name() != 'DA_XEP'}" class="no-act">
+                        Không có thao tác khả dụng
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- MODAL HOÀN THÀNH -->
+    <div id="modalHoanThanh" class="ldb-overlay">
+        <div class="ldb-mbox">
+            <div class="m-ico" style="background:#f0fdf4">
+                <i class="bi bi-check-circle" style="color:#16a34a;font-size:1.5rem"></i>
+            </div>
+            <h5>Xác nhận hoàn thành?</h5>
+            <p>Buổi dạy bù này sẽ được đánh dấu là <strong style="color:#16a34a">Hoàn thành</strong>.<br>Hành động này không thể hoàn tác.</p>
+            <div class="m-acts">
+                <button type="button" class="m-cancel-btn" onclick="dongModal('modalHoanThanh')">Hủy bỏ</button>
+                <form id="formHoanThanh" method="post" style="flex:1;display:flex">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="m-confirm-btn btn-green"><i class="bi bi-check-lg"></i> Hoàn thành</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HỦY -->
+    <div id="modalHuy" class="ldb-overlay">
+        <div class="ldb-mbox">
+            <div class="m-ico" style="background:#fff1f2">
+                <i class="bi bi-trash3" style="color:#e11d48;font-size:1.4rem"></i>
+            </div>
+            <h5>Hủy lịch dạy bù?</h5>
+            <p>Lịch dạy bù này sẽ bị hủy và <strong style="color:#e11d48">không thể khôi phục</strong> lại.<br>Bạn có chắc chắn muốn tiếp tục không?</p>
+            <div class="m-acts">
+                <button type="button" class="m-cancel-btn" onclick="dongModal('modalHuy')">Không, giữ lại</button>
+                <form id="formHuy" method="post" style="flex:1;display:flex">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="m-confirm-btn btn-red"><i class="bi bi-trash3"></i> Xác nhận hủy</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function moModal(id, url) {
+          document.getElementById(id === 'modalHoanThanh' ? 'formHoanThanh' : 'formHuy').action = url;
+          document.getElementById(id).style.display = 'flex';
+        }
+        function dongModal(id) { document.getElementById(id).style.display = 'none'; }
+        ['modalHoanThanh','modalHuy'].forEach(id => {
+          document.getElementById(id).addEventListener('click', e => { if(e.target===e.currentTarget) dongModal(id); });
+        });
+    </script>
 </main>
 </body>
 </html>

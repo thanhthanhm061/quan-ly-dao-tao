@@ -2,264 +2,445 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layout/base :: layout(~{::main}, 'Chi tiết đơn xin nghỉ')}">
-
-<head>
-    <title>Chi tiết đơn xin nghỉ</title>
-</head>
-
+<head><title>Chi tiết đơn xin nghỉ</title></head>
 <body>
 <main>
-    <div class="page-body">
+    <style>
+        .ctd-wrap { max-width: 780px; }
 
-        <!-- HEADER -->
-        <div class="page-header-card shadow-sm rounded-3 p-3 mb-4 bg-white d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <span class="fs-3">📄</span>
-                <div>
-                    <h4 class="mb-0">Chi tiết đơn xin nghỉ</h4>
-                    <small class="text-muted">Xem thông tin và thao tác với đơn</small>
-                </div>
+        /* Header */
+        .ctd-hdr {
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 12px;
+            margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .ctd-hdr h4 { margin: 0; font-size: 1.05rem; font-weight: 700; color: #1a202c; }
+        .ctd-hdr small { color: #718096; font-size: .8rem; display: block; margin-top: 2px; }
+        .ctd-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 8px;
+            border: 1px solid #e2e8f0; background: #fff;
+            color: #718096; font-size: .845rem; font-weight: 500;
+            text-decoration: none; transition: background .13s, border-color .13s;
+        }
+        .ctd-back:hover { background: #f7fafc; border-color: #cbd5e0; color: #4a5568; }
+
+        /* Main card */
+        .ctd-card {
+            background: #fff; border-radius: 14px;
+            border: 1px solid #e8edf3;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); overflow: hidden;
+        }
+
+        /* Card top bar */
+        .ctd-card-head {
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 12px;
+            padding: 14px 22px;
+            border-bottom: 1px solid #edf2f7;
+            background: #f8fafc;
+        }
+        .ctd-card-head-left {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .ctd-doc-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: #ebf4ff; display: flex;
+            align-items: center; justify-content: center;
+            color: #2b6cb0; font-size: 1.05rem; flex-shrink: 0;
+        }
+        .ctd-card-title { font-size: .95rem; font-weight: 600; color: #1a202c; }
+        .ctd-card-id { font-size: .8rem; color: #a0aec0; font-weight: 400; margin-left: 4px; }
+
+        /* Status badge */
+        .ctd-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: .78rem; font-weight: 600; white-space: nowrap;
+        }
+        .b-cho   { background: #fef3c7; color: #92400e; }
+        .b-duyet { background: #d1fae5; color: #065f46; }
+        .b-tu    { background: #fee2e2; color: #991b1b; }
+        .b-huy   { background: #f1f5f9; color: #475569; }
+
+        /* Section strip */
+        .ctd-section {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 22px;
+            background: #f8fafc;
+            border-top: 1px solid #edf2f7;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .ctd-section:first-of-type { border-top: none; }
+        .ctd-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .dot-blue  { background: #3182ce; }
+        .dot-amber { background: #d97706; }
+        .dot-green { background: #2c7a7b; }
+        .dot-red   { background: #e53e3e; }
+        .ctd-section-lbl {
+            font-size: .69rem; font-weight: 700;
+            letter-spacing: .07em; text-transform: uppercase; color: #718096;
+        }
+
+        /* Content grid */
+        .ctd-body { padding: 18px 22px; }
+        .ctd-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+        }
+        .ctd-grid.cols-1 { grid-template-columns: 1fr; }
+        .ctd-field-label {
+            font-size: .72rem; font-weight: 600;
+            color: #a0aec0; margin-bottom: 3px; letter-spacing: .01em;
+        }
+        .ctd-field-val {
+            font-size: .895rem; font-weight: 500; color: #1a202c;
+        }
+        .ctd-field-val.highlight {
+            color: #2b6cb0; font-size: 1.1rem; font-weight: 700;
+        }
+
+        /* Lý do box */
+        .ctd-reason {
+            background: #f8fafc; border: 1px solid #edf2f7;
+            border-radius: 8px; padding: 13px 15px;
+            font-size: .855rem; color: #4a5568;
+            line-height: 1.65; white-space: pre-wrap;
+            min-height: 56px;
+        }
+        .ctd-reason-deny {
+            background: #fff5f5; border: 1px solid #fed7d7;
+            border-radius: 8px; padding: 13px 15px;
+            font-size: .855rem; color: #c53030;
+            line-height: 1.65; white-space: pre-wrap;
+        }
+
+        /* File attach */
+        .ctd-file-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 13px; border-radius: 8px;
+            border: 1px solid #e2e8f0; background: #fff;
+            color: #4a5568; font-size: .82rem; font-weight: 500;
+            text-decoration: none; transition: background .13s;
+        }
+        .ctd-file-btn:hover { background: #f7fafc; }
+
+        /* Day count pill */
+        .ctd-day-pill {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: #ebf4ff; color: #2b6cb0;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: .82rem; font-weight: 700;
+        }
+
+        /* Footer actions */
+        .ctd-footer {
+            display: flex; justify-content: flex-end;
+            align-items: center; gap: 10px;
+            padding: 14px 22px;
+            background: #f8fafc;
+            border-top: 1px solid #edf2f7;
+        }
+        .ctd-btn-huy {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 8px;
+            border: 1px solid #f6ad55; background: #fffaf0;
+            color: #92400e; font-size: .845rem; font-weight: 500;
+            cursor: pointer; transition: background .13s;
+        }
+        .ctd-btn-huy:hover { background: #fef3c7; }
+        .ctd-btn-duyet {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 18px; border-radius: 8px; border: none;
+            background: #276749; color: #fff;
+            font-size: .845rem; font-weight: 600; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(39,103,73,.25);
+            transition: opacity .13s;
+        }
+        .ctd-btn-duyet:hover { opacity: .88; }
+        .ctd-btn-tuchoi {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 18px; border-radius: 8px; border: none;
+            background: #c53030; color: #fff;
+            font-size: .845rem; font-weight: 600; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(197,48,48,.25);
+            transition: opacity .13s;
+        }
+        .ctd-btn-tuchoi:hover { opacity: .88; }
+
+        /* Modals */
+        .ctd-modal .modal-content {
+            border: none; border-radius: 14px;
+            box-shadow: 0 8px 40px rgba(0,0,0,.13); overflow: hidden;
+        }
+        .ctd-modal .modal-header { padding: 13px 18px; }
+        .ctd-modal .modal-header h5 {
+            font-size: .95rem; font-weight: 700; margin: 0;
+            display: flex; align-items: center; gap: 7px;
+        }
+        .ctd-modal .modal-body { padding: 18px; font-size: .875rem; color: #4a5568; }
+        .ctd-modal .modal-body textarea {
+            border-radius: 8px; border: 1px solid #e2e8f0;
+            font-size: .855rem; color: #2d3748;
+            padding: 10px 12px; resize: vertical; width: 100%;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .ctd-modal .modal-body textarea:focus {
+            border-color: #fc8181; box-shadow: 0 0 0 3px rgba(252,129,129,.2); outline: none;
+        }
+        .ctd-modal .modal-footer {
+            padding: 11px 18px; gap: 8px;
+            background: #f8fafc; border-top: 1px solid #edf2f7;
+        }
+        .ctd-modal .m-cancel {
+            padding: 7px 16px; border-radius: 8px;
+            border: 1px solid #e2e8f0; background: #fff;
+            color: #718096; font-size: .845rem; cursor: pointer;
+        }
+        .ctd-modal .m-deny {
+            padding: 7px 18px; border-radius: 8px; border: none;
+            background: #c53030; color: #fff;
+            font-size: .845rem; font-weight: 600; cursor: pointer;
+        }
+        .ctd-modal .m-warn {
+            padding: 7px 18px; border-radius: 8px; border: none;
+            background: #d97706; color: #fff;
+            font-size: .845rem; font-weight: 600; cursor: pointer;
+        }
+
+        @media (max-width: 580px) {
+            .ctd-grid { grid-template-columns: 1fr; }
+            .ctd-footer { flex-wrap: wrap; }
+        }
+    </style>
+
+    <div class="page-body ctd-wrap">
+
+        <!-- Header -->
+        <div class="ctd-hdr">
+            <div>
+                <h4>Chi tiết đơn xin nghỉ</h4>
+                <small>Xem thông tin và thao tác với đơn</small>
             </div>
-
-            <a th:href="@{/don-nghi}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Quay lại
+            <a href="/don-nghi" class="ctd-back">
+                <i class="bi bi-arrow-left"></i> Quay lại
             </a>
         </div>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
+        <!-- Main card -->
+        <div class="ctd-card">
 
-                <!-- CARD CHÍNH -->
-                <div class="card shadow border-0 rounded-4 mb-4">
+            <!-- Top bar: title + badge -->
+            <div class="ctd-card-head">
+                <div class="ctd-card-head-left">
+                    <div class="ctd-doc-icon">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <div>
+                        <span class="ctd-card-title">Đơn xin nghỉ</span>
+                        <span class="ctd-card-id">#<span th:text="${don.id}"></span></span>
+                    </div>
+                </div>
+                <span class="ctd-badge"
+                      th:classappend="${don.trangThai.name() == 'CHO_DUYET' ? 'b-cho' :
+                                   don.trangThai.name() == 'DA_DUYET'  ? 'b-duyet' :
+                                   don.trangThai.name() == 'TU_CHOI'   ? 'b-tu' : 'b-huy'}">
+                <i class="bi"
+                   th:classappend="${don.trangThai.name() == 'CHO_DUYET' ? 'bi-clock' :
+                                    don.trangThai.name() == 'DA_DUYET'  ? 'bi-check-circle' :
+                                    don.trangThai.name() == 'TU_CHOI'   ? 'bi-x-circle' : 'bi-dash-circle'}"
+                   style="font-size:.75rem;"></i>
+                <span th:text="${don.trangThai.tenHienThi}"></span>
+            </span>
+            </div>
 
-                    <!-- HEADER CARD -->
-                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                        <h5 class="mb-0 fw-semibold">
-                            <i class="bi bi-file-earmark-text me-2 text-primary"></i>
-                            Đơn xin nghỉ
-                            <span class="text-muted fw-normal fs-6 ms-2">
-                            #<span th:text="${don.id}"></span>
+            <!-- SECTION 1: Người nộp -->
+            <div class="ctd-section">
+                <span class="ctd-dot dot-blue"></span>
+                <span class="ctd-section-lbl">Người nộp đơn</span>
+            </div>
+            <div class="ctd-body">
+                <div class="ctd-grid">
+                    <div>
+                        <div class="ctd-field-label">Họ và tên</div>
+                        <div class="ctd-field-val" th:text="${don.nguoiNop?.hoTen ?: '—'}"></div>
+                    </div>
+                    <div>
+                        <div class="ctd-field-label">Mã nhân viên</div>
+                        <div class="ctd-field-val" th:text="${don.nguoiNop?.maNhanVien ?: '—'}"></div>
+                    </div>
+                    <div>
+                        <div class="ctd-field-label">Khoa</div>
+                        <div class="ctd-field-val" th:text="${don.nguoiNop?.khoa?.tenKhoa ?: '—'}"></div>
+                    </div>
+                    <div>
+                        <div class="ctd-field-label">Chức vụ</div>
+                        <div class="ctd-field-val" th:text="${don.nguoiNop?.chucVu?.tenChucVu ?: '—'}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: Thông tin đơn -->
+            <div class="ctd-section">
+                <span class="ctd-dot dot-amber"></span>
+                <span class="ctd-section-lbl">Thông tin đơn</span>
+            </div>
+            <div class="ctd-body">
+                <div class="ctd-grid" style="margin-bottom:16px;">
+                    <div>
+                        <div class="ctd-field-label">Loại nghỉ</div>
+                        <div class="ctd-field-val" th:text="${don.loaiNghi ?: '—'}"></div>
+                    </div>
+                    <div>
+                        <div class="ctd-field-label">Ngày nộp</div>
+                        <div class="ctd-field-val"
+                             th:text="${#temporals.format(don.ngayTao, 'dd/MM/yyyy HH:mm')}"></div>
+                    </div>
+                    <div>
+                        <div class="ctd-field-label">Bắt đầu</div>
+                        <div class="ctd-field-val"
+                             th:text="${#temporals.format(don.ngayBatDau, 'dd/MM/yyyy')}"></div>
+                    </div>
+                    <div>
+                        <div class="ctd-field-label">Kết thúc</div>
+                        <div class="ctd-field-val"
+                             th:text="${#temporals.format(don.ngayKetThuc, 'dd/MM/yyyy')}"></div>
+                    </div>
+                    <div>
+                        <div class="ctd-field-label">Số ngày nghỉ</div>
+                        <div style="margin-top:2px;">
+                        <span class="ctd-day-pill">
+                            <i class="bi bi-calendar-check" style="font-size:.8rem;"></i>
+                            <span th:text="${don.soNgayNghi + ' ngày'}"></span>
                         </span>
-                        </h5>
-
-                        <!-- BADGE -->
-                        <span class="badge rounded-pill px-3 py-2 fs-6 shadow-sm"
-                              th:classappend="${don.trangThai.name() == 'CHO_DUYET' ? 'bg-warning text-dark' :
-                                           don.trangThai.name() == 'DA_DUYET'  ? 'bg-success' :
-                                           don.trangThai.name() == 'TU_CHOI'   ? 'bg-danger' :
-                                           don.trangThai.name() == 'DA_HUY'    ? 'bg-secondary' :
-                                           'bg-info'}"
-                              th:text="${don.trangThai.tenHienThi}">
-                    </span>
+                        </div>
                     </div>
-
-                    <div class="card-body px-4 py-4">
-
-                        <!-- NGƯỜI NỘP -->
-                        <h6 class="text-uppercase text-muted small fw-bold mb-3">
-                            <i class="bi bi-person-fill me-1"></i> Người nộp đơn
-                        </h6>
-
-                        <div class="row g-3 mb-4">
-                            <div class="col-sm-6">
-                                <div class="text-muted small">Họ và tên</div>
-                                <div class="fw-semibold" th:text="${don.nguoiNop?.hoTen ?: '—'}"></div>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <div class="text-muted small">Mã nhân viên</div>
-                                <div class="fw-semibold" th:text="${don.nguoiNop?.maNhanVien ?: '—'}"></div>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <div class="text-muted small">Khoa</div>
-                                <div class="fw-semibold" th:text="${don.nguoiNop?.khoa?.tenKhoa ?: '—'}"></div>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <div class="text-muted small">Chức vụ</div>
-                                <div class="fw-semibold" th:text="${don.nguoiNop?.chucVu?.tenChucVu ?: '—'}"></div>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        <!-- THÔNG TIN ĐƠN -->
-                        <h6 class="text-uppercase text-muted small fw-bold mb-3">
-                            <i class="bi bi-calendar3 me-1"></i> Thông tin đơn
-                        </h6>
-
-                        <div class="row g-3 mb-4">
-                            <div class="col-sm-6">
-                                <div class="text-muted small">Loại nghỉ</div>
-                                <div class="fw-semibold" th:text="${don.loaiNghi ?: '—'}"></div>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <div class="text-muted small">Ngày nộp</div>
-                                <div class="fw-semibold"
-                                     th:text="${#temporals.format(don.ngayTao, 'dd/MM/yyyy HH:mm')}"></div>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <div class="text-muted small">Bắt đầu</div>
-                                <div class="fw-semibold text-primary"
-                                     th:text="${#temporals.format(don.ngayBatDau, 'dd/MM/yyyy')}"></div>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <div class="text-muted small">Kết thúc</div>
-                                <div class="fw-semibold text-primary"
-                                     th:text="${#temporals.format(don.ngayKetThuc, 'dd/MM/yyyy')}"></div>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <div class="text-muted small">Số ngày</div>
-                                <div class="fw-bold fs-5 text-primary">
-                                    <span th:text="${don.soNgayNghi}"></span> ngày
-                                </div>
-                            </div>
-
-                            <div class="col-sm-6"
-                                 th:if="${don.fileDinhKem != null and !don.fileDinhKem.isEmpty()}">
-                                <div class="text-muted small">File đính kèm</div>
-                                <a th:href="${don.fileDinhKem}" target="_blank"
-                                   class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-paperclip me-1"></i> Xem file
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- LÝ DO -->
-                        <div class="mb-3">
-                            <div class="text-muted small mb-1">Lý do xin nghỉ</div>
-                            <div class="bg-light border rounded p-3" style="white-space: pre-wrap;"
-                                 th:text="${don.lyDo ?: '—'}"></div>
-                        </div>
-
-                        <!-- DUYỆT -->
-                        <div th:if="${don.trangThai.name() == 'DA_DUYET' or don.trangThai.name() == 'TU_CHOI'}">
-                            <hr>
-                            <h6 class="text-uppercase text-muted small fw-bold mb-3">
-                                <i class="bi bi-person-check me-1"></i> Phê duyệt
-                            </h6>
-
-                            <div class="row g-3">
-                                <div class="col-sm-6" th:if="${don.nguoiDuyet != null}">
-                                    <div class="text-muted small">Người duyệt</div>
-                                    <div class="fw-semibold" th:text="${don.nguoiDuyet.hoTen}"></div>
-                                </div>
-
-                                <div class="col-sm-6" th:if="${don.ngayDuyet != null}">
-                                    <div class="text-muted small">Ngày duyệt</div>
-                                    <div class="fw-semibold"
-                                         th:text="${#temporals.format(don.ngayDuyet, 'dd/MM/yyyy HH:mm')}"></div>
-                                </div>
-
-                                <div class="col-12"
-                                     th:if="${don.trangThai.name() == 'TU_CHOI' and don.lyDoTuChoi != null}">
-                                    <div class="text-muted small">Lý do từ chối</div>
-                                    <div class="bg-danger bg-opacity-10 border border-danger text-danger rounded p-3"
-                                         style="white-space: pre-wrap;"
-                                         th:text="${don.lyDoTuChoi}">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- FOOTER ACTION -->
-                    <div class="card-footer bg-light border-0 py-3 px-4 d-flex justify-content-end gap-2">
-
-                        <!-- HỦY (MODAL) -->
-                        <button type="button"
-                                th:if="${laNguoiNop and don.trangThai.name() == 'CHO_DUYET'}"
-                                class="btn btn-outline-warning"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalHuyDon">
-                            <i class="bi bi-x-circle me-1"></i> Hủy đơn
-                        </button>
-
-                        <!-- DUYỆT / TỪ CHỐI -->
-                        <div th:if="${!laNguoiNop and don.trangThai.name() == 'CHO_DUYET'}"
-                             class="d-flex gap-2">
-
-                            <form th:action="@{/don-nghi/{id}/duyet(id=${don.id})}" method="post">
-                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                <button class="btn btn-success">
-                                    <i class="bi bi-check-lg me-1"></i> Duyệt
-                                </button>
-                            </form>
-
-                            <button class="btn btn-danger"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalTuChoi">
-                                <i class="bi bi-x-circle me-1"></i> Từ chối
-                            </button>
-
-                        </div>
-
+                    <div th:if="${don.fileDinhKem != null and !don.fileDinhKem.isEmpty()}">
+                        <div class="ctd-field-label">File đính kèm</div>
+                        <a th:href="${don.fileDinhKem}" target="_blank" class="ctd-file-btn">
+                            <i class="bi bi-paperclip"></i> Xem file
+                        </a>
                     </div>
                 </div>
 
+                <div>
+                    <div class="ctd-field-label" style="margin-bottom:6px;">Lý do xin nghỉ</div>
+                    <div class="ctd-reason" th:text="${don.lyDo ?: '—'}"></div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- MODAL TỪ CHỐI -->
-    <div class="modal fade" id="modalTuChoi" tabindex="-1">
+            <!-- SECTION 3: Phê duyệt (chỉ hiện nếu đã duyệt hoặc từ chối) -->
+            <div th:if="${don.trangThai.name() == 'DA_DUYET' or don.trangThai.name() == 'TU_CHOI'}">
+                <div class="ctd-section">
+                <span class="ctd-dot"
+                      th:classappend="${don.trangThai.name() == 'DA_DUYET' ? 'dot-green' : 'dot-red'}"
+                      style="border-radius:50%;"></span>
+                    <span class="ctd-section-lbl">Phê duyệt</span>
+                </div>
+                <div class="ctd-body">
+                    <div class="ctd-grid" style="margin-bottom:14px;">
+                        <div th:if="${don.nguoiDuyet != null}">
+                            <div class="ctd-field-label">Người duyệt</div>
+                            <div class="ctd-field-val" th:text="${don.nguoiDuyet.hoTen}"></div>
+                        </div>
+                        <div th:if="${don.ngayDuyet != null}">
+                            <div class="ctd-field-label">Ngày duyệt</div>
+                            <div class="ctd-field-val"
+                                 th:text="${#temporals.format(don.ngayDuyet, 'dd/MM/yyyy HH:mm')}"></div>
+                        </div>
+                    </div>
+                    <div th:if="${don.trangThai.name() == 'TU_CHOI' and don.lyDoTuChoi != null}">
+                        <div class="ctd-field-label" style="margin-bottom:6px;">Lý do từ chối</div>
+                        <div class="ctd-reason-deny" th:text="${don.lyDoTuChoi}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer actions -->
+            <div class="ctd-footer">
+
+                <!-- Hủy đơn (người nộp, chờ duyệt) -->
+                <button type="button"
+                        th:if="${laNguoiNop and don.trangThai.name() == 'CHO_DUYET'}"
+                        class="ctd-btn-huy"
+                        data-bs-toggle="modal" data-bs-target="#modalHuyDon">
+                    <i class="bi bi-x-circle"></i> Hủy đơn
+                </button>
+
+                <!-- Duyệt / Từ chối (không phải người nộp, chờ duyệt) -->
+                <div th:if="${!laNguoiNop and don.trangThai.name() == 'CHO_DUYET'}"
+                     style="display:flex; gap:10px;">
+
+                    <form th:action="@{/don-nghi/{id}/duyet(id=${don.id})}" method="post" style="margin:0;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="ctd-btn-duyet">
+                            <i class="bi bi-check-lg"></i> Duyệt
+                        </button>
+                    </form>
+
+                    <button type="button" class="ctd-btn-tuchoi"
+                            data-bs-toggle="modal" data-bs-target="#modalTuChoi">
+                        <i class="bi bi-x-circle"></i> Từ chối
+                    </button>
+
+                </div>
+            </div>
+
+        </div><!-- /ctd-card -->
+
+    </div><!-- /ctd-wrap -->
+
+    <!-- Modal từ chối -->
+    <div class="modal fade ctd-modal" id="modalTuChoi" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg">
-
+            <div class="modal-content">
                 <form th:action="@{/don-nghi/{id}/tu-choi(id=${don.id})}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-                    <div class="modal-header border-0">
-                        <h5 class="text-danger">Từ chối đơn</h5>
-                        <button class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="modal-header" style="background:#fff5f5; border-bottom:1px solid #fed7d7;">
+                        <h5 style="color:#c53030;">
+                            <i class="bi bi-x-circle-fill"></i> Từ chối đơn nghỉ
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-
                     <div class="modal-body">
-                    <textarea name="lyDoTuChoi" class="form-control" rows="4"
-                              required minlength="5"
-                              placeholder="Nhập lý do từ chối..."></textarea>
+                        <label style="font-size:.775rem; font-weight:600; color:#4a5568; margin-bottom:6px; display:block;">
+                            Lý do từ chối <span style="color:#e53e3e;">*</span>
+                        </label>
+                        <textarea name="lyDoTuChoi" rows="4" required minlength="5"
+                                  placeholder="Nhập lý do từ chối..."></textarea>
                     </div>
-
-                    <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button class="btn btn-danger">Xác nhận</button>
+                    <div class="modal-footer">
+                        <button type="button" class="m-cancel" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="m-deny">
+                            <i class="bi bi-x-circle me-1"></i>Xác nhận từ chối
+                        </button>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
 
-    <!-- MODAL HỦY -->
-    <div class="modal fade" id="modalHuyDon" tabindex="-1">
+    <!-- Modal hủy đơn -->
+    <div class="modal fade ctd-modal" id="modalHuyDon" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg">
-
+            <div class="modal-content">
                 <form th:action="@{/don-nghi/{id}/huy(id=${don.id})}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-                    <div class="modal-header border-0">
-                        <h5 class="text-warning">Xác nhận hủy đơn</h5>
-                        <button class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="modal-header" style="background:#fffbeb; border-bottom:1px solid #fde68a;">
+                        <h5 style="color:#92400e;">
+                            <i class="bi bi-exclamation-triangle-fill"></i> Xác nhận hủy đơn
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-
-                    <div class="modal-body text-muted">
-                        Bạn chắc chắn muốn hủy đơn này? Hành động không thể hoàn tác.
+                    <div class="modal-body">
+                        Bạn chắc chắn muốn hủy đơn này? Hành động này không thể hoàn tác.
                     </div>
-
-                    <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button class="btn btn-warning">Xác nhận hủy</button>
+                    <div class="modal-footer">
+                        <button type="button" class="m-cancel" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="m-warn">
+                            <i class="bi bi-x-circle me-1"></i>Xác nhận hủy
+                        </button>
                     </div>
-
                 </form>
-
             </div>
         </div>
     </div>

@@ -4,62 +4,274 @@
 <head><title>Xếp lịch dạy bù</title></head>
 <body>
 <main>
-    <div class="page-body">
+    <style>
+        /* ── Page layout ─────────────────────────────── */
+        .xldb-wrap {
+            max-width: 860px;
+        }
 
-        <div class="page-header-card">
-            <div class="d-flex align-items-center gap-3">
-                <a href="/lich-day-bu" class="btn btn-light btn-sm">
-                    <i class="bi bi-arrow-left"></i>
-                </a>
-                <div>
-                    <h4 class="mb-0">Xếp lịch dạy bù</h4>
-                    <small class="text-muted">Chọn lớp, giảng viên và thời gian dạy bù</small>
-                </div>
+        /* ── Back + title bar ────────────────────────── */
+        .xldb-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .xldb-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #4a5568;
+            text-decoration: none;
+            flex-shrink: 0;
+            transition: background .15s, border-color .15s;
+        }
+        .xldb-back:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+            color: #2d3748;
+        }
+        .xldb-header h4 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1a202c;
+        }
+        .xldb-header small {
+            color: #718096;
+            font-size: .8rem;
+        }
+
+        /* ── Info banner ─────────────────────────────── */
+        .xldb-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #ebf8ff;
+            border: 1px solid #bee3f8;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            font-size: .85rem;
+            color: #2c5282;
+        }
+        .xldb-banner i { margin-top: 1px; flex-shrink: 0; }
+
+        /* ── Main card ───────────────────────────────── */
+        .xldb-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid #e8edf3;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06);
+            overflow: hidden;
+        }
+
+        /* ── Section header strip ────────────────────── */
+        .xldb-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .xldb-section-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .dot-primary { background: #3182ce; }
+        .dot-orange  { background: #dd6b20; }
+        .dot-teal    { background: #2c7a7b; }
+
+        .xldb-section-title {
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            color: #718096;
+            margin: 0;
+        }
+
+        /* ── Form inner padding ──────────────────────── */
+        .xldb-body {
+            padding: 20px 22px;
+        }
+
+        /* ── Field label ─────────────────────────────── */
+        .xldb-label {
+            display: block;
+            font-size: .775rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 6px;
+            letter-spacing: .01em;
+        }
+        .xldb-label .req { color: #e53e3e; margin-left: 2px; }
+        .xldb-hint {
+            font-size: .72rem;
+            color: #a0aec0;
+            margin-top: 5px;
+        }
+
+        /* ── Custom select & input styling ───────────── */
+        .xldb-body .form-select,
+        .xldb-body .form-control {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: .855rem;
+            color: #2d3748;
+            padding: 8px 12px;
+            transition: border-color .15s, box-shadow .15s;
+            height: auto;
+            background-color: #fdfdfe;
+        }
+        .xldb-body .form-select:focus,
+        .xldb-body .form-control:focus {
+            border-color: #63b3ed;
+            box-shadow: 0 0 0 3px rgba(66,153,225,.15);
+            outline: none;
+            background-color: #fff;
+        }
+        .xldb-body .form-select {
+            padding-right: 32px;
+        }
+
+        /* ── Divider between sections ────────────────── */
+        .xldb-divider {
+            border: none;
+            border-top: 1px solid #edf2f7;
+            margin: 0;
+        }
+
+        /* ── Footer actions ──────────────────────────── */
+        .xldb-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 22px;
+            background: #f8fafc;
+            border-top: 1px solid #edf2f7;
+        }
+        .xldb-btn-cancel {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #718096;
+            font-size: .845rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background .15s, border-color .15s, color .15s;
+            cursor: pointer;
+        }
+        .xldb-btn-cancel:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+            color: #4a5568;
+        }
+        .xldb-btn-submit {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #2b6cb0 0%, #2c5282 100%);
+            color: #fff;
+            font-size: .845rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity .15s, transform .1s;
+            box-shadow: 0 2px 8px rgba(43,108,176,.35);
+        }
+        .xldb-btn-submit:hover { opacity: .92; }
+        .xldb-btn-submit:active { transform: scale(.98); }
+
+        /* ── Row/column helpers ──────────────────────── */
+        .xldb-row {
+            display: grid;
+            gap: 16px;
+        }
+        .xldb-row.cols-2  { grid-template-columns: 1fr 1fr; }
+        .xldb-row.cols-3  { grid-template-columns: 1fr 1fr 1fr; }
+        .xldb-row.cols-12 { grid-template-columns: 1fr 2fr; }
+
+        @media (max-width: 600px) {
+            .xldb-row.cols-2,
+            .xldb-row.cols-3,
+            .xldb-row.cols-12 { grid-template-columns: 1fr; }
+        }
+    </style>
+
+    <div class="page-body xldb-wrap">
+
+        <!-- ── Header ──────────────────────────────────────── -->
+        <div class="xldb-header">
+            <a href="/lich-day-bu" class="xldb-back" title="Quay lại">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h4>Xếp lịch dạy bù</h4>
+                <small>Chọn lớp, giảng viên và thời gian dạy bù</small>
             </div>
         </div>
 
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-exclamation-circle me-2"></i>
+        <!-- ── Error alert ─────────────────────────────────── -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-3" style="border-radius:10px;">
+            <i class="bi bi-exclamation-circle-fill"></i>
             <span th:text="${error}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
         </div>
 
-        <div th:if="${donNghi != null}" class="alert alert-info mb-3">
-            <i class="bi bi-info-circle me-2"></i>
-            Xếp lịch bù liên quan đến đơn nghỉ của
-            <strong th:text="${donNghi.nguoiNop.hoTen}"></strong>
-            (từ <span th:text="${#temporals.format(donNghi.ngayBatDau,'dd/MM/yyyy')}"></span>
-            đến <span th:text="${#temporals.format(donNghi.ngayKetThuc,'dd/MM/yyyy')}"></span>)
+        <!-- ── Info banner (đơn nghỉ) ──────────────────────── -->
+        <div th:if="${donNghi != null}" class="xldb-banner">
+            <i class="bi bi-info-circle-fill"></i>
+            <div>
+                Xếp lịch bù liên quan đến đơn nghỉ của
+                <strong th:text="${donNghi.nguoiNop.hoTen}"></strong>
+                &nbsp;(từ
+                <strong th:text="${#temporals.format(donNghi.ngayBatDau,'dd/MM/yyyy')}"></strong>
+                đến
+                <strong th:text="${#temporals.format(donNghi.ngayKetThuc,'dd/MM/yyyy')}"></strong>)
+            </div>
         </div>
 
-        <div class="card shadow-sm" style="max-width: 800px;">
-            <div class="card-body p-4">
-                <form action="/lich-day-bu/xep" method="post">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <input th:if="${donNghi != null}" type="hidden" name="donNghiId" th:value="${donNghi.id}"/>
+        <!-- ── Main form card ──────────────────────────────── -->
+        <div class="xldb-card">
+            <form action="/lich-day-bu/xep" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input th:if="${donNghi != null}" type="hidden" name="donNghiId" th:value="${donNghi.id}"/>
 
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Lớp học phần <span class="text-danger">*</span></label>
+                <!-- SECTION 1: Lớp & giảng viên -->
+                <div class="xldb-section">
+                    <span class="xldb-section-dot dot-primary"></span>
+                    <span class="xldb-section-title">Lớp học &amp; Giảng viên</span>
+                </div>
+
+                <div class="xldb-body">
+                    <div class="xldb-row cols-2">
+                        <div>
+                            <label class="xldb-label">Lớp học phần <span class="req">*</span></label>
                             <select name="lhpId" class="form-select" required>
                                 <option value="">-- Chọn lớp học phần --</option>
                                 <option th:each="lhp : ${danhSachLhp}"
                                         th:value="${lhp.id}"
-                                        th:text="${lhp.maLhp
-                                            + ' - '
-                                            + lhp.monHoc.tenMon
-                                            + ' | GV: '
-                                            + lhp.giangVien.hoTen
-                                            + ' | '
-                                            + lhp.monHoc.soTinChi
-                                            + ' tín'}"
+                                        th:text="${lhp.maLhp + ' – ' + lhp.monHoc.tenMon + ' | GV: ' + lhp.giangVien.hoTen + ' | ' + lhp.monHoc.soTinChi + ' tín'}"
                                         th:selected="${lhpChon != null and lhpChon.id == lhp.id}">
                                 </option>
                             </select>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Giảng viên dạy bù <span class="text-danger">*</span></label>
+                        <div>
+                            <label class="xldb-label">Giảng viên dạy bù <span class="req">*</span></label>
                             <select name="giangVienId" class="form-select" required>
                                 <option value="">-- Chọn giảng viên --</option>
                                 <option th:each="gv : ${danhSachGV}"
@@ -69,88 +281,105 @@
                                 </option>
                             </select>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Ngày buổi học bị nghỉ</label>
+                <hr class="xldb-divider"/>
+
+                <!-- SECTION 2: Thời gian -->
+                <div class="xldb-section">
+                    <span class="xldb-section-dot dot-orange"></span>
+                    <span class="xldb-section-title">Thời gian buổi học</span>
+                </div>
+
+                <div class="xldb-body">
+                    <!-- Row: ngày nghỉ + ngày bù -->
+                    <div class="xldb-row cols-2 mb-3">
+                        <div>
+                            <label class="xldb-label">Ngày buổi học bị nghỉ</label>
                             <input type="date" name="ngayNghiGoc" class="form-control"
                                    th:value="${ngayNghiGoc != null ? #temporals.format(ngayNghiGoc,'yyyy-MM-dd') : ''}"/>
-                            <div class="form-text">Để trống nếu không liên quan đến buổi nghỉ cụ thể</div>
+                            <p class="xldb-hint">Để trống nếu không liên quan đến buổi nghỉ cụ thể</p>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Ngày dạy bù <span class="text-danger">*</span></label>
-                            <input type="date" name="ngayDayBu" class="form-control" id="ngayDayBu" required
+                        <div>
+                            <label class="xldb-label">Ngày dạy bù <span class="req">*</span></label>
+                            <input type="date" name="ngayDayBu" id="ngayDayBu" class="form-control" required
                                    th:min="${#temporals.format(#temporals.createNow(),'yyyy-MM-dd')}"/>
                         </div>
+                    </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Thứ <span class="text-danger">*</span></label>
+                    <!-- Row: thứ + tiết bắt đầu + số tiết -->
+                    <div class="xldb-row cols-3">
+                        <div>
+                            <label class="xldb-label">Thứ trong tuần <span class="req">*</span></label>
                             <select name="thuTrongTuan" id="thuTrongTuan" class="form-select" required>
-                                <option value="">-- Chọn thứ --</option>
+                                <option value="">-- Chọn --</option>
                                 <option th:each="thu : ${thuList}"
                                         th:value="${thu}"
                                         th:text="${thu == 2 ? 'Thứ 2' :
-                                                  thu == 3 ? 'Thứ 3' :
-                                                  thu == 4 ? 'Thứ 4' :
-                                                  thu == 5 ? 'Thứ 5' :
-                                                  thu == 6 ? 'Thứ 6' : 'Thứ 7'}">
+                                              thu == 3 ? 'Thứ 3' :
+                                              thu == 4 ? 'Thứ 4' :
+                                              thu == 5 ? 'Thứ 5' :
+                                              thu == 6 ? 'Thứ 6' : 'Thứ 7'}">
                                 </option>
                             </select>
                         </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Tiết bắt đầu <span class="text-danger">*</span></label>
+                        <div>
+                            <label class="xldb-label">Tiết bắt đầu <span class="req">*</span></label>
                             <input type="number" name="tietBatDau" class="form-control"
-                                   min="1" max="12" required placeholder="1–12"/>
+                                   min="1" max="12" required placeholder="1 – 12"/>
                         </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Số tiết <span class="text-danger">*</span></label>
+                        <div>
+                            <label class="xldb-label">Số tiết <span class="req">*</span></label>
                             <input type="number" name="soTiet" class="form-control"
                                    min="1" max="6" value="3" required/>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                Phòng học
-                            </label>
+                <hr class="xldb-divider"/>
 
+                <!-- SECTION 3: Phòng & ghi chú -->
+                <div class="xldb-section">
+                    <span class="xldb-section-dot dot-teal"></span>
+                    <span class="xldb-section-title">Phòng học &amp; Ghi chú</span>
+                </div>
+
+                <div class="xldb-body">
+                    <div class="xldb-row cols-2">
+                        <div>
+                            <label class="xldb-label">Phòng học</label>
                             <select name="phongHoc" class="form-select">
-                                <option value="">
-                                    -- Chọn phòng học --
-                                </option>
-
+                                <option value="">-- Chọn phòng học --</option>
                                 <option th:each="p : ${danhSachPhong}"
                                         th:value="${p.maPhong}"
-                                        th:text="${p.maPhong
-                    + ' | '
-                    + p.loaiPhong
-                    + ' | Sức chứa: '
-                    + p.sucChua}">
+                                        th:text="${p.maPhong + ' | ' + p.loaiPhong + ' | Sức chứa: ' + p.sucChua}">
                                 </option>
                             </select>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Ghi chú</label>
+                        <div>
+                            <label class="xldb-label">Ghi chú</label>
                             <input type="text" name="ghiChu" class="form-control"
                                    maxlength="300" placeholder="Ghi chú thêm (nếu có)"/>
                         </div>
                     </div>
+                </div>
 
-                    <div class="d-flex gap-2 justify-content-end mt-4">
-                        <a href="/lich-day-bu" class="btn btn-outline-secondary">
-                            <i class="bi bi-x me-1"></i> Hủy bỏ
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-calendar-plus me-1"></i> Xếp lịch bù
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <!-- ── Footer actions ─────────────────────────── -->
+                <div class="xldb-footer">
+                    <a href="/lich-day-bu" class="xldb-btn-cancel">
+                        <i class="bi bi-x-lg"></i> Hủy bỏ
+                    </a>
+                    <button type="submit" class="xldb-btn-submit">
+                        <i class="bi bi-calendar-plus-fill"></i> Xếp lịch bù
+                    </button>
+                </div>
 
-    </div>
+            </form>
+        </div><!-- /xldb-card -->
+
+    </div><!-- /xldb-wrap -->
+
     <script>
         document.getElementById('ngayDayBu').addEventListener('change', function () {
             if (!this.value) return;

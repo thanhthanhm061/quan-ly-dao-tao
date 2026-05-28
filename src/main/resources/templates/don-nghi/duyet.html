@@ -2,31 +2,177 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layout/base :: layout(~{::main}, 'Duyệt đơn nghỉ')}">
-
-<head>
-    <title>Duyệt đơn nghỉ</title>
-</head>
-
+<head><title>Duyệt đơn nghỉ</title></head>
 <body>
 <main>
-    <div class="page-body">
+    <style>
+        .ddn-wrap { max-width: 1100px; }
 
-        <!-- HEADER -->
-        <div class="page-header-card shadow-sm rounded-3 p-3 mb-3 bg-white d-flex justify-content-between align-items-center">
+        .ddn-hdr {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 12px; margin-bottom: 16px;
+        }
+        .ddn-hdr h4 { margin: 0; font-size: 1.05rem; font-weight: 700; color: #1a202c; }
+        .ddn-hdr small { color: #718096; font-size: .8rem; display: block; margin-top: 2px; }
+
+        .ddn-filter select {
+            font-size: .845rem; border-radius: 8px;
+            border: 1px solid #e2e8f0; padding: 7px 30px 7px 11px;
+            background: #fdfdfe; color: #2d3748; min-width: 190px;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .ddn-filter select:focus {
+            border-color: #63b3ed;
+            box-shadow: 0 0 0 3px rgba(66,153,225,.15); outline: none;
+        }
+
+        .ddn-stats {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 10px; margin-bottom: 16px;
+        }
+        .ddn-stat {
+            background: #fff; border: 1px solid #e8edf3;
+            border-radius: 10px; padding: 14px 16px;
+        }
+        .ddn-stat-label { font-size: .75rem; color: #718096; margin-bottom: 4px; font-weight: 500; }
+        .ddn-stat-val   { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+        .val-amber { color: #92400e; }
+        .val-green { color: #065f46; }
+        .val-red   { color: #991b1b; }
+
+        .ddn-card {
+            background: #fff; border-radius: 14px;
+            border: 1px solid #e8edf3;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); overflow: hidden;
+        }
+
+        .ddn-empty {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 60px 20px; color: #a0aec0; gap: 10px;
+        }
+        .ddn-empty i { font-size: 2.2rem; }
+        .ddn-empty p { font-size: .875rem; margin: 0; }
+
+        .ddn-table { width: 100%; border-collapse: collapse; font-size: .845rem; }
+        .ddn-table thead tr {
+            background: #f8fafc; border-bottom: 1px solid #edf2f7;
+        }
+        .ddn-table thead th {
+            padding: 10px 13px; font-size: .69rem; font-weight: 700;
+            letter-spacing: .06em; text-transform: uppercase;
+            color: #718096; text-align: left; white-space: nowrap;
+        }
+        .ddn-table tbody tr { border-bottom: 1px solid #f0f4f8; transition: background .1s; }
+        .ddn-table tbody tr:last-child { border-bottom: none; }
+        .ddn-table tbody tr:hover { background: #f7fbff; }
+        .ddn-table td { padding: 11px 13px; vertical-align: middle; color: #2d3748; }
+
+        .ddn-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: .75rem; font-weight: 700; flex-shrink: 0;
+            margin-right: 9px; background: #ebf4ff; color: #2b6cb0;
+        }
+        .ddn-name-main { font-weight: 600; color: #1a202c; font-size: .845rem; line-height: 1.25; }
+        .ddn-name-sub  { font-size: .72rem; color: #a0aec0; }
+
+        .ddn-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: .72rem; font-weight: 600; white-space: nowrap;
+        }
+        .b-cho   { background: #fef3c7; color: #92400e; }
+        .b-duyet { background: #d1fae5; color: #065f46; }
+        .b-tu    { background: #fee2e2; color: #991b1b; }
+        .b-other { background: #f1f5f9; color: #475569; }
+
+        .ddn-day {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: .78rem; font-weight: 600; color: #2b6cb0;
+            background: #ebf4ff; padding: 2px 8px; border-radius: 20px;
+        }
+
+        .ddn-acts { display: flex; gap: 5px; justify-content: center; align-items: center; }
+        .ddn-btn {
+            width: 30px; height: 30px; border-radius: 8px;
+            border: 1px solid transparent; display: inline-flex;
+            align-items: center; justify-content: center;
+            cursor: pointer; font-size: .85rem;
+            transition: background .12s, transform .1s;
+            text-decoration: none;
+        }
+        .ddn-btn:active { transform: scale(.94); }
+        .ddn-btn-view { background: #ebf8ff; border-color: #bee3f8; color: #2b6cb0; }
+        .ddn-btn-view:hover { background: #bee3f8; color: #2c5282; }
+        .ddn-btn-ok   { background: #f0fff4; border-color: #9ae6b4; color: #276749; }
+        .ddn-btn-ok:hover { background: #c6f6d5; }
+        .ddn-btn-deny { background: #fff5f5; border-color: #feb2b2; color: #c53030; }
+        .ddn-btn-deny:hover { background: #fed7d7; }
+
+        .ddn-num { color: #a0aec0; font-size: .78rem; }
+        .ddn-date { font-size: .8rem; color: #718096; white-space: nowrap; }
+        .ddn-muted { color: #718096; font-size: .845rem; }
+
+        .ddn-modal .modal-content {
+            border: none; border-radius: 14px;
+            box-shadow: 0 8px 40px rgba(0,0,0,.14); overflow: hidden;
+        }
+        .ddn-modal .modal-header {
+            background: #fff5f5; border-bottom: 1px solid #fed7d7; padding: 13px 18px;
+        }
+        .ddn-modal .modal-header h5 {
+            font-size: .95rem; font-weight: 700; color: #c53030; margin: 0;
+            display: flex; align-items: center; gap: 7px;
+        }
+        .ddn-modal .modal-body { padding: 18px; }
+        .ddn-modal .modal-body label {
+            font-size: .775rem; font-weight: 600; color: #4a5568; margin-bottom: 6px; display: block;
+        }
+        .ddn-modal .modal-body textarea {
+            border-radius: 8px; border: 1px solid #e2e8f0;
+            font-size: .855rem; color: #2d3748; padding: 10px 12px;
+            resize: vertical; width: 100%;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .ddn-modal .modal-body textarea:focus {
+            border-color: #fc8181; box-shadow: 0 0 0 3px rgba(252,129,129,.2); outline: none;
+        }
+        .ddn-modal .modal-footer {
+            background: #f8fafc; border-top: 1px solid #edf2f7;
+            padding: 11px 18px; gap: 8px;
+        }
+        .ddn-modal .btn-tc-huy {
+            padding: 7px 16px; border-radius: 8px;
+            border: 1px solid #e2e8f0; background: #fff;
+            color: #718096; font-size: .845rem; font-weight: 500; cursor: pointer;
+        }
+        .ddn-modal .btn-tc-xn {
+            padding: 7px 18px; border-radius: 8px; border: none;
+            background: #c53030; color: #fff;
+            font-size: .845rem; font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px;
+            box-shadow: 0 2px 8px rgba(197,48,48,.25);
+        }
+        .ddn-modal .btn-tc-xn:hover { background: #9b2c2c; }
+
+        @media (max-width: 640px) {
+            .ddn-hdr { flex-direction: column; align-items: flex-start; }
+            .ddn-stats { grid-template-columns: repeat(3,1fr); }
+        }
+    </style>
+
+    <div class="page-body ddn-wrap">
+
+        <!-- Header -->
+        <div class="ddn-hdr">
             <div>
-                <h4 class="mb-0">Phê duyệt đơn xin nghỉ</h4>
-                <small class="text-muted">Duyệt hoặc từ chối đơn của nhân viên</small>
+                <h4>Phê duyệt đơn xin nghỉ</h4>
+                <small>Duyệt hoặc từ chối đơn của nhân viên</small>
             </div>
-
-            <!-- FILTER -->
-            <form method="get" action="/don-nghi/duyet" class="d-flex gap-2">
-                <select name="trangThai"
-                        class="form-select form-select-sm shadow-sm"
-                        style="min-width:200px"
-                        onchange="this.form.submit()">
-
+            <form method="get" action="/don-nghi/duyet" class="ddn-filter">
+                <select name="trangThai" onchange="this.form.submit()">
                     <option value="">-- Tất cả trạng thái --</option>
-
                     <option th:each="tt : ${trangThaiList}"
                             th:value="${tt.name()}"
                             th:text="${tt.tenHienThi}"
@@ -36,193 +182,186 @@
             </form>
         </div>
 
-        <!-- ALERT -->
-        <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm">
-            <i class="bi bi-check-circle me-2"></i>
+        <!-- Alerts -->
+        <div th:if="${success}"
+             class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-3"
+             style="border-radius:10px;">
+            <i class="bi bi-check-circle-fill"></i>
             <span th:text="${success}"></span>
-            <button class="btn-close" data-bs-dismiss="alert"></button>
+            <button class="btn-close ms-auto" data-bs-dismiss="alert"></button>
         </div>
-
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm">
-            <i class="bi bi-exclamation-circle me-2"></i>
+        <div th:if="${error}"
+             class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-3"
+             style="border-radius:10px;">
+            <i class="bi bi-exclamation-circle-fill"></i>
             <span th:text="${error}"></span>
-            <button class="btn-close" data-bs-dismiss="alert"></button>
+            <button class="btn-close ms-auto" data-bs-dismiss="alert"></button>
         </div>
 
-        <!-- TABLE CARD -->
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <!-- Stat cards -->
+        <div class="ddn-stats">
+            <div class="ddn-stat">
+                <div class="ddn-stat-label">Chờ duyệt</div>
+                <div class="ddn-stat-val val-amber"
+                     th:text="${danhSach != null ? #lists.size(danhSach.?[trangThai.name() == 'CHO_DUYET']) : 0}">0</div>
+            </div>
+            <div class="ddn-stat">
+                <div class="ddn-stat-label">Đã duyệt</div>
+                <div class="ddn-stat-val val-green"
+                     th:text="${danhSach != null ? #lists.size(danhSach.?[trangThai.name() == 'DA_DUYET']) : 0}">0</div>
+            </div>
+            <div class="ddn-stat">
+                <div class="ddn-stat-label">Từ chối</div>
+                <div class="ddn-stat-val val-red"
+                     th:text="${danhSach != null ? #lists.size(danhSach.?[trangThai.name() == 'TU_CHOI']) : 0}">0</div>
+            </div>
+        </div>
 
-            <div class="card-body p-0">
+        <!-- Table card -->
+        <div class="ddn-card">
 
-                <!-- EMPTY -->
-                <div th:if="${#lists.isEmpty(danhSach)}"
-                     class="text-center py-5 text-muted">
-                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                    Không có đơn nào cần xử lý
-                </div>
+            <!-- Empty -->
+            <div th:if="${#lists.isEmpty(danhSach)}" class="ddn-empty">
+                <i class="bi bi-inbox"></i>
+                <p>Không có đơn nào cần xử lý</p>
+            </div>
 
-                <!-- TABLE -->
-                <div th:unless="${#lists.isEmpty(danhSach)}" class="table-responsive">
+            <!-- Table -->
+            <div th:unless="${#lists.isEmpty(danhSach)}" class="table-responsive">
+                <table class="ddn-table">
+                    <thead>
+                    <tr>
+                        <th style="width:36px;">#</th>
+                        <th style="width:180px;">Người nộp</th>
+                        <th style="width:110px;">Khoa</th>
+                        <th style="width:110px;">Loại nghỉ</th>
+                        <th style="width:90px;">Từ ngày</th>
+                        <th style="width:90px;">Đến ngày</th>
+                        <th style="width:80px;">Số ngày</th>
+                        <th style="width:110px;">Trạng thái</th>
+                        <th style="width:90px; text-align:center;">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="don, i : ${danhSach}">
 
-                    <table class="table table-hover align-middle mb-0">
+                        <td class="ddn-num" th:text="${i.count}"></td>
 
-                        <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Người nộp</th>
-                            <th>Khoa</th>
-                            <th>Loại nghỉ</th>
-                            <th>Từ</th>
-                            <th>Đến</th>
-                            <th>Số ngày</th>
-                            <th>Trạng thái</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-                        <tr th:each="don, i : ${danhSach}">
-
-                            <td th:text="${i.count}"></td>
-
-                            <td>
-                                <div class="fw-semibold"
-                                     th:text="${don.nguoiNop.hoTen ?: don.nguoiNop.maNhanVien}">
+                        <td>
+                            <div style="display:flex; align-items:center;">
+                                <span class="ddn-avatar"
+                                      th:text="${don.nguoiNop.hoTen != null and !don.nguoiNop.hoTen.isEmpty()
+                                                  ? don.nguoiNop.hoTen.substring(0,1).toUpperCase() : '?'}">
+                                </span>
+                                <div>
+                                    <div class="ddn-name-main"
+                                         th:text="${don.nguoiNop.hoTen ?: don.nguoiNop.maNhanVien}"></div>
+                                    <div class="ddn-name-sub"
+                                         th:text="${don.nguoiNop.chucVu?.tenChucVu ?: ''}"></div>
                                 </div>
-                                <small class="text-muted"
-                                       th:text="${don.nguoiNop.chucVu?.tenChucVu ?: ''}">
-                                </small>
-                            </td>
+                            </div>
+                        </td>
 
-                            <td th:text="${don.nguoiNop.khoa?.tenKhoa ?: '—'}"></td>
+                        <td class="ddn-muted" th:text="${don.nguoiNop.khoa?.tenKhoa ?: '—'}"></td>
+                        <td th:text="${don.loaiNghi ?: '—'}"></td>
+                        <td class="ddn-date" th:text="${#temporals.format(don.ngayBatDau,'dd/MM/yyyy')}"></td>
+                        <td class="ddn-date" th:text="${#temporals.format(don.ngayKetThuc,'dd/MM/yyyy')}"></td>
 
-                            <td th:text="${don.loaiNghi ?: '—'}"></td>
-
-                            <td th:text="${#temporals.format(don.ngayBatDau,'dd/MM/yyyy')}"></td>
-
-                            <td th:text="${#temporals.format(don.ngayKetThuc,'dd/MM/yyyy')}"></td>
-
-                            <td class="fw-semibold text-primary"
-                                th:text="${don.soNgayNghi + ' ngày'}"></td>
-
-                            <!-- BADGE -->
-                            <td>
-                            <span class="badge rounded-pill px-3 py-2 shadow-sm"
-                                  th:classappend="${don.trangThai.name() == 'CHO_DUYET' ? 'bg-warning text-dark' :
-                                                   don.trangThai.name() == 'DA_DUYET'  ? 'bg-success' :
-                                                   don.trangThai.name() == 'TU_CHOI'   ? 'bg-danger' :
-                                                   'bg-secondary'}"
-                                  th:text="${don.trangThai.tenHienThi}">
+                        <td>
+                            <span class="ddn-day">
+                                <i class="bi bi-calendar-check" style="font-size:.75rem;"></i>
+                                <span th:text="${don.soNgayNghi + ' ngày'}"></span>
                             </span>
-                            </td>
+                        </td>
 
-                            <!-- ACTION -->
-                            <td class="text-center">
-                                <div class="d-flex gap-1 justify-content-center">
+                        <td>
+                            <span class="ddn-badge"
+                                  th:classappend="${don.trangThai.name() == 'CHO_DUYET' ? 'b-cho' :
+                                                   don.trangThai.name() == 'DA_DUYET'  ? 'b-duyet' :
+                                                   don.trangThai.name() == 'TU_CHOI'   ? 'b-tu' : 'b-other'}">
+                                <i class="bi"
+                                   th:classappend="${don.trangThai.name() == 'CHO_DUYET' ? 'bi-clock' :
+                                                    don.trangThai.name() == 'DA_DUYET'  ? 'bi-check-circle' :
+                                                    don.trangThai.name() == 'TU_CHOI'   ? 'bi-x-circle' : 'bi-dash-circle'}"
+                                   style="font-size:.7rem;"></i>
+                                <span th:text="${don.trangThai.tenHienThi}"></span>
+                            </span>
+                        </td>
 
-                                    <!-- XEM -->
-                                    <a th:href="@{/don-nghi/{id}(id=${don.id})}"
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
+                        <td>
+                            <div class="ddn-acts">
+                                <a th:href="@{/don-nghi/{id}(id=${don.id})}"
+                                   class="ddn-btn ddn-btn-view" title="Xem chi tiết">
+                                    <i class="bi bi-eye"></i>
+                                </a>
 
-                                    <!-- DUYỆT -->
-                                    <form th:if="${don.trangThai.name() == 'CHO_DUYET'}"
-                                          th:action="@{/don-nghi/{id}/duyet(id=${don.id})}"
-                                          method="post">
-
-                                        <input type="hidden" th:name="${_csrf.parameterName}"
-                                               th:value="${_csrf.token}"/>
-
-                                        <button type="submit"
-                                                class="btn btn-sm btn-success">
-                                            <i class="bi bi-check-lg"></i>
-                                        </button>
-                                    </form>
-
-                                    <!-- TỪ CHỐI -->
-                                    <button th:if="${don.trangThai.name() == 'CHO_DUYET'}"
-                                            class="btn btn-sm btn-danger"
-                                            th:data-id="${don.id}"
-                                            onclick="moModalTuChoi(this.dataset.id)">
-                                        <i class="bi bi-x-lg"></i>
+                                <form th:if="${don.trangThai.name() == 'CHO_DUYET'}"
+                                      th:action="@{/don-nghi/{id}/duyet(id=${don.id})}"
+                                      method="post" style="margin:0;">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="ddn-btn ddn-btn-ok" title="Phê duyệt">
+                                        <i class="bi bi-check-lg"></i>
                                     </button>
+                                </form>
 
-                                </div>
-                            </td>
+                                <button th:if="${don.trangThai.name() == 'CHO_DUYET'}"
+                                        type="button"
+                                        class="ddn-btn ddn-btn-deny"
+                                        title="Từ chối"
+                                        th:data-id="${don.id}"
+                                        onclick="moModalTuChoi(this.dataset.id)">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        </td>
 
-                        </tr>
-                        </tbody>
-
-                    </table>
-
-                </div>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
     </div>
 
-    <!-- MODAL TỪ CHỐI -->
-    <div class="modal fade" id="modalTuChoi" tabindex="-1">
+    <!-- Modal từ chối -->
+    <div class="modal fade ddn-modal" id="modalTuChoi" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-
-            <div class="modal-content border-0 shadow-lg">
-
+            <div class="modal-content">
                 <form id="formTuChoi" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-                    <input type="hidden"
-                           th:name="${_csrf.parameterName}"
-                           th:value="${_csrf.token}"/>
-
-                    <div class="modal-header border-0">
-                        <h5 class="text-danger mb-0">
-                            <i class="bi bi-x-circle me-1"></i>
+                    <div class="modal-header">
+                        <h5>
+                            <i class="bi bi-x-circle-fill"></i>
                             Từ chối đơn nghỉ
                         </h5>
-                        <button type="button" class="btn-close"
-                                data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
 
                     <div class="modal-body">
-                        <label class="form-label fw-semibold">
-                            Lý do từ chối <span class="text-danger">*</span>
-                        </label>
-
-                        <textarea name="lyDoTuChoi"
-                                  class="form-control"
-                                  rows="4"
-                                  required
+                        <label>Lý do từ chối <span style="color:#e53e3e;">*</span></label>
+                        <textarea name="lyDoTuChoi" rows="4" required
                                   maxlength="300"
                                   placeholder="Nhập lý do từ chối..."></textarea>
                     </div>
 
-                    <div class="modal-footer border-0">
-                        <button type="button"
-                                class="btn btn-outline-secondary"
-                                data-bs-dismiss="modal">
-                            Hủy
-                        </button>
-
-                        <button type="submit"
-                                class="btn btn-danger">
-                            Xác nhận
+                    <div class="modal-footer">
+                        <button type="button" class="btn-tc-huy" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn-tc-xn">
+                            <i class="bi bi-x-circle"></i> Xác nhận từ chối
                         </button>
                     </div>
-
                 </form>
-
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT -->
     <script>
         function moModalTuChoi(id) {
             document.getElementById('formTuChoi').action = '/don-nghi/' + id + '/tu-choi';
             new bootstrap.Modal(document.getElementById('modalTuChoi')).show();
         }
     </script>
-
 </main>
 </body>
 </html>
