@@ -3,276 +3,968 @@
       th:replace="~{layout/base :: layout(~{::main}, 'Chi tiết Nhân Viên')}">
 
 <main>
-    <div class="container-fluid px-4">
-        <div class="d-flex align-items-center justify-content-between py-3 mb-3 border-bottom">
-            <div class="d-flex align-items-center">
-                <!-- đổi bi bi-arrow-left → fas fa-arrow-left -->
-                <a href="/admin/nhan-vien" class="btn btn-outline-secondary btn-sm me-3">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
-                <div>
-                    <h4 class="mb-0 fw-bold">
-                        <!-- đổi bi bi-person-badge → fas fa-id-badge -->
-                        <i class="fas fa-id-badge me-2 text-success"></i>
-                        <span th:text="${nhanVien.hoTenVaHocVi}"></span>
-                    </h4>
-                    <small class="text-muted" th:text="${nhanVien.maNhanVien}"></small>
-                </div>
-            </div>
-            <div class="d-flex gap-2">
-                <a th:href="@{/admin/nhan-vien/{id}/chuc-vu/them(id=${nhanVien.id})}"
-                   class="btn btn-outline-warning btn-sm">
-                    <!-- đổi bi bi-plus-circle → fas fa-plus-circle -->
-                    <i class="fas fa-plus-circle me-1"></i>Thêm Chức Vụ
-                </a>
-                <a th:href="@{/admin/nhan-vien/sua/{id}(id=${nhanVien.id})}"
-                   class="btn btn-success btn-sm">
-                    <!-- đổi bi bi-pencil → fas fa-edit -->
-                    <i class="fas fa-edit me-1"></i>Chỉnh Sửa
-                </a>
-            </div>
+
+    <style>
+
+        body{
+            background:#e9eef5;
+        }
+
+        .container-fluid{
+            max-width:1450px;
+        }
+
+        .page-header{
+            background:#ffffff;
+            border-radius:22px;
+            padding:22px 26px;
+            margin-bottom:24px;
+            box-shadow:0 8px 28px rgba(15,23,42,.08);
+            border:1px solid #eef2f7;
+        }
+
+        .card-custom{
+            border:none;
+            border-radius:22px;
+            overflow:hidden;
+            background:#ffffff;
+            box-shadow:0 8px 30px rgba(15,23,42,.08);
+            border:1px solid #eef2f7;
+        }
+
+        .card-header-custom{
+            padding:16px 22px;
+            font-size:15px;
+            font-weight:700;
+            border:none;
+        }
+
+        .info-table tr{
+            border-bottom:1px solid #f1f5f9;
+        }
+
+        .info-table tr:last-child{
+            border-bottom:none;
+        }
+
+        .info-table td{
+            padding:15px 18px;
+            vertical-align:middle;
+            font-size:14px;
+        }
+
+        .label-title{
+            width:38%;
+            color:#64748b;
+            font-weight:600;
+            background:#fafafa;
+        }
+
+        .employee-name{
+            font-size:24px;
+            font-weight:800;
+            color:#0f172a;
+        }
+
+        .employee-code{
+            font-size:14px;
+            color:#64748b;
+            margin-top:2px;
+        }
+
+        .btn-rounded{
+            border-radius:13px;
+            padding:9px 16px;
+            font-weight:600;
+        }
+
+        .table-history-wrapper{
+            padding:14px;
+        }
+
+        .table-history{
+            margin-bottom:0;
+            border-collapse:separate;
+            border-spacing:0 10px;
+        }
+
+        .table-history thead th{
+            background:#f8fafc;
+            font-size:12px;
+            font-weight:700;
+            color:#64748b;
+            border:none;
+            padding:14px 10px;
+            white-space:nowrap;
+            text-align:center;
+            vertical-align:middle;
+        }
+
+        .table-history tbody tr{
+            background:#ffffff;
+            box-shadow:0 3px 10px rgba(15,23,42,.04);
+            transition:.2s ease;
+        }
+
+        .table-history tbody tr:hover{
+            transform:translateY(-2px);
+            background:#fcfdff;
+        }
+
+        .table-history tbody td{
+            padding:14px 10px;
+            vertical-align:middle;
+            font-size:13px;
+            text-align:center;
+            border-top:1px solid #f1f5f9;
+            border-bottom:1px solid #f1f5f9;
+        }
+
+        .table-history tbody td:first-child{
+            border-left:1px solid #f1f5f9;
+            border-top-left-radius:14px;
+            border-bottom-left-radius:14px;
+        }
+
+        .table-history tbody td:last-child{
+            border-right:1px solid #f1f5f9;
+            border-top-right-radius:14px;
+            border-bottom-right-radius:14px;
+        }
+
+        .table-history td:nth-child(1){
+            width:50px;
+            font-weight:700;
+        }
+
+        .table-history td:nth-child(2){
+            width:190px;
+            text-align:left;
+        }
+
+        .table-history td:nth-child(3){
+            width:110px;
+        }
+
+        .table-history td:nth-child(4){
+            width:110px;
+        }
+
+        .table-history td:nth-child(5){
+            width:180px;
+            text-align:left;
+        }
+
+        .table-history td:nth-child(6){
+            width:150px;
+        }
+
+        .table-history td:nth-child(7){
+            width:110px;
+        }
+
+        .position-title{
+            font-weight:700;
+            color:#0f172a;
+            margin-bottom:2px;
+        }
+
+        .note-text{
+            color:#64748b;
+            font-size:12px;
+            line-height:1.5;
+            word-break:break-word;
+        }
+
+        .btn-action{
+            width:36px;
+            height:36px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:12px;
+            transition:.2s ease;
+        }
+
+        .btn-action:hover{
+            transform:translateY(-2px);
+        }
+
+        .badge-soft-success{
+            background:#dcfce7;
+            color:#166534;
+            border-radius:999px;
+            padding:6px 12px;
+            font-size:12px;
+            font-weight:700;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .badge-soft-danger{
+            background:#fee2e2;
+            color:#991b1b;
+            border-radius:999px;
+            padding:6px 12px;
+            font-size:12px;
+            font-weight:700;
+        }
+
+        .badge-soft-warning{
+            background:#fef3c7;
+            color:#92400e;
+            border-radius:999px;
+            padding:6px 12px;
+            font-size:12px;
+            font-weight:700;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .badge-soft-secondary{
+            background:#e2e8f0;
+            color:#475569;
+            border-radius:999px;
+            padding:6px 12px;
+            font-size:12px;
+            font-weight:700;
+        }
+
+        .empty-box{
+            padding:55px 20px;
+            text-align:center;
+            color:#94a3b8;
+        }
+
+        .action-group{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:8px;
+        }
+
+        /* TOAST */
+
+        .toast-confirm{
+            position:fixed;
+            top:26px;
+            left:50%;
+            transform:translateX(-50%);
+            background:#ffffff;
+            color:#0f172a;
+            width:360px;
+            padding:18px;
+            border-radius:18px;
+            z-index:9999;
+            box-shadow:
+                    0 18px 40px rgba(15,23,42,.28),
+                    0 2px 8px rgba(15,23,42,.08);
+            border:1px solid rgba(255,255,255,.8);
+            animation:toastFade .25s ease;
+        }
+
+        .toast-confirm.hidden{
+            display:none;
+        }
+
+        .toast-top-line{
+            position:absolute;
+            top:0;
+            left:0;
+            width:100%;
+            height:5px;
+            border-top-left-radius:18px;
+            border-top-right-radius:18px;
+            background:#f59e0b;
+        }
+
+        .toast-confirm.danger .toast-top-line{
+            background:#ef4444;
+        }
+
+        .toast-confirm.warning .toast-top-line{
+            background:#f59e0b;
+        }
+
+        .toast-confirm-title{
+            font-size:16px;
+            font-weight:800;
+            margin-bottom:6px;
+            margin-top:4px;
+        }
+
+        .toast-confirm-text{
+            font-size:13px;
+            color:#64748b;
+            line-height:1.6;
+            margin-bottom:16px;
+        }
+
+        .toast-confirm-actions{
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+        }
+
+        .toast-btn{
+            border:none;
+            padding:9px 15px;
+            border-radius:11px;
+            font-size:13px;
+            font-weight:700;
+            transition:.2s ease;
+        }
+
+        .toast-btn:hover{
+            transform:translateY(-1px);
+        }
+
+        .toast-cancel{
+            background:#edf2f7;
+            color:#334155;
+        }
+
+        .toast-danger{
+            background:#ef4444;
+            color:#fff;
+        }
+
+        .toast-warning{
+            background:#f59e0b;
+            color:#fff;
+        }
+
+        .overlay-toast{
+            position:fixed;
+            inset:0;
+            background:rgba(15,23,42,.18);
+            backdrop-filter:blur(3px);
+            z-index:9998;
+        }
+
+        .overlay-toast.hidden{
+            display:none;
+        }
+
+        @keyframes toastFade{
+            from{
+                opacity:0;
+                transform:translate(-50%,-10px);
+            }
+            to{
+                opacity:1;
+                transform:translate(-50%,0);
+            }
+        }
+
+        @media(max-width:1200px){
+
+            .table-history td:nth-child(2){
+                width:170px;
+            }
+
+            .table-history td:nth-child(5){
+                width:150px;
+            }
+
+        }
+
+        @media(max-width:992px){
+
+            .table-history{
+                min-width:820px;
+            }
+
+        }
+
+        @media(max-width:768px){
+
+            .page-header{
+                flex-direction:column;
+                align-items:flex-start !important;
+                gap:16px;
+            }
+
+            .label-title{
+                width:42%;
+            }
+
+            .toast-confirm{
+                width:92%;
+            }
+
+        }
+
+    </style>
+
+    <div class="container-fluid px-4 py-3">
+
+        <!-- OVERLAY -->
+        <div id="overlayToast"
+             class="overlay-toast hidden">
         </div>
 
-        <!-- alerts dùng success/error từ flash (khớp với layout/base) -->
-        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
-            <i class="fas fa-check-circle me-2"></i>
-            <span th:text="${success}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <!-- TOAST CONFIRM -->
+        <div id="toastConfirm"
+             class="toast-confirm hidden">
+
+            <div class="toast-top-line"></div>
+
+            <div class="toast-confirm-title"
+                 id="toastTitle">
+
+                Xác nhận
+
+            </div>
+
+            <div class="toast-confirm-text"
+                 id="toastText">
+
+                Bạn chắc chắn muốn thực hiện thao tác này?
+
+            </div>
+
+            <div class="toast-confirm-actions">
+
+                <button type="button"
+                        class="toast-btn toast-cancel"
+                        onclick="closeToast()">
+
+                    Hủy
+
+                </button>
+
+                <button type="button"
+                        class="toast-btn"
+                        id="toastSubmitBtn">
+
+                    Đồng ý
+
+                </button>
+
+            </div>
+
         </div>
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
-            <i class="fas fa-exclamation-circle me-2"></i>
-            <span th:text="${error}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+        <!-- HEADER -->
+        <div class="page-header d-flex justify-content-between align-items-center">
+
+            <div class="d-flex align-items-center">
+
+                <a href="/admin/nhan-vien"
+                   class="btn btn-light border me-3 btn-rounded">
+
+                    <i class="fas fa-arrow-left"></i>
+
+                </a>
+
+                <div>
+
+                    <div class="employee-name">
+
+                        <i class="fas fa-id-badge text-success me-2"></i>
+
+                        <span th:text="${nhanVien.hoTenVaHocVi}"></span>
+
+                    </div>
+
+                    <div class="employee-code"
+                         th:text="${nhanVien.maNhanVien}">
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="d-flex gap-2">
+
+                <a th:href="@{/admin/nhan-vien/{id}/chuc-vu/them(id=${nhanVien.id})}"
+                   class="btn btn-warning text-white btn-rounded">
+
+                    <i class="fas fa-plus-circle me-1"></i>
+                    Thêm Chức Vụ
+
+                </a>
+
+                <a th:href="@{/admin/nhan-vien/sua/{id}(id=${nhanVien.id})}"
+                   class="btn btn-success btn-rounded">
+
+                    <i class="fas fa-edit me-1"></i>
+                    Chỉnh Sửa
+
+                </a>
+
+            </div>
+
         </div>
 
         <div class="row g-4">
-            <!-- Cột trái -->
+
+            <!-- LEFT -->
             <div class="col-lg-5">
-                <div class="card shadow-sm border-0 mb-3">
-                    <div class="card-header bg-success text-white fw-semibold">
-                        <!-- đổi bi bi-person → fas fa-user -->
-                        <i class="fas fa-user me-2"></i>Thông Tin Cá Nhân
+
+                <!-- PERSONAL -->
+                <div class="card card-custom mb-4">
+
+                    <div class="card-header card-header-custom bg-success text-white">
+
+                        <i class="fas fa-user me-2"></i>
+                        Thông Tin Cá Nhân
+
                     </div>
+
                     <div class="card-body p-0">
-                        <table class="table table-borderless mb-0 small">
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2 w-40">Mã Nhân Viên</td>
-                                <td class="py-2">
-                                    <span class="badge bg-success fs-6" th:text="${nhanVien.maNhanVien}"></span>
+
+                        <table class="table info-table mb-0">
+
+                            <tr>
+                                <td class="label-title">Mã Nhân Viên</td>
+                                <td>
+                                    <span class="badge bg-success"
+                                          th:text="${nhanVien.maNhanVien}">
+                                    </span>
                                 </td>
                             </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Họ Tên</td>
-                                <td class="py-2 fw-semibold" th:text="${nhanVien.hoTen}"></td>
+
+                            <tr>
+                                <td class="label-title">Họ Tên</td>
+                                <td class="fw-semibold"
+                                    th:text="${nhanVien.hoTen}">
+                                </td>
                             </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Học Vị / Học Hàm</td>
-                                <td class="py-2">
+
+                            <tr>
+                                <td class="label-title">Học Vị / Học Hàm</td>
+                                <td>
+
                                     <span th:if="${nhanVien.hocHam}"
-                                          class="badge bg-dark-subtle text-dark border me-1"
-                                          th:text="${nhanVien.hocHam}"></span>
+                                          class="badge-soft-secondary me-1"
+                                          th:text="${nhanVien.hocHam}">
+                                    </span>
+
                                     <span th:if="${nhanVien.hocVi}"
-                                          class="badge bg-secondary-subtle text-secondary border"
-                                          th:text="${nhanVien.hocVi}"></span>
-                                    <span th:if="${nhanVien.hocVi == null and nhanVien.hocHam == null}"
-                                          class="text-muted">—</span>
+                                          class="badge-soft-warning"
+                                          th:text="${nhanVien.hocVi}">
+                                    </span>
+
                                 </td>
                             </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Giới Tính</td>
-                                <td class="py-2" th:text="${nhanVien.gioiTinh ?: '—'}"></td>
+
+                            <tr>
+                                <td class="label-title">Giới Tính</td>
+                                <td th:text="${nhanVien.gioiTinh ?: '—'}"></td>
                             </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Ngày Sinh</td>
-                                <td class="py-2"
-                                    th:text="${nhanVien.ngaySinh != null
-                                        ? #temporals.format(nhanVien.ngaySinh,'dd/MM/yyyy') : '—'}"></td>
+
+                            <tr>
+                                <td class="label-title">Ngày Sinh</td>
+                                <td th:text="${nhanVien.ngaySinh != null
+                                        ? #temporals.format(nhanVien.ngaySinh,'dd/MM/yyyy') : '—'}">
+                                </td>
                             </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Email</td>
-                                <td class="py-2">
+
+                            <tr>
+                                <td class="label-title">Email</td>
+                                <td>
+
                                     <a th:if="${nhanVien.email}"
                                        th:href="'mailto:' + ${nhanVien.email}"
                                        class="text-decoration-none"
-                                       th:text="${nhanVien.email}"></a>
-                                    <span th:unless="${nhanVien.email}">—</span>
+                                       th:text="${nhanVien.email}">
+                                    </a>
+
+                                    <span th:unless="${nhanVien.email}">
+                                        —
+                                    </span>
+
                                 </td>
                             </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Số Điện Thoại</td>
-                                <td class="py-2" th:text="${nhanVien.soDienThoai ?: '—'}"></td>
-                            </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Địa Chỉ</td>
-                                <td class="py-2" th:text="${nhanVien.diaChi ?: '—'}"></td>
-                            </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Chuyên Môn</td>
-                                <td class="py-2" th:text="${nhanVien.chuyenMon ?: '—'}"></td>
-                            </tr>
+
                             <tr>
-                                <td class="text-muted fw-semibold ps-3 py-2">Trạng Thái</td>
-                                <td class="py-2">
-                                    <span th:if="${nhanVien.trangThai}" class="badge bg-success">Đang làm việc</span>
-                                    <span th:unless="${nhanVien.trangThai}" class="badge bg-secondary">Đã nghỉ</span>
+                                <td class="label-title">Số Điện Thoại</td>
+                                <td th:text="${nhanVien.soDienThoai ?: '—'}"></td>
+                            </tr>
+
+                            <tr>
+                                <td class="label-title">Địa Chỉ</td>
+                                <td th:text="${nhanVien.diaChi ?: '—'}"></td>
+                            </tr>
+
+                            <tr>
+                                <td class="label-title">Chuyên Môn</td>
+                                <td th:text="${nhanVien.chuyenMon ?: '—'}"></td>
+                            </tr>
+
+                            <tr>
+                                <td class="label-title">Trạng Thái</td>
+                                <td>
+
+                                    <span th:if="${nhanVien.trangThai}"
+                                          class="badge-soft-success">
+
+                                        Đang làm việc
+
+                                    </span>
+
+                                    <span th:unless="${nhanVien.trangThai}"
+                                          class="badge-soft-danger">
+
+                                        Đã nghỉ
+
+                                    </span>
+
                                 </td>
                             </tr>
+
                         </table>
+
                     </div>
+
                 </div>
 
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-warning text-dark fw-semibold">
-                        <!-- đổi bi bi-briefcase → fas fa-briefcase -->
-                        <i class="fas fa-briefcase me-2"></i>Thông Tin Công Tác
+                <!-- WORK -->
+                <div class="card card-custom">
+
+                    <div class="card-header card-header-custom bg-warning text-dark">
+
+                        <i class="fas fa-briefcase me-2"></i>
+                        Thông Tin Công Tác
+
                     </div>
+
                     <div class="card-body p-0">
-                        <table class="table table-borderless mb-0 small">
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2 w-40">Khoa</td>
-                                <td class="py-2"
-                                    th:text="${nhanVien.khoa != null ? nhanVien.khoa.tenKhoa : '—'}"></td>
-                            </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Chức Vụ</td>
-                                <td class="py-2">
-                                    <span th:if="${nhanVien.chucVu}"
-                                          class="badge bg-warning-subtle text-warning border border-warning-subtle"
-                                          th:text="${nhanVien.chucVu.tenChucVu}"></span>
-                                    <span th:unless="${nhanVien.chucVu}" class="text-muted">—</span>
+
+                        <table class="table info-table mb-0">
+
+                            <tr>
+                                <td class="label-title">Khoa</td>
+
+                                <td th:text="${nhanVien.khoa != null
+                                ? nhanVien.khoa.tenKhoa : '—'}">
                                 </td>
                             </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Loại Hợp Đồng</td>
-                                <td class="py-2" th:text="${nhanVien.loaiHopDong ?: '—'}"></td>
-                            </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Ngày Tuyển Dụng</td>
-                                <td class="py-2"
-                                    th:text="${nhanVien.ngayTuyenDung != null
-                                        ? #temporals.format(nhanVien.ngayTuyenDung,'dd/MM/yyyy') : '—'}"></td>
-                            </tr>
-                            <tr class="border-bottom">
-                                <td class="text-muted fw-semibold ps-3 py-2">Bắt Đầu Làm</td>
-                                <td class="py-2"
-                                    th:text="${nhanVien.batDauLamViec != null
-                                        ? #temporals.format(nhanVien.batDauLamViec,'dd/MM/yyyy') : '—'}"></td>
-                            </tr>
+
                             <tr>
-                                <td class="text-muted fw-semibold ps-3 py-2">Hệ Số Lương</td>
-                                <td class="py-2"
-                                    th:text="${nhanVien.heSoLuong != null ? nhanVien.heSoLuong : '—'}"></td>
+                                <td class="label-title">Chức Vụ</td>
+
+                                <td>
+
+                                    <span th:if="${nhanVien.chucVu}"
+                                          class="badge-soft-warning"
+                                          th:text="${nhanVien.chucVu.tenChucVu}">
+                                    </span>
+
+                                    <span th:unless="${nhanVien.chucVu}">
+                                        —
+                                    </span>
+
+                                </td>
                             </tr>
+
+                            <tr>
+                                <td class="label-title">Loại Hợp Đồng</td>
+
+                                <td th:text="${nhanVien.loaiHopDong ?: '—'}">
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="label-title">Ngày Tuyển Dụng</td>
+
+                                <td th:text="${nhanVien.ngayTuyenDung != null
+                                ? #temporals.format(nhanVien.ngayTuyenDung,'dd/MM/yyyy') : '—'}">
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="label-title">Bắt Đầu Làm</td>
+
+                                <td th:text="${nhanVien.batDauLamViec != null
+                                ? #temporals.format(nhanVien.batDauLamViec,'dd/MM/yyyy') : '—'}">
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="label-title">Hệ Số Lương</td>
+
+                                <td th:text="${nhanVien.heSoLuong ?: '—'}">
+                                </td>
+                            </tr>
+
                         </table>
+
                     </div>
+
                 </div>
+
             </div>
 
-            <!-- Cột phải: Lịch sử chức vụ -->
+            <!-- RIGHT -->
             <div class="col-lg-7">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-info text-white fw-semibold d-flex justify-content-between align-items-center">
-                        <!-- đổi bi bi-clock-history → fas fa-history -->
-                        <span><i class="fas fa-history me-2"></i>Lịch Sử Vị Trí / Chức Vụ Đảm Nhiệm</span>
+
+                <div class="card card-custom">
+
+                    <div class="card-header card-header-custom bg-info text-white d-flex justify-content-between align-items-center">
+
+                        <span>
+                            <i class="fas fa-history me-2"></i>
+                            Lịch Sử Chức Vụ
+                        </span>
+
                         <a th:href="@{/admin/nhan-vien/{id}/chuc-vu/them(id=${nhanVien.id})}"
-                           class="btn btn-sm btn-light text-info">
-                            <i class="fas fa-plus"></i> Thêm
+                           class="btn btn-light btn-sm text-info fw-semibold rounded-3">
+
+                            <i class="fas fa-plus me-1"></i>
+                            Thêm
+
                         </a>
+
                     </div>
-                    <div class="card-body p-0">
+
+                    <div class="table-history-wrapper">
+
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
+
+                            <table class="table table-history">
+
+                                <thead>
+
                                 <tr>
-                                    <th class="ps-3">#</th>
+                                    <th>#</th>
                                     <th>Chức Vụ</th>
-                                    <th>Ngày Bắt Đầu</th>
-                                    <th>Ngày Kết Thúc</th>
+                                    <th>Bắt Đầu</th>
+                                    <th>Kết Thúc</th>
                                     <th>Ghi Chú</th>
-                                    <th class="text-center">Trạng Thái</th>
-                                    <th class="text-center">Thao Tác</th>
+                                    <th>Trạng Thái</th>
+                                    <th>Thao Tác</th>
                                 </tr>
+
                                 </thead>
+
                                 <tbody>
+
                                 <tr th:each="ls, stat : ${lichSuChucVu}">
-                                    <td class="ps-3 text-muted" th:text="${stat.count}"></td>
+
+                                    <td th:text="${stat.count}"></td>
+
                                     <td>
-                                        <div class="fw-semibold" th:text="${ls.chucVu.tenChucVu}"></div>
-                                        <small class="text-muted" th:if="${ls.laChucVuChinh}">
-                                            <!-- đổi bi bi-star-fill → fas fa-star -->
-                                            <i class="fas fa-star text-warning me-1"></i>Chức vụ chính
+
+                                        <div class="position-title"
+                                             th:text="${ls.chucVu.tenChucVu}">
+                                        </div>
+
+                                        <small th:if="${ls.laChucVuChinh}"
+                                               class="text-warning fw-semibold">
+
+                                            <i class="fas fa-star me-1"></i>
+                                            Chức vụ chính
+
                                         </small>
+
                                     </td>
+
                                     <td>
-                                        <small th:text="${#temporals.format(ls.ngayBatDau,'dd/MM/yyyy')}"></small>
+
+                                        <span class="fw-semibold"
+                                              th:text="${#temporals.format(ls.ngayBatDau,'dd/MM/yyyy')}">
+                                        </span>
+
                                     </td>
+
                                     <td>
-                                        <small th:if="${ls.ngayKetThuc}"
-                                               th:text="${#temporals.format(ls.ngayKetThuc,'dd/MM/yyyy')}"></small>
-                                        <small th:unless="${ls.ngayKetThuc}"
-                                               class="text-success fw-semibold">Hiện tại</small>
+
+                                        <span th:if="${ls.ngayKetThuc}"
+                                              th:text="${#temporals.format(ls.ngayKetThuc,'dd/MM/yyyy')}">
+                                        </span>
+
+                                        <span th:unless="${ls.ngayKetThuc}"
+                                              class="badge-soft-success">
+
+                                            Hiện tại
+
+                                        </span>
+
                                     </td>
-                                    <td><small class="text-muted" th:text="${ls.ghiChu ?: '—'}"></small></td>
-                                    <td class="text-center">
+
+                                    <td>
+
+                                        <div class="note-text"
+                                             th:text="${ls.ghiChu ?: 'Không có ghi chú'}">
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
                                         <span th:if="${ls.dangDamNhiem}"
-                                              class="badge bg-success-subtle text-success border border-success-subtle small">
+                                              class="badge-soft-success">
+
                                             Đang đảm nhiệm
+
                                         </span>
+
                                         <span th:unless="${ls.dangDamNhiem}"
-                                              class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small">
+                                              class="badge-soft-secondary">
+
                                             Đã kết thúc
+
                                         </span>
+
                                     </td>
-                                    <td class="text-center">
-                                        <div class="btn-group btn-group-sm">
+
+                                    <td>
+
+                                        <div class="action-group">
+
                                             <form th:if="${ls.dangDamNhiem}"
                                                   th:action="@{/admin/nhan-vien/{nid}/chuc-vu/{id}/ket-thuc(nid=${nhanVien.id},id=${ls.id})}"
-                                                  method="post" class="d-inline"
-                                                  onsubmit="return confirm('Kết thúc chức vụ này?')">
+                                                  method="post">
+
                                                 <input type="hidden"
                                                        th:name="${_csrf.parameterName}"
                                                        th:value="${_csrf.token}"/>
-                                                <button type="submit"
-                                                        class="btn btn-outline-warning btn-sm"
-                                                        title="Kết thúc">
-                                                    <!-- đổi bi bi-stop-circle → fas fa-stop-circle -->
+
+                                                <button type="button"
+                                                        class="btn btn-outline-warning btn-action"
+                                                        onclick="showConfirm(
+                                                            this.form,
+                                                            'Kết thúc chức vụ?',
+                                                            'Bạn muốn kết thúc chức vụ hiện tại của nhân viên này?',
+                                                            'warning'
+                                                        )">
+
                                                     <i class="fas fa-stop-circle"></i>
+
                                                 </button>
+
                                             </form>
+
                                             <form th:action="@{/admin/nhan-vien/{nid}/chuc-vu/{id}/xoa(nid=${nhanVien.id},id=${ls.id})}"
-                                                  method="post" class="d-inline"
-                                                  onsubmit="return confirm('Xóa bản ghi này?')">
+                                                  method="post">
+
                                                 <input type="hidden"
                                                        th:name="${_csrf.parameterName}"
                                                        th:value="${_csrf.token}"/>
-                                                <button type="submit"
-                                                        class="btn btn-outline-danger btn-sm"
-                                                        title="Xóa">
+
+                                                <button type="button"
+                                                        class="btn btn-outline-danger btn-action"
+                                                        onclick="showConfirm(
+                                                            this.form,
+                                                            'Xóa bản ghi?',
+                                                            'Dữ liệu lịch sử chức vụ sẽ bị xóa khỏi hệ thống.',
+                                                            'danger'
+                                                        )">
+
                                                     <i class="fas fa-trash"></i>
+
                                                 </button>
+
                                             </form>
+
                                         </div>
+
                                     </td>
+
                                 </tr>
+
                                 <tr th:if="${#lists.isEmpty(lichSuChucVu)}">
-                                    <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="fas fa-history fs-2 d-block mb-2"></i>
-                                        Chưa có lịch sử chức vụ
-                                        <div class="mt-2">
+
+                                    <td colspan="7">
+
+                                        <div class="empty-box">
+
+                                            <i class="fas fa-history fs-1 mb-3"></i>
+
+                                            <div class="fw-semibold mb-2">
+                                                Chưa có lịch sử chức vụ
+                                            </div>
+
                                             <a th:href="@{/admin/nhan-vien/{id}/chuc-vu/them(id=${nhanVien.id})}"
-                                               class="btn btn-sm btn-outline-info">
-                                                <i class="fas fa-plus me-1"></i>Thêm chức vụ đầu tiên
+                                               class="btn btn-outline-info rounded-3">
+
+                                                <i class="fas fa-plus me-1"></i>
+                                                Thêm chức vụ đầu tiên
+
                                             </a>
+
                                         </div>
+
                                     </td>
+
                                 </tr>
+
                                 </tbody>
+
                             </table>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
+
+    <script>
+
+        let selectedForm = null;
+
+        function showConfirm(form, title, text, type){
+
+            selectedForm = form;
+
+            const toast = document.getElementById('toastConfirm');
+            const overlay = document.getElementById('overlayToast');
+            const submitBtn = document.getElementById('toastSubmitBtn');
+
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastText').innerText = text;
+
+            toast.classList.remove('danger','warning');
+            toast.classList.add(type);
+
+            submitBtn.className = 'toast-btn';
+
+            if(type === 'danger'){
+                submitBtn.classList.add('toast-danger');
+            }else{
+                submitBtn.classList.add('toast-warning');
+            }
+
+            toast.classList.remove('hidden');
+            overlay.classList.remove('hidden');
+
+        }
+
+        function closeToast(){
+
+            document.getElementById('toastConfirm')
+                .classList.add('hidden');
+
+            document.getElementById('overlayToast')
+                .classList.add('hidden');
+
+        }
+
+        document.getElementById('toastSubmitBtn')
+            .addEventListener('click', function(){
+
+                if(selectedForm){
+                    selectedForm.submit();
+                }
+
+            });
+
+        document.getElementById('overlayToast')
+            .addEventListener('click', closeToast);
+
+    </script>
+
 </main>
+
 </html>

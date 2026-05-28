@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/base :: layout(~{::content}, 'Quản lý Lớp học')}">
 <body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <th:block th:fragment="content">
 
     <div class="card">
@@ -117,23 +118,31 @@
                         </td>
 
                         <td>
-                            <a th:href="@{/admin/lop/sua/{id}(id=${lop.id})}"
-                               class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-edit"></i>
-                            </a>
+                            <div class="action-group">
 
-                            <form th:action="@{/admin/lop/xoa/{id}(id=${lop.id})}"
-                                  method="post"
-                                  class="d-inline delete-form"
-                                  th:data-ten="${lop.tenLop}">
-                                <input type="hidden"
-                                       th:name="${_csrf.parameterName}"
-                                       th:value="${_csrf.token}"/>
+                                <a th:href="@{/admin/lop/sua/{id}(id=${lop.id})}"
+                                   class="action-btn action-btn-edit"
+                                   title="Chỉnh sửa">
+                                    <i class="fas fa-pen-to-square"></i>
+                                </a>
 
-                                <button class="btn btn-sm btn-outline-danger ms-1">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                                <form th:action="@{/admin/lop/xoa/{id}(id=${lop.id})}"
+                                      method="post"
+                                      class="d-inline delete-form"
+                                      th:data-ten="${lop.tenLop}">
+
+                                    <input type="hidden"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}"/>
+
+                                    <button type="submit"
+                                            class="action-btn action-btn-delete"
+                                            title="Xóa">
+                                        <i class="fas fa-trash-can"></i>
+                                    </button>
+                                </form>
+
+                            </div>
                         </td>
                     </tr>
                     </tbody>
@@ -169,9 +178,7 @@
                     </div>
 
                     <!-- Badge đếm tổng SV -->
-                    <span class="badge bg-primary rounded-pill ms-auto me-3 fs-6"
-                          id="modalBadgeCount"
-                          style="min-width:52px;text-align:center"></span>
+
 
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -236,122 +243,718 @@
     <div class="custom-toast-container"></div>
 
     <style>
-        .search-box {
-            position: relative;
+        /* =========================
+           SEARCH
+        ========================= */
+        .search-box{
+            position:relative;
         }
 
-        .search-icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 14px;
+        .search-icon{
+            position:absolute;
+            left:14px;
+            top:50%;
+            transform:translateY(-50%);
+            color:#94a3b8;
+            font-size:14px;
+            pointer-events:none;
         }
 
-        .search-input {
-            padding-left: 40px;
-            border-radius: 12px;
-            border: 1px solid #dbeafe;
-            height: 42px;
+        .search-input{
+            padding-left:42px;
+            border-radius:14px;
+            border:1px solid #dbeafe;
+            height:44px;
+            background:#f8fafc;
+            transition:all .18s ease;
         }
 
-        .search-input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, .15);
+        .search-input:focus{
+            border-color:#2563eb;
+            box-shadow:0 0 0 4px rgba(37,99,235,.12);
+            background:#fff;
         }
 
-        .filter-select {
-            border-radius: 12px;
-            border: 1px solid #dbeafe;
-            height: 42px;
+        /* =========================
+           FILTER
+        ========================= */
+        .filter-select{
+            border-radius:14px;
+            border:1px solid #dbeafe;
+            height:44px;
+            background:#f8fafc;
+            transition:all .18s ease;
         }
 
-        .class-header {
-            background: linear-gradient(135deg, #1e3a8a, #2563eb);
-            color: white;
-            padding: 14px 18px;
-            border-bottom: none;
+        .filter-select:focus{
+            border-color:#2563eb;
+            box-shadow:0 0 0 4px rgba(37,99,235,.12);
+            background:#fff;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+        .class-header{
+            background:linear-gradient(135deg,#1e3a8a,#2563eb);
+            color:#fff;
+            padding:16px 22px;
+            border:none;
         }
 
         .class-header span,
-        .class-header i {
-            color: white;
-            font-weight: 600;
+        .class-header i{
+            color:#fff;
+            font-weight:600;
         }
 
-        .add-btn {
-            background: white;
-            color: #2563eb !important;
-            font-weight: 600;
-            border: none;
-            border-radius: 10px;
-            padding: 6px 14px;
+        /* =========================
+           ADD BUTTON
+        ========================= */
+        .add-btn{
+            background:#fff;
+            color:#2563eb !important;
+            font-weight:600;
+            border:none;
+            border-radius:10px;
+            padding:6px 14px;
+            transition:all .18s ease;
         }
 
-        .add-btn:hover {
-            background: #eff6ff;
-            color: #1d4ed8 !important;
+        .add-btn:hover{
+            background:#eff6ff;
+            color:#1d4ed8 !important;
+            transform:translateY(-1px);
         }
 
-        .custom-toast-container {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 99999;
+        /* =========================
+           TABLE
+        ========================= */
+        .table thead{
+            background:#eff6ff;
         }
 
-        .custom-toast {
-            width: 360px;
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
-            border-left: 5px solid #ef4444;
-            overflow: hidden;
+        .table thead th{
+            color:#1e3a8a;
+            font-size:13px;
+            font-weight:700;
+            border-bottom:none;
+            white-space:nowrap;
         }
 
-        .toast-header-custom {
-            display: flex;
-            gap: 12px;
-            padding: 16px;
+        .table tbody tr{
+            transition:all .18s ease;
         }
 
-        .toast-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: #fee2e2;
-            color: #dc2626;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .table tbody tr:hover{
+            background:#f8fbff;
         }
 
-        .toast-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            padding: 0 16px 16px;
+        .table td{
+            vertical-align:middle;
         }
 
-        .toast-btn {
-            border: none;
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
+        /* code mã lớp */
+        .table code{
+            background:#eff6ff;
+            color:#1d4ed8;
+            padding:4px 9px;
+            border-radius:7px;
+            font-size:12px;
+            font-weight:700;
         }
 
-        .toast-btn-cancel {
-            background: #f1f5f9;
+        /* =========================
+           BADGE
+        ========================= */
+        .badge.bg-light{
+            background:#f8fafc !important;
+            border:1px solid #e2e8f0 !important;
         }
 
-        .toast-btn-confirm {
-            background: #dc2626;
-            color: white;
+        /* =========================
+           SĨ SỐ BUTTON
+        ========================= */
+        .si-so-btn{
+            border-radius:999px !important;
+            padding:7px 14px !important;
+            background:#eff6ff !important;
+            color:#1d4ed8 !important;
+            border:none !important;
+            font-weight:600;
+            transition:all .18s ease;
         }
+
+        .si-so-btn:hover{
+            background:#1d4ed8 !important;
+            color:#fff !important;
+            transform:translateY(-1px);
+        }
+
+        /* =========================
+   ACTION BUTTONS
+   FIX ICON + ĐỒNG ĐỀU
+========================= */
+
+.action-group{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+/* reset button/form */
+.action-group form{
+    margin:0;
+}
+
+.action-btn{
+    width:36px;
+    height:36px;
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    border:none;
+    border-radius:11px;
+
+    text-decoration:none;
+
+    transition:all .18s ease;
+
+    padding:0;
+
+    cursor:pointer;
+}
+
+/* icon */
+.action-btn i{
+    font-size:13px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* ======================
+   EDIT
+====================== */
+.action-btn-edit{
+    background:#fff7ed;
+    color:#ea580c;
+    border:1px solid #fed7aa;
+}
+
+.action-btn-edit:hover{
+    background:#ea580c;
+    border-color:#ea580c;
+    color:#fff;
+    transform:translateY(-1px);
+}
+
+/* ======================
+   DELETE
+====================== */
+.action-btn-delete{
+    background:#fef2f2;
+    color:#dc2626;
+    border:1px solid #fecaca;
+}
+
+.action-btn-delete:hover{
+    background:#dc2626;
+    border-color:#dc2626;
+    color:#fff;
+    transform:translateY(-1px);
+}
+
+/* fix button mặc định */
+.action-btn-delete:focus,
+.action-btn-edit:focus{
+    outline:none;
+    box-shadow:none;
+}
+
+/* fix icon lệch */
+.action-btn-delete i,
+.action-btn-edit i{
+    pointer-events:none;
+}
+        /* =========================
+           TOAST DELETE
+        ========================= */
+
+        /* blur overlay */
+        .delete-overlay{
+            position:fixed;
+            inset:0;
+
+            backdrop-filter:blur(7px);
+            -webkit-backdrop-filter:blur(7px);
+
+            background:rgba(15,23,42,.22);
+
+            opacity:0;
+            visibility:hidden;
+
+            transition:all .2s ease;
+
+            z-index:9998;
+        }
+
+        .delete-overlay.show{
+            opacity:1;
+            visibility:visible;
+        }
+
+        /* toast container */
+        .custom-toast-container{
+            position:fixed;
+            inset:0;
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+
+            z-index:99999;
+
+            pointer-events:none;
+        }
+
+        /* toast */
+        .custom-toast{
+            width:380px;
+            max-width:calc(100vw - 24px);
+
+            background:#fff;
+
+            border-radius:20px;
+
+            box-shadow:
+                0 20px 40px rgba(0,0,0,.18),
+                0 2px 10px rgba(0,0,0,.08);
+
+            overflow:hidden;
+
+            border:1px solid #fee2e2;
+
+            transform:translateY(10px) scale(.96);
+            opacity:0;
+
+            animation:toastShow .22s ease forwards;
+
+            pointer-events:auto;
+        }
+
+        @keyframes toastShow{
+            to{
+                opacity:1;
+                transform:translateY(0) scale(1);
+            }
+        }
+
+        .toast-header-custom{
+            display:flex;
+            gap:14px;
+            padding:22px 22px 16px;
+        }
+
+        .toast-icon{
+            width:46px;
+            height:46px;
+
+            border-radius:14px;
+
+            background:#fee2e2;
+            color:#dc2626;
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+
+            flex-shrink:0;
+
+            font-size:18px;
+        }
+
+        .toast-title{
+            font-size:16px;
+            font-weight:700;
+            color:#0f172a;
+        }
+
+        .toast-message{
+            font-size:13px;
+            color:#64748b;
+            margin-top:4px;
+            line-height:1.5;
+        }
+
+        /* actions */
+        .toast-actions{
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+
+            padding:0 22px 22px;
+        }
+
+        .toast-btn{
+            border:none;
+
+            min-width:92px;
+            height:40px;
+
+            border-radius:12px;
+
+            font-size:13px;
+            font-weight:600;
+
+            cursor:pointer;
+
+            transition:all .18s ease;
+        }
+
+        .toast-btn-cancel{
+            background:#f1f5f9;
+            color:#475569;
+        }
+
+        .toast-btn-cancel:hover{
+            background:#e2e8f0;
+        }
+
+        .toast-btn-confirm{
+            background:#dc2626;
+            color:#fff;
+        }
+
+        .toast-btn-confirm:hover{
+            background:#b91c1c;
+        }
+
+      /* =========================
+   MODAL SINH VIÊN
+========================= */
+
+#modalSinhVien .modal-dialog{
+    max-width: 980px;
+}
+
+#modalSinhVien .modal-content{
+    border:none;
+    border-radius:24px !important;
+    overflow:hidden;
+    box-shadow:
+        0 25px 60px rgba(15,23,42,.18),
+        0 4px 18px rgba(15,23,42,.08);
+    background:#fff;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+#modalSinhVien .modal-header{
+    border:none;
+    padding:22px 26px;
+    background:
+        linear-gradient(
+            135deg,
+            #1e3a8a 0%,
+            #2563eb 100%
+        );
+    color:#fff;
+    position:relative;
+}
+#modalSinhVien .modal-header::after{
+    content:"";
+    position:absolute;
+    inset:auto -40px -40px auto;
+
+    width:140px;
+    height:140px;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.08);
+
+    pointer-events:none; /* FIX */
+}
+
+#modalSinhVien .btn-close{
+    filter:brightness(0) invert(1);
+    opacity:.9;
+
+    position:relative;
+    z-index:10;
+}
+#modalSinhVien .modal-title{
+    color:#fff;
+    font-size:18px;
+    font-weight:700;
+}
+
+#modalSinhVien #modalLopMa,
+#modalSinhVien #modalLopCvht{
+    color:rgba(255,255,255,.82) !important;
+}
+
+#modalSinhVien .btn-close{
+    filter:brightness(0) invert(1);
+    opacity:.9;
+}
+
+#modalSinhVien .btn-close:hover{
+    opacity:1;
+}
+
+/* icon users */
+#modalSinhVien .modal-header .rounded-3{
+    width:52px !important;
+    height:52px !important;
+
+    border-radius:16px !important;
+
+    background:rgba(255,255,255,.16) !important;
+
+    backdrop-filter:blur(6px);
+}
+
+#modalSinhVien .modal-header .rounded-3 i{
+    color:#fff !important;
+    font-size:18px;
+}
+
+/* badge */
+#modalBadgeCount{
+    background:#fff !important;
+    color:#1d4ed8 !important;
+
+    font-weight:700;
+    font-size:14px !important;
+
+    padding:9px 14px;
+
+    border-radius:999px !important;
+
+    box-shadow:0 4px 10px rgba(0,0,0,.08);
+}
+
+/* =========================
+   SEARCH BAR
+========================= */
+
+#modalSinhVien .input-group{
+    background:#fff;
+    border-radius:14px;
+    overflow:hidden;
+
+    border:1px solid #dbeafe;
+
+    transition:all .18s ease;
+}
+
+#modalSinhVien .input-group:focus-within{
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+}
+
+#modalSinhVien .input-group-text{
+    border:none !important;
+    background:#fff !important;
+    padding-left:14px;
+}
+
+#modalSinhVien #modalSearch{
+    border:none !important;
+    box-shadow:none !important;
+
+    height:42px;
+
+    font-size:14px;
+    padding-left:4px;
+}
+
+/* =========================
+   BODY
+========================= */
+
+#modalSinhVien .modal-body{
+    background:#f8fafc;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+#modalTable{
+    background:#fff;
+    border-collapse:separate;
+    border-spacing:0;
+}
+
+#modalTable thead{
+    position:sticky;
+    top:0;
+    z-index:5;
+}
+
+#modalTable thead th{
+    background:#eff6ff !important;
+
+    color:#1e3a8a;
+
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.3px;
+
+    text-transform:uppercase;
+
+    border:none !important;
+
+    padding:14px 16px;
+
+    white-space:nowrap;
+}
+
+#modalTable tbody tr{
+    transition:all .16s ease;
+}
+
+#modalTable tbody tr:hover{
+    background:#f8fbff;
+    transform:scale(1.002);
+}
+
+#modalTable tbody td{
+    border-color:#eef2f7 !important;
+
+    padding:14px 16px;
+
+    vertical-align:middle;
+}
+
+/* mã SV */
+#modalTable code{
+    background:#eff6ff;
+    color:#1d4ed8;
+
+    border:none !important;
+
+    padding:6px 10px !important;
+
+    border-radius:8px;
+
+    font-size:11px;
+    font-weight:700;
+}
+
+/* avatar */
+#modalTable .rounded-circle{
+    width:34px !important;
+    height:34px !important;
+
+    font-size:11px !important;
+    font-weight:700 !important;
+
+    background:#dbeafe !important;
+    color:#1d4ed8 !important;
+}
+
+/* tên SV */
+#modalTable .fw-semibold{
+    color:#0f172a;
+    font-size:13px;
+}
+
+/* =========================
+   LOADING + EMPTY
+========================= */
+
+#modalLoading,
+#modalEmpty{
+    background:#fff;
+    margin:18px;
+    border-radius:18px;
+
+    border:1px dashed #dbeafe;
+}
+
+#modalLoading{
+    padding:50px 20px !important;
+}
+
+#modalEmpty{
+    padding:60px 20px !important;
+}
+
+#modalEmpty i{
+    font-size:42px !important;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+#modalSinhVien .modal-footer{
+    background:#fff;
+    border-top:1px solid #eef2f7 !important;
+
+    padding:14px 22px;
+}
+
+#modalFooterCount{
+    font-size:13px;
+    color:#64748b !important;
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
+
+#modalSinhVien ::-webkit-scrollbar{
+    width:8px;
+    height:8px;
+}
+
+#modalSinhVien ::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:999px;
+}
+
+#modalSinhVien ::-webkit-scrollbar-thumb:hover{
+    background:#94a3b8;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:768px){
+
+    #modalSinhVien .modal-dialog{
+        margin:12px;
+    }
+
+    #modalSinhVien .modal-header{
+        padding:18px;
+    }
+
+    #modalSinhVien .modal-footer{
+        padding:12px 16px;
+    }
+
+    #modalTable{
+        min-width:720px;
+    }
+
+    #modalSinhVien .modal-header .rounded-3{
+        width:46px !important;
+        height:46px !important;
+    }
+}
+
     </style>
 
     <script>
@@ -405,102 +1008,201 @@
             );
         }
 
-        /* ── Mở modal sĩ số ── */
-        document.querySelectorAll('.si-so-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const lopId  = this.dataset.lopId;
-                const maLop  = this.dataset.maLop;
-                const tenLop = this.dataset.tenLop;
-                const cvht   = this.dataset.cvht;
+       /* ── Mở modal sĩ số ── */
+document.querySelectorAll('.si-so-btn').forEach(btn => {
 
-                /* Reset nội dung modal */
-                document.getElementById('modalLopTen').textContent   = tenLop;
-                document.getElementById('modalLopMa').textContent    = 'Mã lớp: ' + maLop;
-                document.getElementById('modalBadgeCount').textContent = '';
-                document.getElementById('modalSearch').value         = '';
-                document.getElementById('modalFooterCount').textContent = '';
+    btn.addEventListener('click', async function () {
 
-                document.getElementById('modalLoading').style.display = 'block';
-                document.getElementById('modalTable').style.display   = 'none';
-                document.getElementById('modalEmpty').style.display   = 'none';
+        const lopId  = this.dataset.lopId;
+        const maLop  = this.dataset.maLop;
+        const tenLop = this.dataset.tenLop;
+        const cvht   = this.dataset.cvht;
 
-                /* Cố vấn học tập */
-                const cvhtEl = document.getElementById('modalLopCvht');
-                if (cvht) {
-                    document.getElementById('modalLopCvhtTen').textContent = cvht;
-                    cvhtEl.style.setProperty('display', 'block', 'important');
-                } else {
-                    cvhtEl.style.setProperty('display', 'none', 'important');
-                }
+        /* Reset */
+        _allSvs = [];
 
-                /* Mở modal */
-                new bootstrap.Modal(document.getElementById('modalSinhVien')).show();
+        document.getElementById('modalLopTen').textContent =
+            tenLop;
 
-                /* Fetch danh sách SV */
-                fetch(`/admin/lop/${lopId}/sinh-vien`)
-                    .then(r => {
-                        if (!r.ok) throw new Error('HTTP ' + r.status);
-                        return r.json();
-                    })
-                    .then(svs => {
-                        _allSvs = svs;
-                        document.getElementById('modalLoading').style.display = 'none';
-                        document.getElementById('modalBadgeCount').textContent = svs.length + ' SV';
+        document.getElementById('modalLopMa').textContent =
+            'Mã lớp: ' + maLop;
 
-                        if (!svs.length) {
-                            document.getElementById('modalEmpty').style.display = 'block';
-                            document.getElementById('modalFooterCount').textContent = '0 sinh viên';
-                            return;
-                        }
+        document.getElementById('modalSearch').value = '';
 
-                        renderModalRows(svs);
-                        document.getElementById('modalTable').style.display = 'table';
-                    })
-                    .catch(err => {
-                        document.getElementById('modalLoading').innerHTML =
-                            '<i class="fas fa-exclamation-circle text-danger me-2"></i>' +
-                            '<span class="text-danger small">Lỗi tải dữ liệu: ' + err.message + '</span>';
-                    });
-            });
-        });
+        document.getElementById('modalFooterCount').textContent = '';
 
-        /* ── Toast xác nhận xóa ── */
-        function showDeleteToast(title, message, onConfirm) {
-            const container = document.querySelector('.custom-toast-container');
-            container.innerHTML = '';
+        /* loading */
+        document.getElementById('modalLoading').style.display = 'block';
 
-            const toast = document.createElement('div');
-            toast.className = 'custom-toast';
-            toast.innerHTML = `
-                <div class="toast-header-custom">
-                    <div class="toast-icon"><i class="fas fa-trash"></i></div>
-                    <div>
-                        <div class="fw-bold">${title}</div>
-                        <div class="text-muted small">${message}</div>
-                    </div>
-                </div>
-                <div class="toast-actions">
-                    <button class="toast-btn toast-btn-cancel">Hủy</button>
-                    <button class="toast-btn toast-btn-confirm">Xóa</button>
-                </div>
-            `;
+        /* table */
+        document.getElementById('modalTable').style.display = 'none';
 
-            container.appendChild(toast);
-            toast.querySelector('.toast-btn-cancel').onclick = () => toast.remove();
-            toast.querySelector('.toast-btn-confirm').onclick = () => { toast.remove(); onConfirm(); };
+        /* empty */
+        document.getElementById('modalEmpty').style.display = 'none';
+
+        /* clear body */
+        document.getElementById('modalBody').innerHTML = '';
+
+        /* CVHT */
+        const cvhtEl = document.getElementById('modalLopCvht');
+
+        if (cvht && cvht.trim() !== '') {
+
+            document.getElementById('modalLopCvhtTen').textContent = cvht;
+
+            cvhtEl.style.display = 'block';
+
+        } else {
+
+            cvhtEl.style.display = 'none';
         }
 
-        document.querySelectorAll('.delete-form').forEach(form => {
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
-                showDeleteToast(
-                    'Xác nhận xóa',
-                    `Bạn có chắc muốn xóa lớp "${this.dataset.ten}"?`,
-                    () => this.submit()
-                );
-            });
-        });
+        /* Bootstrap modal */
+        const modalEl = document.getElementById('modalSinhVien');
 
+        const modal =
+            bootstrap.Modal.getOrCreateInstance(modalEl);
+
+        modal.show();
+
+        try {
+
+            const response =
+                await fetch(`/admin/lop/${lopId}/sinh-vien`);
+
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+
+            const svs = await response.json();
+
+            _allSvs = svs;
+
+            /* TẮT loading */
+            document.getElementById('modalLoading').style.display = 'none';
+
+            if (!svs || svs.length === 0) {
+
+                document.getElementById('modalEmpty').style.display = 'block';
+
+                document.getElementById('modalFooterCount').textContent =
+                    '0 sinh viên';
+
+                return;
+            }
+
+            renderModalRows(svs);
+
+            document.getElementById('modalTable').style.display = 'table';
+
+        } catch (err) {
+
+            document.getElementById('modalLoading').style.display = 'none';
+
+            document.getElementById('modalEmpty').style.display = 'block';
+
+            document.getElementById('modalEmpty').innerHTML = `
+                <i class="fas fa-exclamation-circle text-danger fa-2x mb-2"></i>
+                <div class="text-danger small">
+                    Lỗi tải dữ liệu: ${err.message}
+                </div>
+            `;
+        }
+    });
+});
+document.getElementById('modalSinhVien')
+    .addEventListener('hidden.bs.modal', function () {
+
+        document.getElementById('modalLoading').style.display = 'none';
+
+        document.getElementById('modalTable').style.display = 'none';
+
+        document.getElementById('modalEmpty').style.display = 'none';
+
+        document.getElementById('modalBody').innerHTML = '';
+
+        document.getElementById('modalSearch').value = '';
+});
+        /* ── Toast xác nhận xóa ── */
+        function showDeleteToast(title, message, onConfirm) {
+
+    /* tạo blur nền */
+    const overlay = document.createElement('div');
+    overlay.className = 'delete-overlay';
+    document.body.appendChild(overlay);
+
+/* trigger animation mượt */
+requestAnimationFrame(() => {
+    overlay.classList.add('show');
+});
+
+    const container = document.querySelector('.custom-toast-container');
+    container.innerHTML = '';
+
+    const toast = document.createElement('div');
+
+    toast.className = 'custom-toast';
+
+    toast.innerHTML = `
+        <div class="toast-header-custom">
+            <div class="toast-icon">
+                <i class="fas fa-trash"></i>
+            </div>
+
+            <div>
+                <div class="fw-bold">${title}</div>
+                <div class="text-muted small">${message}</div>
+            </div>
+        </div>
+
+        <div class="toast-actions">
+            <button class="toast-btn toast-btn-cancel">
+                Hủy
+            </button>
+
+            <button class="toast-btn toast-btn-confirm">
+                Xóa
+            </button>
+        </div>
+    `;
+
+    container.appendChild(toast);
+
+    function closeToast(){
+
+    overlay.classList.remove('show');
+
+    setTimeout(() => {
+        toast.remove();
+        overlay.remove();
+    }, 180);
+}
+
+    toast.querySelector('.toast-btn-cancel').onclick = closeToast;
+
+    overlay.onclick = closeToast;
+
+    toast.querySelector('.toast-btn-confirm').onclick = () => {
+        closeToast();
+        onConfirm();
+    };
+}
+/* ── BẮT SỰ KIỆN XOÁ ── */
+document.querySelectorAll('.delete-form').forEach(form => {
+
+    form.addEventListener('submit', function (e) {
+
+        e.preventDefault();
+
+        showDeleteToast(
+            'Xác nhận xóa',
+            `Bạn có chắc muốn xóa lớp "${this.dataset.ten}"?`,
+            () => this.submit()
+        );
+
+    });
+
+});
         /* ── Populate filter dropdowns ── */
         function populateFilters() {
             const rows = document.querySelectorAll('tbody tr');

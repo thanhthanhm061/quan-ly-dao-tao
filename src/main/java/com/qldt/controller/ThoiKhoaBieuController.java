@@ -25,8 +25,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
 
-import java.awt.*;
-import java.awt.Font;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.util.CellRangeAddress;
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -381,6 +381,7 @@ class LopHocPhanController {
     }
 
     // ── Tìm SV chưa đăng ký (modal tìm kiếm) ──────────────────────────────────
+
     /**
      * FIX hiệu năng: đẩy filter "chưa đăng ký" và tìm kiếm xuống DB thay vì
      * load toàn bộ SV rồi filter trong memory.
@@ -463,10 +464,10 @@ class LopHocPhanController {
         return "redirect:/admin/lop-hoc-phan/" + lhpId + "/danh-sach";
     }
 
-    // ── Export Excel ───────────────────────────────────────────────────────────
     @GetMapping("/{id}/export-excel")
     public void exportExcel(@PathVariable Long id,
                             HttpServletResponse response) throws IOException {
+
         LopHocPhan lhp = lhpService.findById(id).orElseThrow();
         List<DangKy> dangKys = lhpService.getDanhSachDangKy(id);
 
@@ -475,51 +476,186 @@ class LopHocPhanController {
                 "attachment; filename=\"" + lhp.getMaLhp() + "_danhsach.xlsx\"");
 
         try (Workbook wb = new XSSFWorkbook()) {
-            Sheet sheet = wb.createSheet("Danh sách");
 
+            Sheet sheet = wb.createSheet("Danh sách sinh viên");
+
+            // =========================================================
+            // FONT
+            // =========================================================
+            Font titleFont = wb.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+
+            Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+
+            Font normalFont = wb.createFont();
+            normalFont.setFontHeightInPoints((short) 11);
+
+            // =========================================================
+            // STYLE TIÊU ĐỀ
+            // =========================================================
+            CellStyle titleStyle = wb.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // =========================================================
+            // STYLE THÔNG TIN
+            // =========================================================
+            CellStyle infoStyle = wb.createCellStyle();
+            infoStyle.setFont(normalFont);
+
+            // =========================================================
+            // STYLE HEADER
+            // =========================================================
             CellStyle headerStyle = wb.createCellStyle();
-            headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+
+            headerStyle.setFillForegroundColor(IndexedColors.BLUE_GREY.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-            // Dòng thông tin lớp
-            Row infoRow = sheet.createRow(0);
-            infoRow.createCell(0).setCellValue(
-                    "Lớp học phần: " + lhp.getMaLhp()
-                            + " | Môn: " + lhp.getMonHoc().getTenMon()
-                            + " | GV: " + lhp.getGiangVien().getHoTen()
-                            + " | HK: " + lhp.getHocKy()
-            );
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
-            // Header
-            Row header = sheet.createRow(2);
-            String[] cols = {"#", "Mã SV", "Họ tên", "Điểm QT", "Điểm thi", "Tổng kết", "Xếp loại"};
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            headerStyle.setFont(headerFont);
+
+            // =========================================================
+            // STYLE DỮ LIỆU
+            // =========================================================
+            CellStyle dataStyle = wb.createCellStyle();
+
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            dataStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+            // =========================================================
+            // STYLE ĐIỂM
+            // =========================================================
+            CellStyle scoreStyle = wb.createCellStyle();
+
+            scoreStyle.cloneStyleFrom(dataStyle);
+            scoreStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // =========================================================
+            // TIÊU ĐỀ
+            // =========================================================
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+
+            Row titleRow = sheet.createRow(0);
+            titleRow.setHeight((short) 500);
+
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("DANH SÁCH SINH VIÊN LỚP HỌC PHẦN");
+            titleCell.setCellStyle(titleStyle);
+
+            // =========================================================
+            // THÔNG TIN LỚP
+            // =========================================================
+            Row info1 = sheet.createRow(2);
+            info1.createCell(0).setCellValue("Mã lớp học phần:");
+            info1.createCell(1).setCellValue(lhp.getMaLhp());
+
+            info1.createCell(3).setCellValue("Học kỳ:");
+            info1.createCell(4).setCellValue(lhp.getHocKy());
+
+            Row info2 = sheet.createRow(3);
+            info2.createCell(0).setCellValue("Môn học:");
+            info2.createCell(1).setCellValue(lhp.getMonHoc().getTenMon());
+
+            info2.createCell(3).setCellValue("Giảng viên:");
+            info2.createCell(4).setCellValue(lhp.getGiangVien().getHoTen());
+
+            // =========================================================
+            // HEADER TABLE
+            // =========================================================
+            Row header = sheet.createRow(5);
+
+            String[] cols = {
+                    "STT",
+                    "Mã SV",
+                    "Họ tên",
+                    "Điểm QT",
+                    "Điểm thi",
+                    "Tổng kết",
+                    "Xếp loại"
+            };
+
             for (int i = 0; i < cols.length; i++) {
-                Cell c = header.createCell(i);
-                c.setCellValue(cols[i]);
-                c.setCellStyle(headerStyle);
+                Cell cell = header.createCell(i);
+                cell.setCellValue(cols[i]);
+                cell.setCellStyle(headerStyle);
             }
 
-            // Dữ liệu
+            // =========================================================
+            // DỮ LIỆU
+            // =========================================================
+            int rowNum = 6;
+
             for (int i = 0; i < dangKys.size(); i++) {
+
                 DangKy dk = dangKys.get(i);
-                Row row = sheet.createRow(i + 3);
-                row.createCell(0).setCellValue(i + 1);
-                row.createCell(1).setCellValue(dk.getSinhVien().getMaSv());
-                row.createCell(2).setCellValue(dk.getSinhVien().getHoTen());
-                row.createCell(3).setCellValue(dk.getDiemQuaTrinh() != null ? dk.getDiemQuaTrinh() : 0);
-                row.createCell(4).setCellValue(dk.getDiemThi() != null ? dk.getDiemThi() : 0);
-                row.createCell(5).setCellValue(dk.getDiemTongKet() != null ? dk.getDiemTongKet() : 0);
-                row.createCell(6).setCellValue(dk.getXepLoai() != null ? dk.getXepLoai() : "-");
+
+                Row row = sheet.createRow(rowNum++);
+
+                Cell c0 = row.createCell(0);
+                c0.setCellValue(i + 1);
+                c0.setCellStyle(scoreStyle);
+
+                Cell c1 = row.createCell(1);
+                c1.setCellValue(dk.getSinhVien().getMaSv());
+                c1.setCellStyle(dataStyle);
+
+                Cell c2 = row.createCell(2);
+                c2.setCellValue(dk.getSinhVien().getHoTen());
+                c2.setCellStyle(dataStyle);
+
+                Cell c3 = row.createCell(3);
+                c3.setCellValue(dk.getDiemQuaTrinh() != null ? dk.getDiemQuaTrinh() : 0);
+                c3.setCellStyle(scoreStyle);
+
+                Cell c4 = row.createCell(4);
+                c4.setCellValue(dk.getDiemThi() != null ? dk.getDiemThi() : 0);
+                c4.setCellStyle(scoreStyle);
+
+                Cell c5 = row.createCell(5);
+                c5.setCellValue(dk.getDiemTongKet() != null ? dk.getDiemTongKet() : 0);
+                c5.setCellStyle(scoreStyle);
+
+                Cell c6 = row.createCell(6);
+                c6.setCellValue(dk.getXepLoai() != null ? dk.getXepLoai() : "-");
+                c6.setCellStyle(scoreStyle);
             }
 
-            for (int i = 0; i < cols.length; i++) sheet.autoSizeColumn(i);
+            // =========================================================
+            // WIDTH CỘT
+            // =========================================================
+            sheet.setColumnWidth(0, 3000);
+            sheet.setColumnWidth(1, 5000);
+            sheet.setColumnWidth(2, 9000);
+            sheet.setColumnWidth(3, 4000);
+            sheet.setColumnWidth(4, 4000);
+            sheet.setColumnWidth(5, 4000);
+            sheet.setColumnWidth(6, 5000);
+
+            // =========================================================
+            // FREEZE HEADER
+            // =========================================================
+            sheet.createFreezePane(0, 6);
+
             wb.write(response.getOutputStream());
         }
     }
-
-    //
 }
-// =====================================================================
+
+    // =====================================================================
 // THOI KHOA BIEU CONTROLLER
 // =====================================================================
 @Controller

@@ -4,179 +4,304 @@
 
 <main>
 
+    <style>
+
+        body{
+            background:#f5f7fb;
+        }
+
+        /* ===== WRAPPER ===== */
+        .form-wrapper{
+            max-width:850px;
+            margin:40px auto;
+        }
+
+        /* ===== HEADER ===== */
+        .page-header{
+            background:#fff;
+            border-radius:18px;
+            padding:20px 24px;
+            margin-bottom:24px;
+            box-shadow:0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .page-title{
+            font-size:24px;
+            font-weight:700;
+            margin:0;
+            color:#1e293b;
+        }
+
+        /* ===== CARD ===== */
+        .form-card{
+            border:none;
+            border-radius:22px;
+            overflow:hidden;
+            box-shadow:0 10px 30px rgba(0,0,0,0.06);
+        }
+
+        .form-card .card-body{
+            padding:36px;
+            background:#fff;
+        }
+
+        /* ===== LABEL ===== */
+        .form-label{
+            font-weight:600;
+            color:#334155;
+            margin-bottom:8px;
+        }
+
+        /* ===== INPUT ===== */
+        .form-control,
+        .form-select{
+            height:48px;
+            border-radius:14px;
+            border:1px solid #dbe2ea;
+            padding:0 16px;
+            transition:all .25s ease;
+            box-shadow:none;
+        }
+
+        textarea.form-control{
+            min-height:120px;
+            padding-top:14px;
+            resize:none;
+        }
+
+        .form-control:focus,
+        .form-select:focus{
+            border-color:#f59e0b;
+            box-shadow:0 0 0 4px rgba(245,158,11,0.15);
+        }
+
+        /* ===== SWITCH ===== */
+        .form-check-input{
+            width:48px;
+            height:24px;
+            cursor:pointer;
+        }
+
+        .form-check-label{
+            margin-left:10px;
+            font-weight:500;
+            color:#475569;
+        }
+
+        /* ===== BUTTON ===== */
+        .btn-save{
+            background:#f59e0b;
+            border:none;
+            color:#fff;
+            border-radius:12px;
+            padding:11px 24px;
+            font-weight:600;
+            transition:.25s;
+        }
+
+        .btn-save:hover{
+            background:#d97706;
+            transform:translateY(-1px);
+        }
+
+        .btn-cancel{
+            border-radius:12px;
+            padding:11px 24px;
+            font-weight:600;
+        }
+
+        /* ===== ERROR ===== */
+        .text-danger{
+            margin-top:6px;
+        }
+
+    </style>
+
     <div class="container-fluid px-4">
 
-        <!-- Tiêu đề -->
-        <div class="d-flex justify-content-between align-items-center py-3 mb-3 border-bottom">
+        <div class="form-wrapper">
 
-            <h4 class="mb-0 fw-bold"
-                th:text="${tieuDe}">
-                Chức vụ
-            </h4>
+            <!-- HEADER -->
+            <div class="page-header d-flex justify-content-between align-items-center">
 
-            <a th:href="@{/admin/chuc-vu}"
-               class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-1"></i>
-                Quay lại
-            </a>
+                <h4 class="page-title"
+                    th:text="${tieuDe}">
+                    Chức vụ
+                </h4>
 
-        </div>
+                <a th:href="@{/admin/chuc-vu}"
+                   class="btn btn-outline-secondary rounded-3 px-4">
 
-        <!-- Card Form -->
-        <div class="card shadow-sm border-0">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Quay lại
 
-            <div class="card-body">
+                </a>
 
-                <form th:action="${chucVu.id == null
-                                    ? '/admin/chuc-vu/them'
-                                    : '/admin/chuc-vu/sua/' + chucVu.id}"
-                      th:object="${chucVu}"
-                      method="post">
+            </div>
 
-                    <!-- CSRF -->
-                    <input type="hidden"
-                           th:name="${_csrf.parameterName}"
-                           th:value="${_csrf.token}"/>
+            <!-- FORM CARD -->
+            <div class="card form-card">
 
-                    <!-- Mã chức vụ -->
-                    <div class="mb-3">
+                <div class="card-body">
 
-                        <label class="form-label fw-semibold">
-                            Mã chức vụ
-                        </label>
+                    <form th:action="${chucVu.id == null
+                                        ? '/admin/chuc-vu/them'
+                                        : '/admin/chuc-vu/sua/' + chucVu.id}"
+                          th:object="${chucVu}"
+                          method="post">
 
-                        <input type="text"
-                               th:field="*{maChucVu}"
-                               class="form-control"
-                               placeholder="Nhập mã chức vụ"/>
+                        <!-- CSRF -->
+                        <input type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}"/>
 
-                        <div class="text-danger small"
-                             th:if="${#fields.hasErrors('maChucVu')}"
-                             th:errors="*{maChucVu}">
+                        <div class="row">
+
+                            <!-- MÃ -->
+                            <div class="col-md-6 mb-4">
+
+                                <label class="form-label">
+                                    Mã chức vụ
+                                </label>
+
+                                <input type="text"
+                                       th:field="*{maChucVu}"
+                                       class="form-control"
+                                       placeholder="Nhập mã chức vụ"/>
+
+                                <div class="text-danger small"
+                                     th:if="${#fields.hasErrors('maChucVu')}"
+                                     th:errors="*{maChucVu}">
+                                </div>
+
+                            </div>
+
+                            <!-- TÊN -->
+                            <div class="col-md-6 mb-4">
+
+                                <label class="form-label">
+                                    Tên chức vụ
+                                </label>
+
+                                <input type="text"
+                                       th:field="*{tenChucVu}"
+                                       class="form-control"
+                                       placeholder="Nhập tên chức vụ"/>
+
+                                <div class="text-danger small"
+                                     th:if="${#fields.hasErrors('tenChucVu')}"
+                                     th:errors="*{tenChucVu}">
+                                </div>
+
+                            </div>
+
+                            <!-- CẤP BẬC -->
+                            <div class="col-md-6 mb-4">
+
+                                <label class="form-label">
+                                    Cấp bậc
+                                </label>
+
+                                <select th:field="*{capBac}"
+                                        class="form-select">
+
+                                    <option value="">
+                                        -- Chọn cấp bậc --
+                                    </option>
+
+                                    <option th:each="cb : ${dsCapBac}"
+                                            th:value="${cb}"
+                                            th:text="${cb}">
+                                    </option>
+
+                                </select>
+
+                                <div class="text-danger small"
+                                     th:if="${#fields.hasErrors('capBac')}"
+                                     th:errors="*{capBac}">
+                                </div>
+
+                            </div>
+
+                            <!-- KHOA -->
+                            <div class="col-md-6 mb-4">
+
+                                <label class="form-label">
+                                    Khoa
+                                </label>
+
+                                <select th:field="*{khoa.id}"
+                                        class="form-select">
+
+                                    <option value="">
+                                        -- Không thuộc khoa --
+                                    </option>
+
+                                    <option th:each="k : ${dsKhoa}"
+                                            th:value="${k.id}"
+                                            th:text="${k.tenKhoa}">
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <!-- MÔ TẢ -->
+                            <div class="col-12 mb-4">
+
+                                <label class="form-label">
+                                    Mô tả
+                                </label>
+
+                                <textarea th:field="*{moTa}"
+                                          class="form-control"
+                                          placeholder="Nhập mô tả chức vụ">
+                                </textarea>
+
+                            </div>
+
+                            <!-- TRẠNG THÁI -->
+                            <div class="col-12 mb-4">
+
+                                <div class="form-check form-switch">
+
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           th:field="*{trangThai}"/>
+
+                                    <label class="form-check-label">
+                                        Hoạt động
+                                    </label>
+
+                                </div>
+
+                            </div>
+
                         </div>
 
-                    </div>
+                        <!-- BUTTON -->
+                        <div class="d-flex justify-content-end gap-3 mt-2">
 
-                    <!-- Tên chức vụ -->
-                    <div class="mb-3">
+                            <a th:href="@{/admin/chuc-vu}"
+                               class="btn btn-outline-secondary btn-cancel">
 
-                        <label class="form-label fw-semibold">
-                            Tên chức vụ
-                        </label>
+                                Hủy
 
-                        <input type="text"
-                               th:field="*{tenChucVu}"
-                               class="form-control"
-                               placeholder="Nhập tên chức vụ"/>
+                            </a>
 
-                        <div class="text-danger small"
-                             th:if="${#fields.hasErrors('tenChucVu')}"
-                             th:errors="*{tenChucVu}">
+                            <button type="submit"
+                                    class="btn btn-save">
+
+                                <i class="fas fa-save me-1"></i>
+                                Lưu chức vụ
+
+                            </button>
+
                         </div>
 
-                    </div>
+                    </form>
 
-                    <!-- Cấp bậc -->
-                    <div class="mb-3">
-
-                        <label class="form-label fw-semibold">
-                            Cấp bậc
-                        </label>
-
-                        <select th:field="*{capBac}"
-                                class="form-select">
-
-                            <option value="">
-                                -- Chọn cấp bậc --
-                            </option>
-
-                            <option th:each="cb : ${dsCapBac}"
-                                    th:value="${cb}"
-                                    th:text="${cb}">
-                            </option>
-
-                        </select>
-
-                        <div class="text-danger small"
-                             th:if="${#fields.hasErrors('capBac')}"
-                             th:errors="*{capBac}">
-                        </div>
-
-                    </div>
-
-                    <!-- Khoa -->
-                    <div class="mb-3">
-
-                        <label class="form-label fw-semibold">
-                            Khoa
-                        </label>
-
-                        <!-- FIX -->
-                        <select th:field="*{khoa.id}"
-                                class="form-select">
-
-                            <option value="">
-                                -- Không thuộc khoa --
-                            </option>
-
-                            <option th:each="k : ${dsKhoa}"
-                                    th:value="${k.id}"
-                                    th:text="${k.tenKhoa}">
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <!-- Mô tả -->
-                    <div class="mb-3">
-
-                        <label class="form-label fw-semibold">
-                            Mô tả
-                        </label>
-
-                        <textarea th:field="*{moTa}"
-                                  class="form-control"
-                                  rows="4"
-                                  placeholder="Nhập mô tả chức vụ">
-                        </textarea>
-
-                    </div>
-
-                    <!-- Trạng thái -->
-                    <div class="form-check form-switch mb-4">
-
-                        <input class="form-check-input"
-                               type="checkbox"
-                               th:field="*{trangThai}"/>
-
-                        <label class="form-check-label">
-                            Hoạt động
-                        </label>
-
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="d-flex gap-2">
-
-                        <button type="submit"
-                                class="btn btn-warning text-white">
-
-                            <i class="fas fa-save me-1"></i>
-                            Lưu
-
-                        </button>
-
-                        <a th:href="@{/admin/chuc-vu}"
-                           class="btn btn-outline-secondary">
-
-                            Hủy
-
-                        </a>
-
-                    </div>
-
-                </form>
+                </div>
 
             </div>
 
