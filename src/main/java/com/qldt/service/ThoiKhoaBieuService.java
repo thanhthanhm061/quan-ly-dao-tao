@@ -1,6 +1,7 @@
 package com.qldt.service;
 import com.qldt.model.PhongHoc;
 import com.qldt.model.ThoiKhoaBieu;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -14,6 +15,7 @@ public interface ThoiKhoaBieuService {
     List<ThoiKhoaBieu> findBySinhVien(Long svId, String hocKy);
 
     // --- Mới ---
+    @Transactional(readOnly = true)
     List<ThoiKhoaBieu> findByGiangVienTuan(Long gvId, String hocKy, LocalDate ngayTrongTuan);
     List<ThoiKhoaBieu> findBySinhVienTuan(Long svId, String hocKy, LocalDate ngayTrongTuan);
     List<TaiGiangDayDTO> thongKeTaiGiangDay(String hocKy);
@@ -29,4 +31,7 @@ public interface ThoiKhoaBieuService {
     // Lấy tất cả TKB của 1 LHP
     List<ThoiKhoaBieu> findByLopHocPhanId(Long lhpId);
     void capNhatNhanh(Long id, TkbQuickUpdateDTO dto);
+    void overrideTuan(Long id, TkbWeekOverrideDTO dto, LocalDate ngayTrongTuan);
+    void xoaTuan(Long id, LocalDate ngayTrongTuan);
+    void huyOverride(Long id, LocalDate ngayTrongTuan);
 }

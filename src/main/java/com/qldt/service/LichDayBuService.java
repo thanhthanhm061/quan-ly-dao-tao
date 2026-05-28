@@ -1,6 +1,7 @@
 package com.qldt.service;
 
 import com.qldt.model.LichDayBu;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -77,7 +78,8 @@ public interface LichDayBuService {
     List<LichDayBu> findByDonNghi(Long donNghiId);
 
     /** Lịch bù của giảng viên trong khoảng ngày */
-    List<LichDayBu> findByGiangVienAndKhoangNgay(Long giangVienId,
+    @Transactional(readOnly = true)
+    List<LichDayBu> findByGiangVienAndKhoangNgay(Long gvId,
                                                  LocalDate from, LocalDate to);
 
     /** Lịch bù thuộc khoa (TK/PTK xem) */

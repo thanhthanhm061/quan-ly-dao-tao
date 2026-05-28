@@ -82,20 +82,27 @@
                     <!-- ── Giảng viên ──────────────────────────────────────────────────
                          FIX: Tương tự môn học — dùng th:selected tường minh.
                     -->
+                    <!-- Giảng viên -->
                     <div class="col-12">
                         <label class="form-label fw-semibold">
                             Giảng viên <span class="text-danger">*</span>
                         </label>
+
                         <select class="form-select" name="giangVien.id">
                             <option value="">-- Chọn giảng viên --</option>
+
                             <option th:each="gv : ${giangViens}"
                                     th:value="${gv.id}"
-                                    th:text="${gv.maNhanVien + ' - ' + gv.hoTen + (gv.hocVi != null ? ' (' + gv.hocVi + ')' : '')}"
+                                    th:text="${gv.maNhanVien + ' - ' + gv.hoTen
+                        + (gv.hocVi != null ? ' (' + gv.hocVi + ')' : '')
+                        + (gv.khoa != null ? ' - ' + gv.khoa.tenKhoa : '')
+                        + (gv.chucVu != null ? ' - ' + gv.chucVu.tenChucVu : '')}"
                                     th:selected="${lopHocPhan.giangVien != null
-                                              and lopHocPhan.giangVien.id != null
-                                              and lopHocPhan.giangVien.id == gv.id}">
+                          and lopHocPhan.giangVien.id != null
+                          and lopHocPhan.giangVien.id == gv.id}">
                             </option>
                         </select>
+
                         <div class="text-danger small mt-1" th:errors="*{giangVien}"></div>
                     </div>
 

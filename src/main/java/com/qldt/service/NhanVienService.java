@@ -37,6 +37,8 @@ public interface NhanVienService {
     /** Tìm kiếm trong danh sách giảng viên */
     List<NhanVien> searchGiangVien(String keyword);
 
+    List<NhanVien> findAllCoVanHocTap();
+
     /** Số lượng giảng viên */
     long countGiangVien();
 

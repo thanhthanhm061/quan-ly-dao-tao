@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::main}, 'Chỉnh sửa lịch dạy bù')}">
+<head><title>Chỉnh sửa lịch dạy bù</title></head>
+<body>
+<main>
+    <div class="page-body">
+
+        <div class="page-header-card">
+            <div class="d-flex align-items-center gap-3">
+                <span class="page-icon">✏️</span>
+                <div>
+                    <h4 class="mb-0">Chỉnh sửa lịch dạy bù</h4>
+                    <small class="text-muted">Cập nhật thông tin buổi dạy bù</small>
+                </div>
+            </div>
+            <a th:href="@{/lich-day-bu/{id}(id=${lichBu.id})}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại
+            </a>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-circle me-2"></i><span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Thông tin cần cập nhật</h6>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Thông tin chỉ đọc -->
+                        <div class="mb-4 p-3 bg-light rounded">
+                            <div class="row g-2">
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">Lớp học phần</small>
+                                    <span class="fw-semibold" th:text="${lichBu.lopHocPhan.maLhp}"></span>
+                                    <small class="text-muted ms-1"
+                                           th:text="${lichBu.lopHocPhan.monHoc?.tenMon ?: ''}"></small>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">Giảng viên</small>
+                                    <span th:text="${lichBu.giangVien.hoTen ?: lichBu.giangVien.maNhanVien}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form th:action="@{/lich-day-bu/{id}/sua(id=${lichBu.id})}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                            <div class="row g-3">
+
+                                <!-- Ngày dạy bù -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Ngày dạy bù <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" name="ngayDayBu" class="form-control"
+                                           th:value="${#temporals.format(lichBu.ngayDayBu, 'yyyy-MM-dd')}"
+                                           required/>
+                                </div>
+
+                                <!-- Thứ trong tuần -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Thứ trong tuần <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="thuTrongTuan" class="form-select" required>
+                                        <option th:each="thu : ${thuList}"
+                                                th:value="${thu}"
+                                                th:text="${thu == 1 ? 'Chủ nhật' : 'Thứ ' + thu}"
+                                                th:selected="${thu == lichBu.thuTrongTuan}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Tiết bắt đầu -->
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">
+                                        Tiết bắt đầu <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" name="tietBatDau" class="form-control"
+                                           min="1" max="12"
+                                           th:value="${lichBu.tietBatDau}"
+                                           required/>
+                                </div>
+
+                                <!-- Số tiết -->
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">
+                                        Số tiết <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" name="soTiet" class="form-control"
+                                           min="1" max="6"
+                                           th:value="${lichBu.soTiet}"
+                                           required/>
+                                </div>
+
+                                <!-- Phòng học -->
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Phòng học</label>
+                                    <input type="text" name="phongHoc" class="form-control"
+                                           placeholder="VD: A101"
+                                           th:value="${lichBu.phongHoc}"/>
+                                </div>
+
+                                <!-- Ghi chú -->
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Ghi chú</label>
+                                    <textarea name="ghiChu" class="form-control" rows="3"
+                                              placeholder="Ghi chú thêm (nếu có)"
+                                              th:text="${lichBu.ghiChu}"></textarea>
+                                </div>
+
+                            </div>
+
+                            <div class="d-flex gap-2 justify-content-end mt-4">
+                                <a th:href="@{/lich-day-bu/{id}(id=${lichBu.id})}"
+                                   class="btn btn-outline-secondary">
+                                    <i class="bi bi-x me-1"></i> Hủy
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i> Lưu thay đổi
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+</body>
+</html>

@@ -14,6 +14,34 @@ import java.util.Optional;
 @Repository
 public interface DonNghiRepository extends JpaRepository<DonNghi, Long> {
 
+    // Đơn nghỉ đã duyệt của GV trong khoảng thời gian (cho calendar)
+    // SAU
+    @Query("""
+    SELECT d FROM DonNghi d
+    JOIN FETCH d.nguoiNop
+    WHERE d.nguoiNop.id = :gvId
+      AND d.trangThai = 'DA_DUYET'
+      AND d.ngayBatDau <= :to
+      AND d.ngayKetThuc >= :from
+""")
+    List<DonNghi> findDaDuyetByGvAndKhoang(
+            @Param("gvId") Long gvId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to);
+    // Đơn nghỉ đã duyệt của khoa trong khoảng thời gian
+    @Query("""
+    SELECT d FROM DonNghi d
+    JOIN FETCH d.nguoiNop
+    WHERE d.nguoiNop.khoa.id = :khoaId
+      AND d.trangThai = 'DA_DUYET'
+      AND d.ngayBatDau <= :to
+      AND d.ngayKetThuc >= :from
+""")
+    List<DonNghi> findDaDuyetByKhoaAndKhoang(
+            @Param("khoaId") Long khoaId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to);
+
     // Tất cả đơn của một nhân viên
     List<DonNghi> findByNguoiNopIdOrderByNgayTaoDesc(Long nguoiNopId);
 

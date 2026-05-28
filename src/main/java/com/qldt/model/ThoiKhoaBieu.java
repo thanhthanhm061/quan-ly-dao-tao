@@ -119,7 +119,11 @@ public class ThoiKhoaBieu {
 
     @Column(name = "tuan_hoc", length = 200)
     private String tuanHoc; // "1,2,3,5,7" — tuần áp dụng (bỏ tuần 4,6 nếu lễ)
+    @Column(name = "is_override", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isOverride = false;
 
+    @Column(name = "override_parent_id")
+    private Long overrideParentId;
     // Tính tự động từ LopHocPhan.monHoc.soTinChi
     public int getSoTietQuyDoi() {
         if (lopHocPhan == null || lopHocPhan.getMonHoc() == null) return soTiet;

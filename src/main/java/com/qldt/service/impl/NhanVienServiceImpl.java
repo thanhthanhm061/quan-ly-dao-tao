@@ -155,6 +155,11 @@ public class NhanVienServiceImpl implements NhanVienService {
     public long countGiangVien() {
         return nhanVienRepo.countGiangVien();
     }
+    @Override
+    @Transactional(readOnly = true)
+    public List<NhanVien> findAllCoVanHocTap() {
+        return nhanVienRepo.findAllCoVanHocTap();
+    }
 
     @Override
     @Transactional(readOnly = true)

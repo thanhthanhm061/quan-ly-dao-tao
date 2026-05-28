@@ -2,7 +2,6 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml"
       th:replace="~{layout/base :: layout(~{::content}, 'Lịch theo tuần')}">
 <body><th:block th:fragment="content">
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
         :root {
@@ -41,101 +40,128 @@
             padding:14px 20px; font-weight:600; border:none;
             display:flex; align-items:center; justify-content:space-between; }
 
-        /* ── Thanh tiến độ học kỳ compact ── */
-        .semester-progress-bar {
-            padding:10px 18px 11px; background:#f8fafc;
-            border-bottom:1px solid var(--border);
-            display:flex; align-items:center; gap:14px; flex-wrap:wrap;
-        }
+        /* ── Thanh tiến độ học kỳ ── */
+        .semester-progress-bar { padding:10px 18px 11px; background:#f8fafc;
+            border-bottom:1px solid var(--border); display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
         .sp-label { font-size:.78rem; font-weight:700; color:var(--text-muted);
             text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
-        .sp-nums { font-size:.82rem; color:var(--text-muted); white-space:nowrap; }
-        .sp-nums strong { color:var(--navy); font-weight:800; }
-        .sp-nums .warn { color:var(--amber); font-weight:700; }
         .sp-track-wrap { flex:1; min-width:100px; }
         .sp-track { height:5px; background:#e2e8f0; border-radius:5px; overflow:hidden; }
-        .sp-fill { height:100%; border-radius:5px;
-            background:linear-gradient(90deg,#059669,#34d399); transition:width .6s ease; }
-        .sp-pct { font-size:.72rem; color:var(--text-muted); margin-top:3px; font-weight:600; }
+        .sp-fill  { height:100%; border-radius:5px; background:linear-gradient(90deg,#059669,#34d399); transition:width .6s; }
+        .sp-pct   { font-size:.72rem; color:var(--text-muted); margin-top:3px; font-weight:600; }
+        .sp-nums  { font-size:.82rem; color:var(--text-muted); white-space:nowrap; }
+        .sp-nums strong { color:var(--navy); font-weight:800; }
+        .sp-nums .warn  { color:var(--amber); font-weight:700; }
 
-        /* ── Grid ── */
-        .week-nav .week-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 12px;
+        /* ── Week nav ── */
+        .week-btn { display:inline-flex; align-items:center; gap:4px; padding:6px 12px;
             border:1.5px solid rgba(255,255,255,.3); border-radius:8px; color:#fff;
             font-size:.82rem; font-weight:500; text-decoration:none; transition:.2s; }
-        .week-nav .week-btn:hover { background:rgba(255,255,255,.2); color:#fff; }
+        .week-btn:hover { background:rgba(255,255,255,.2); color:#fff; }
 
+        /* ── Grid ── */
         .tkb-grid-wrap { overflow-x:auto; }
         .tkb-grid { width:100%; min-width:760px; border-collapse:collapse; table-layout:fixed; }
         .tkb-grid th { background:var(--navy); color:#fff; font-weight:600; font-size:.8rem;
-            padding:10px 5px; text-align:center; border:1px solid rgba(255,255,255,.1); }
+            padding:0; text-align:center; border:1px solid rgba(255,255,255,.1);
+            position:relative; vertical-align:top; }
+        .tkb-grid th .th-main { padding:10px 5px 6px; }
         .tkb-grid th .date-sub { font-size:.72rem; font-weight:400; opacity:.7; display:block; margin-top:2px; }
         .tkb-grid th.today-col { background:#1d4ed8 !important; }
+
+        /* Banner nghỉ trong header cột */
+        .nghi-banner {
+            display:flex; align-items:center; gap:5px; justify-content:center;
+            background:rgba(220,38,38,.85); color:#fff; font-size:.65rem; font-weight:700;
+            padding:4px 6px; letter-spacing:.02em; border-top:1px solid rgba(255,255,255,.2);
+            animation: fadeIn .3s ease;
+        }
+        .nghi-banner i { font-size:.65rem; }
+
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+        .today-badge { background:#dbeafe; color:#1e40af; font-size:.68rem; font-weight:700;
+            padding:1px 6px; border-radius:4px; margin:2px auto 4px; display:inline-block; }
+
         .tkb-grid td { border:1px solid #e8edf3; padding:0; vertical-align:top;
             position:relative; overflow:visible; height:52px; }
         .tkb-grid td.tiet-label { background:var(--surface); font-size:.78rem; font-weight:700;
-            color:var(--text-muted); text-align:center; vertical-align:middle; }
+            color:var(--text-muted); text-align:center; vertical-align:middle; padding:4px; }
         .tkb-grid td.today-col { background:#f0f6ff; }
+        /* Cột có người nghỉ → tô nhẹ nền */
+        .tkb-grid td.col-has-nghi { background:#fff5f5; }
+        .tkb-grid td.today-col.col-has-nghi { background:#fef2f2; }
 
+        /* ── Cell lịch ── */
         .tkb-cell { position:absolute; z-index:2; left:2px; right:2px; top:2px;
-            border-radius:6px; overflow:hidden; display:flex; flex-direction:column;
-            justify-content:center; padding:5px 7px; cursor:pointer;
-            transition:transform .15s, box-shadow .15s; }
+            border-radius:6px; display:flex; flex-direction:column; justify-content:center;
+            padding:5px 7px; cursor:pointer; transition:transform .15s, box-shadow .15s; }
         .tkb-cell:hover { transform:scale(1.03); z-index:10; box-shadow:0 4px 20px rgba(0,0,0,.18); }
-        .tkb-cell .mon { font-size:.73rem; font-weight:700; line-height:1.25; }
+        .tkb-cell .mon  { font-size:.73rem; font-weight:700; line-height:1.25; }
         .tkb-cell .meta { font-size:.66rem; opacity:.75; margin-top:2px; }
-        .click-hint { font-size:.6rem; opacity:.45; margin-top:2px; }
+        .click-hint { font-size:.6rem; opacity:.4; margin-top:2px; }
 
-        /* Lịch dạy bù — viền đứt */
+        /* Cell dạy bù — viền đứt vàng */
         .tkb-cell.cell-bu {
-            border-style: dashed !important;
-            border-width: 1.5px !important;
-            border-color: currentColor !important;
-            opacity: .88;
+            border: 1.5px dashed var(--amber) !important;
+            background: #fffbeb !important;
         }
-        .bu-badge { display:inline-block; font-size:.58rem; font-weight:800; letter-spacing:.03em;
+        .bu-badge { display:inline-block; font-size:.58rem; font-weight:800;
             background:#fef3c7; color:#92400e; padding:1px 5px; border-radius:4px;
-            margin-bottom:2px; }
+            margin-bottom:2px; letter-spacing:.03em; }
+
+        /* Cell thông báo nghỉ (trong ô tiết) */
+        .nghi-cell {
+            position:absolute; z-index:1; left:1px; right:1px; top:1px; bottom:1px;
+            border-radius:5px; background:repeating-linear-gradient(
+                45deg, #fee2e2, #fee2e2 4px, #fff5f5 4px, #fff5f5 10px);
+            border:1px dashed #fca5a5; display:flex; align-items:center; justify-content:center;
+            cursor:pointer; transition:.15s;
+        }
+        .nghi-cell:hover { opacity:.8; }
+        .nghi-cell-label { font-size:.6rem; font-weight:700; color:#dc2626; text-align:center;
+            line-height:1.3; padding:2px; }
 
         .tag { display:inline-flex; align-items:center; font-size:.75rem;
             padding:3px 10px; border-radius:20px; font-weight:600; }
         .tag-primary { background:#dbeafe; color:#1e40af; }
-        .today-badge { background:#dbeafe; color:#1e40af; font-size:.68rem; font-weight:700;
-            padding:1px 6px; border-radius:4px; margin-top:2px; display:inline-block; }
 
         .empty-state { text-align:center; padding:56px 20px; color:var(--text-muted); }
         .empty-state i { font-size:3rem; opacity:.25; display:block; margin-bottom:14px; }
         .empty-state h5 { font-weight:600; color:#334155; }
 
-        /* ══════════════════════════════════════
-           POPUP NÂNG CẤP
-        ══════════════════════════════════════ */
+        /* ════════ POPUP ════════ */
         .tkb-overlay { position:fixed; inset:0; background:rgba(15,37,66,.45);
             z-index:5000; display:flex; align-items:center; justify-content:center;
-            opacity:0; pointer-events:none; transition:opacity .2s ease; }
+            opacity:0; pointer-events:none; transition:opacity .2s; }
         .tkb-overlay.show { opacity:1; pointer-events:auto; }
         .tkb-popup { background:#fff; border-radius:16px; width:480px; max-width:96vw;
-            box-shadow:0 24px 80px rgba(0,0,0,.25);
-            transform:translateY(16px) scale(.97); transition:transform .22s ease;
-            overflow:hidden; max-height:92vh; overflow-y:auto; }
+            box-shadow:0 24px 80px rgba(0,0,0,.25); transform:translateY(16px) scale(.97);
+            transition:transform .22s; overflow:hidden; max-height:92vh; overflow-y:auto; }
         .tkb-overlay.show .tkb-popup { transform:translateY(0) scale(1); }
 
-        .popup-header { padding:16px 20px 14px;
-            display:flex; align-items:flex-start; justify-content:space-between;
-            border-bottom:1px solid var(--border); }
+        .popup-header { padding:16px 20px 14px; display:flex; align-items:flex-start;
+            justify-content:space-between; border-bottom:1px solid var(--border); }
         .popup-mon { font-size:1rem; font-weight:700; color:var(--navy); }
         .popup-lhp { font-size:.8rem; color:var(--text-muted); margin-top:2px; }
         .popup-close { width:28px; height:28px; border:none; background:#f1f5f9; border-radius:8px;
             display:flex; align-items:center; justify-content:center; cursor:pointer;
-            color:var(--text-muted); font-size:.85rem; flex-shrink:0; transition:.15s; }
+            color:var(--text-muted); flex-shrink:0; transition:.15s; }
         .popup-close:hover { background:#e2e8f0; }
 
-        /* Tabs trong popup */
+        /* Popup nghỉ riêng — header đỏ */
+        .popup-header-nghi { background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff;
+            padding:16px 20px; border-radius:16px 16px 0 0; display:flex;
+            align-items:center; justify-content:space-between; }
+        .popup-header-nghi .popup-close { background:rgba(255,255,255,.2); color:#fff; }
+        .popup-header-nghi .popup-close:hover { background:rgba(255,255,255,.35); }
+
         .popup-tab-bar { display:flex; border-bottom:2px solid var(--border); background:#fafbfc; }
         .popup-tab { flex:1; padding:10px; text-align:center; font-size:.8rem; font-weight:600;
             color:var(--text-muted); cursor:pointer; border:none; background:none;
             border-bottom:2px solid transparent; margin-bottom:-2px; transition:.18s; }
         .popup-tab.active { color:var(--navy); border-bottom-color:var(--navy); }
-        .popup-tab:hover:not(.active) { background:#f1f5f9; color:var(--navy); }
+        .popup-tab:hover:not(.active) { background:#f1f5f9; }
 
         .popup-pane { display:none; }
         .popup-pane.show { display:block; }
@@ -148,86 +174,71 @@
         .popup-row .label { color:var(--text-muted); min-width:90px; font-size:.8rem; }
         .popup-row .value { font-weight:600; color:var(--text); }
 
-        /* Progress trong popup */
-        .popup-progress { padding:14px 20px; background:#f8fafc; border-top:1px solid var(--border); }
         .pp-title { font-size:.72rem; font-weight:700; color:var(--text-muted);
             text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; }
         .pp-stats { display:flex; gap:16px; margin-bottom:10px; }
         .pp-stat { text-align:center; }
         .pp-num { font-size:1.4rem; font-weight:800; color:var(--navy); line-height:1; }
-        .pp-num.done { color:var(--green); }
-        .pp-num.left { color:var(--amber); }
+        .pp-num.done { color:var(--green); } .pp-num.left { color:var(--amber); }
         .pp-label { font-size:.68rem; color:var(--text-muted); margin-top:2px; }
         .pp-track { height:8px; background:#e2e8f0; border-radius:8px; overflow:hidden; margin-bottom:4px; }
-        .pp-fill { height:100%; border-radius:8px;
-            background:linear-gradient(90deg,#059669,#34d399); transition:width .6s ease; width:0%; }
-        .pp-pct { font-size:.72rem; color:var(--text-muted); font-weight:600; }
-        .pp-loading { color:var(--text-muted); font-size:.8rem; }
+        .pp-fill  { height:100%; border-radius:8px; background:linear-gradient(90deg,#059669,#34d399); width:0; transition:width .6s; }
+        .pp-pct   { font-size:.72rem; color:var(--text-muted); font-weight:600; }
+        .pp-loading { color:var(--text-muted); font-size:.8rem; padding:6px 0; }
+        .pp-progress { padding:14px 20px; background:#f8fafc; border-top:1px solid var(--border); }
 
-        /* Lịch bù trong popup */
-        .popup-bu-list { padding:14px 20px; }
         .bu-item { display:flex; align-items:center; gap:10px; padding:8px 12px;
             border-radius:8px; background:#fef3c7; border-left:3px solid #d97706;
             margin-bottom:6px; font-size:.82rem; }
-        .bu-item:last-child { margin-bottom:0; }
         .bu-item .bu-date { font-weight:700; color:#92400e; min-width:80px; }
         .bu-item .bu-meta { color:#78350f; }
         .bu-empty { font-size:.82rem; color:var(--text-muted); text-align:center; padding:12px; }
-
-        /* Form chỉnh sửa */
-        .edit-form-body { padding:16px 20px; }
-        .edit-row { margin-bottom:14px; }
-        .edit-row label { font-size:.78rem; font-weight:700; color:var(--text-muted);
-            text-transform:uppercase; letter-spacing:.04em; display:block; margin-bottom:4px; }
-        .edit-row .form-control, .edit-row .form-select {
-            border:1.5px solid var(--border); border-radius:8px; font-size:.88rem; padding:8px 10px; }
-        .edit-row .form-control:focus, .edit-row .form-select:focus {
-            border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; outline:none; }
-        .edit-conflict { background:#fef2f2; color:#dc2626; border:1px solid #fecaca;
-            border-radius:8px; padding:8px 12px; font-size:.8rem; margin-bottom:10px; display:none; }
-        .edit-conflict.show { display:block; }
+        .popup-bu-list { padding:14px 20px; }
 
         .popup-actions { padding:14px 20px 16px; display:flex; gap:8px; flex-wrap:wrap;
             border-top:1px solid var(--border); background:#fafbfc; }
         .popup-btn { flex:1; min-width:120px; padding:9px 12px; border-radius:10px;
             font-size:.82rem; font-weight:600; border:none; cursor:pointer;
             display:flex; align-items:center; justify-content:center; gap:6px; transition:.18s; }
-        .popup-btn-leave { background:#fef2f2; color:#dc2626; border:1.5px solid #fecaca; }
-        .popup-btn-leave:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+        .popup-btn-leave   { background:#fef2f2; color:#dc2626; border:1.5px solid #fecaca; }
+        .popup-btn-leave:hover   { background:#dc2626; color:#fff; }
         .popup-btn-approve { background:#ecfdf5; color:#059669; border:1.5px solid #a7f3d0; }
         .popup-btn-approve:hover { background:#059669; color:#fff; }
-        .popup-btn-makeup { background:#eff6ff; color:#2563eb; border:1.5px solid #bfdbfe; }
-        .popup-btn-makeup:hover { background:#2563eb; color:#fff; }
-        .popup-btn-edit { background:var(--navy); color:#fff; border:1.5px solid var(--navy); }
-        .popup-btn-edit:hover { background:var(--navy-light); }
-        .popup-btn-save { background:var(--green); color:#fff; border:1.5px solid var(--green); }
-        .popup-btn-save:hover { opacity:.9; }
+        .popup-btn-makeup  { background:#eff6ff; color:#2563eb; border:1.5px solid #bfdbfe; }
+        .popup-btn-makeup:hover  { background:#2563eb; color:#fff; }
+        .popup-btn-edit    { background:var(--navy); color:#fff; border:1.5px solid var(--navy); }
+        .popup-btn-edit:hover    { background:var(--navy-light); }
+        .popup-btn-save    { background:var(--green); color:#fff; border:1.5px solid var(--green); }
 
-        /* Toast thông báo */
+        .edit-form-body { padding:16px 20px; }
+        .edit-row { margin-bottom:14px; }
+        .edit-row label { font-size:.78rem; font-weight:700; color:var(--text-muted);
+            text-transform:uppercase; letter-spacing:.04em; display:block; margin-bottom:4px; }
+        .edit-row .form-control,.edit-row .form-select { border:1.5px solid var(--border); border-radius:8px; font-size:.88rem; padding:8px 10px; }
+        .edit-conflict { background:#fef2f2; color:#dc2626; border:1px solid #fecaca;
+            border-radius:8px; padding:8px 12px; font-size:.8rem; margin-bottom:10px; display:none; }
+        .edit-conflict.show { display:block; }
+
+        /* Toast */
         .toast-notify { position:fixed; bottom:24px; right:24px; min-width:280px;
             background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,.18);
             border:1px solid var(--border); padding:14px 18px; z-index:99999;
-            transform:translateY(20px); opacity:0; pointer-events:none;
-            transition:all .25s ease; display:flex; align-items:center; gap:10px; }
-        .toast-notify.show { transform:translateY(0); opacity:1; pointer-events:auto; }
+            transform:translateY(20px); opacity:0; pointer-events:none; transition:all .25s;
+            display:flex; align-items:center; gap:10px; }
+        .toast-notify.show { transform:translateY(0); opacity:1; }
         .toast-notify.success { border-left:4px solid var(--green); }
         .toast-notify.error   { border-left:4px solid var(--rose); }
-        .toast-notify i { font-size:1.1rem; }
-        .toast-notify.success i { color:var(--green); }
-        .toast-notify.error   i { color:var(--rose); }
-        .toast-notify span { font-size:.88rem; font-weight:500; color:var(--text); }
+        .toast-notify.success i { color:var(--green); font-size:1.1rem; }
+        .toast-notify.error   i { color:var(--rose);  font-size:1.1rem; }
+        .toast-notify span { font-size:.88rem; font-weight:500; }
     </style>
 
     <!-- ── TABS ── -->
     <ul class="tkb-tabs nav">
-        <li class="nav-item"><a class="nav-link" th:href="@{/tkb}">
-            <i class="fas fa-calendar-alt me-1"></i>Tổng quan</a></li>
-        <li class="nav-item"><a class="nav-link active" th:href="@{/tkb/theo-tuan}">
-            <i class="fas fa-calendar-week me-1"></i>Theo tuần</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/tkb/theo-thang}">
-            <i class="fas fa-calendar me-1"></i>Theo tháng</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/tkb/thong-ke}">
-            <i class="fas fa-chart-bar me-1"></i>Thống kê tải</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb}"><i class="fas fa-calendar-alt me-1"></i>Tổng quan</a></li>
+        <li class="nav-item"><a class="nav-link active" th:href="@{/tkb/theo-tuan}"><i class="fas fa-calendar-week me-1"></i>Theo tuần</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb/theo-thang}"><i class="fas fa-calendar me-1"></i>Theo tháng</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/tkb/thong-ke}"><i class="fas fa-chart-bar me-1"></i>Thống kê tải</a></li>
     </ul>
 
     <!-- ── FILTER ── -->
@@ -237,8 +248,7 @@
                 <label class="form-label">Giảng viên</label>
                 <select name="giangVienId" class="form-select">
                     <option value="">— Chọn —</option>
-                    <option th:each="gv : ${giangViens}"
-                            th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
+                    <option th:each="gv : ${giangViens}" th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
                             th:selected="${gv.id == giangVienIdChon}"></option>
                 </select>
             </div>
@@ -246,8 +256,7 @@
                 <label class="form-label">Học kỳ</label>
                 <select name="hocKy" class="form-select">
                     <option value="">— Chọn —</option>
-                    <option th:each="hk : ${danhSachHocKy}"
-                            th:value="${hk}" th:text="${hk}"
+                    <option th:each="hk : ${danhSachHocKy}" th:value="${hk}" th:text="${hk}"
                             th:selected="${hk == hocKyChon}"></option>
                 </select>
             </div>
@@ -263,14 +272,13 @@
         </form>
     </div>
 
-    <!-- ── LỊCH TUẦN ── -->
+    <!-- ── NỘI DUNG ── -->
     <div th:if="${thoiKhoaBieus != null}">
-
         <div th:if="${#lists.isEmpty(thoiKhoaBieus)}" class="card">
             <div class="empty-state">
                 <i class="fas fa-calendar-times"></i>
                 <h5>Không có lịch trong tuần này</h5>
-                <p>Thử chọn tuần khác hoặc kiểm tra lại học kỳ đã chọn.</p>
+                <p>Thử chọn tuần khác hoặc kiểm tra lại học kỳ.</p>
             </div>
         </div>
 
@@ -288,7 +296,7 @@
                 </span>
                     <span class="tag tag-primary" th:text="${#lists.size(thoiKhoaBieus)} + ' buổi'"></span>
                 </div>
-                <div class="week-nav d-flex gap-2">
+                <div class="d-flex gap-2">
                     <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},hocKy=${hocKyChon},ngay=${ngayChon != null ? ngayChon.minusWeeks(1) : ''})}"
                        class="week-btn"><i class="fas fa-chevron-left"></i> Trước</a>
                     <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},hocKy=${hocKyChon},ngay=${ngayChon != null ? ngayChon.plusWeeks(1) : ''})}"
@@ -296,26 +304,22 @@
                 </div>
             </div>
 
-            <!-- ── Thanh tiến độ học kỳ ── -->
+            <!-- Thanh tiến độ học kỳ -->
             <div th:if="${thongKeTinChi != null}" class="semester-progress-bar">
                 <span class="sp-label"><i class="fas fa-graduation-cap me-1"></i>Tiến độ học kỳ</span>
                 <div class="sp-track-wrap">
                     <div class="sp-track">
-                        <div class="sp-fill"
-                             th:style="'width:' + ${thongKeTinChi['phanCong'] > 0 ?
-                             (thongKeTinChi['daDay'] * 100 / thongKeTinChi['phanCong']) : 0} + '%'"></div>
+                        <div class="sp-fill" th:style="'width:' + ${thongKeTinChi['phanCong'] > 0 ?
+                        (thongKeTinChi['daDay'] * 100 / thongKeTinChi['phanCong']) : 0} + '%'"></div>
                     </div>
-                    <div class="sp-pct"
-                         th:text="${thongKeTinChi['phanCong'] > 0 ?
-                         #numbers.formatDecimal(thongKeTinChi['daDay'] * 100.0 / thongKeTinChi['phanCong'],1,1) + '%' : '0%'}
-                         + ' đã xếp lịch'">
-                    </div>
+                    <div class="sp-pct" th:text="${thongKeTinChi['phanCong'] > 0 ?
+                    #numbers.formatDecimal(thongKeTinChi['daDay'] * 100.0 / thongKeTinChi['phanCong'],1,1) + '%' : '0%'}
+                    + ' đã xếp lịch'"></div>
                 </div>
                 <span class="sp-nums">
-                <strong th:text="${thongKeTinChi['daDay']}">0</strong> /
-                <span th:text="${thongKeTinChi['phanCong']}">0</span> TC
-                <span th:if="${thongKeTinChi['conLai'] > 0}" class="warn ms-2"
-                      th:text="'· Còn ' + ${thongKeTinChi['conLai']} + ' TC chưa xếp'"></span>
+                <strong th:text="${thongKeTinChi['daDay']}">0</strong>/<span th:text="${thongKeTinChi['phanCong']}">0</span> TC
+                <span class="warn ms-2" th:if="${thongKeTinChi['conLai'] > 0}"
+                      th:text="'· Còn ' + ${thongKeTinChi['conLai']} + ' TC'"></span>
             </span>
             </div>
 
@@ -323,18 +327,25 @@
                 <div class="tkb-grid-wrap">
                     <table class="tkb-grid">
                         <colgroup>
-                            <col style="width:60px"/>
+                            <col style="width:58px"/>
                             <col/><col/><col/><col/><col/><col/>
                         </colgroup>
                         <thead>
                         <tr>
-                            <th>Tiết</th>
+                            <th><div class="th-main">Tiết</div></th>
                             <th th:each="ngay,i : ${thuTrongTuan}"
-                                th:id="'th-' + ${i.index+2}"
+                                th:id="'col-th-' + ${i.index+2}"
                                 th:classappend="${ngay.equals(#temporals.createToday()) ? ' today-col' : ''}">
-                                <div th:text="'Thứ ' + ${i.index + 2}"></div>
-                                <span class="date-sub" th:text="${#temporals.format(ngay,'dd/MM')}"></span>
-                                <span th:if="${ngay.equals(#temporals.createToday())}" class="today-badge">Hôm nay</span>
+                                <div class="th-main">
+                                    <div th:text="'Thứ ' + ${i.index + 2}"></div>
+                                    <span class="date-sub" th:text="${#temporals.format(ngay,'dd/MM')}"></span>
+                                    <span th:if="${ngay.equals(#temporals.createToday())}" class="today-badge">Hôm nay</span>
+                                </div>
+                                <!-- Banner nghỉ — render bằng JS sau khi load dữ liệu -->
+                                <div th:id="'nghi-banner-' + ${i.index+2}" class="nghi-banner" style="display:none">
+                                    <i class="fas fa-user-times"></i>
+                                    <span></span>
+                                </div>
                             </th>
                         </tr>
                         </thead>
@@ -342,21 +353,20 @@
                         <tr th:each="tiet : ${#numbers.sequence(1,12)}">
                             <td class="tiet-label" th:text="'T' + ${tiet}"></td>
                             <td th:each="thuIdx,iter : ${thuTrongTuan}"
+                                th:id="'cell-' + ${iter.index+2} + '-' + ${tiet}"
                                 th:classappend="${thuIdx.equals(#temporals.createToday()) ? ' today-col' : ''}">
+
                                 <!-- Lịch chính -->
                                 <th:block th:each="tkb,i : ${thoiKhoaBieus}">
                                     <div th:if="${tkb.thuTrongTuan eq (iter.index + 2) and tkb.tietBatDau eq tiet}"
                                          class="tkb-cell"
                                          th:style="'height:' + ${tkb.soTiet*52-4} + 'px;' +
-                                         'background:' + ${i.index%6==0?'#dbeafe':i.index%6==1?'#d1fae5':
-                                           i.index%6==2?'#fef3c7':i.index%6==3?'#ede9fe':
-                                           i.index%6==4?'#fee2e2':'#e0f2fe'} +
+                                         'background:' + ${i.index%6==0?'#dbeafe':i.index%6==1?'#d1fae5':i.index%6==2?'#fef3c7':i.index%6==3?'#ede9fe':i.index%6==4?'#fee2e2':'#e0f2fe'} +
                                          ';border-left:3px solid ' +
-                                         ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':
-                                           i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':
-                                           i.index%6==4?'#dc2626':'#0284c7'}"
+                                         ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':i.index%6==4?'#dc2626':'#0284c7'}"
                                          th:attr="
                                          data-id=${tkb.id},
+                                         data-loai=CHINH,
                                          data-mon=${tkb.lopHocPhan?.monHoc?.tenMon},
                                          data-lhp=${tkb.lopHocPhan?.maLhp},
                                          data-gv=${tkb.lopHocPhan?.giangVien?.hoTen},
@@ -380,55 +390,19 @@
                                      "
                                          onclick="moPopupTKB(this)">
                                     <span class="mon"
-                                          th:style="'color:' + ${i.index%6==0?'#1e40af':i.index%6==1?'#065f46':
-                                            i.index%6==2?'#92400e':i.index%6==3?'#5b21b6':
-                                            i.index%6==4?'#991b1b':'#0c4a6e'}"
+                                          th:style="'color:' + ${i.index%6==0?'#1e40af':i.index%6==1?'#065f46':i.index%6==2?'#92400e':i.index%6==3?'#5b21b6':i.index%6==4?'#991b1b':'#0c4a6e'}"
                                           th:text="${tkb.lopHocPhan?.monHoc?.tenMon ?: '---'}"></span>
                                         <span class="meta text-muted"
-                                              th:text="'P.' + ${tkb.phongHoc ?: '?'} + ' · T' +
-                                             ${tkb.tietBatDau} + '–' + ${tkb.tietBatDau+tkb.soTiet-1}"></span>
-                                        <span class="meta text-muted"
-                                              th:if="${tkb.lopHocPhan?.giangVien != null}"
+                                              th:text="'P.' + ${tkb.phongHoc ?: '?'} + ' · T' + ${tkb.tietBatDau} + '–' + ${tkb.tietBatDau+tkb.soTiet-1}"></span>
+                                        <span class="meta text-muted" th:if="${tkb.lopHocPhan?.giangVien != null}"
                                               th:text="${tkb.lopHocPhan.giangVien.hoTen}"></span>
                                         <span class="meta text-muted"
                                               th:if="${tietMap != null and tietMap[tkb.tietBatDau] != null}"
-                                              th:text="${#temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm')}
-                                                   + ' – ' +
+                                              th:text="${#temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm')} + ' – ' +
                                                    ${tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
                                                      #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?'}">
                                     </span>
                                         <span class="click-hint">↗ Nhấn để xem chi tiết</span>
-                                    </div>
-                                </th:block>
-
-                                <!-- Lịch dạy bù (nếu có trong tuần này) -->
-                                <th:block th:if="${lichDayBuTuan != null}"
-                                          th:each="bu,bi : ${lichDayBuTuan}">
-                                    <div th:if="${bu.thuTrongTuan eq (iter.index + 2) and bu.tietBatDau eq tiet}"
-                                         class="tkb-cell cell-bu"
-                                         th:style="'height:' + ${bu.soTiet*52-4} + 'px;' +
-                                         'background:#fef3c7;border-left:3px dashed #d97706;color:#92400e'"
-                                         th:attr="
-                                         data-id=${bu.id},
-                                         data-mon=${bu.lopHocPhan?.monHoc?.tenMon},
-                                         data-lhp=${bu.lopHocPhan?.maLhp},
-                                         data-gv=${bu.lopHocPhan?.giangVien?.hoTen},
-                                         data-thu=${bu.tenThu},
-                                         data-ngay=${#temporals.format(thuTrongTuan[iter.index],'dd/MM/yyyy')},
-                                         data-ngay-iso=${#temporals.format(thuTrongTuan[iter.index],'yyyy-MM-dd')},
-                                         data-tiet=${'T' + bu.tietBatDau + ' → T' + (bu.tietBatDau+bu.soTiet-1)},
-                                         data-phong=${bu.phongHoc ?: '?'},
-                                         data-tc=${bu.lopHocPhan?.monHoc?.soTinChi},
-                                         data-lhp-id=${bu.lopHocPhan?.id},
-                                         data-gv-id=${bu.lopHocPhan?.giangVien?.id},
-                                         data-loai=BU
-                                     "
-                                         onclick="moPopupTKB(this)">
-                                        <span class="bu-badge">DẠY BÙ</span>
-                                        <span class="mon" style="color:#92400e"
-                                              th:text="${bu.lopHocPhan?.monHoc?.tenMon ?: '---'}"></span>
-                                        <span class="meta" style="opacity:.75"
-                                              th:text="'P.' + ${bu.phongHoc ?: '?'}"></span>
                                     </div>
                                 </th:block>
                             </td>
@@ -440,21 +414,34 @@
         </div>
     </div>
 
-    <!-- ── CHƯA CHỌN ── -->
+    <!-- Chưa chọn -->
     <div th:if="${thoiKhoaBieus == null}" class="card">
         <div class="empty-state">
             <i class="fas fa-calendar-week"></i>
             <h5>Chọn học kỳ và ngày để xem lịch tuần</h5>
-            <p>ADMIN có thể chọn thêm giảng viên cần xem.</p>
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════
-         POPUP CHI TIẾT + CHỈNH SỬA NÂNG CẤP
-    ══════════════════════════════════════════════════════════ -->
+    <!-- ══ DATA INJECT (lịch bù + thông báo nghỉ) ══ -->
+    <div id="dataBuTuan"   th:attr="data-json=${jsonBuTuan   ?: '[]'}" style="display:none"></div>
+    <div id="dataNghiTuan" th:attr="data-json=${jsonNghiTuan ?: '[]'}" style="display:none"></div>
+    <!-- Ngày các cột Thứ 2→7 (ISO) -->
+    <div id="dataThuTrongTuan"
+         th:with="
+         d0=${thuTrongTuan != null and thuTrongTuan.size() > 0 ? #temporals.format(thuTrongTuan[0],'yyyy-MM-dd') : ''},
+         d1=${thuTrongTuan != null and thuTrongTuan.size() > 1 ? #temporals.format(thuTrongTuan[1],'yyyy-MM-dd') : ''},
+         d2=${thuTrongTuan != null and thuTrongTuan.size() > 2 ? #temporals.format(thuTrongTuan[2],'yyyy-MM-dd') : ''},
+         d3=${thuTrongTuan != null and thuTrongTuan.size() > 3 ? #temporals.format(thuTrongTuan[3],'yyyy-MM-dd') : ''},
+         d4=${thuTrongTuan != null and thuTrongTuan.size() > 4 ? #temporals.format(thuTrongTuan[4],'yyyy-MM-dd') : ''},
+         d5=${thuTrongTuan != null and thuTrongTuan.size() > 5 ? #temporals.format(thuTrongTuan[5],'yyyy-MM-dd') : ''}
+     "
+         th:attr="data-json='[&quot;' + ${d0} + '&quot;,&quot;' + ${d1} + '&quot;,&quot;' + ${d2} + '&quot;,&quot;' + ${d3} + '&quot;,&quot;' + ${d4} + '&quot;,&quot;' + ${d5} + '&quot;]'"
+         style="display:none">
+    </div>
+
+    <!-- ══ POPUP LỊCH CHÍNH / LỊCH BÙ ══ -->
     <div class="tkb-overlay" id="tkbOverlay" onclick="dongPopup(event)">
         <div class="tkb-popup">
-
             <div class="popup-header">
                 <div>
                     <div class="popup-mon" id="popupMon">—</div>
@@ -462,110 +449,69 @@
                 </div>
                 <button class="popup-close" onclick="dongPopupBtn()"><i class="fas fa-times"></i></button>
             </div>
-
-            <!-- Tab bar -->
-            <div class="popup-tab-bar" id="popupTabBar">
-                <button class="popup-tab active" onclick="chuyenTab('chi-tiet')">
-                    <i class="fas fa-info-circle me-1"></i>Chi tiết
-                </button>
-                <button class="popup-tab" onclick="chuyenTab('tien-do')">
-                    <i class="fas fa-tasks me-1"></i>Tiến độ
-                </button>
-                <button class="popup-tab" onclick="chuyenTab('lich-bu')">
-                    <i class="fas fa-calendar-plus me-1"></i>Lịch bù
-                </button>
-                <button class="popup-tab" id="tabEdit" onclick="chuyenTab('chinh-sua')"
-                        style="display:none" sec:authorize="hasRole('ADMIN')">
+            <div class="popup-tab-bar">
+                <button class="popup-tab active" onclick="chuyenTab('chi-tiet')"><i class="fas fa-info-circle me-1"></i>Chi tiết</button>
+                <button class="popup-tab" onclick="chuyenTab('tien-do')"><i class="fas fa-tasks me-1"></i>Tiến độ</button>
+                <button class="popup-tab" onclick="chuyenTab('lich-bu')"><i class="fas fa-calendar-plus me-1"></i>Lịch bù</button>
+                <button class="popup-tab" id="tabEdit" onclick="chuyenTab('chinh-sua')" style="display:none" sec:authorize="hasRole('ADMIN')">
                     <i class="fas fa-edit me-1"></i>Chỉnh sửa
                 </button>
             </div>
-
-            <!-- PANE 1: Chi tiết -->
+            <!-- Pane chi tiết -->
             <div class="popup-pane show" id="pane-chi-tiet">
                 <div class="popup-body">
-                    <div class="popup-row">
-                        <i class="fas fa-user-tie"></i>
-                        <span class="label">Giảng viên</span>
-                        <span class="value" id="popupGv">—</span>
-                    </div>
-                    <div class="popup-row">
-                        <i class="fas fa-calendar-day"></i>
-                        <span class="label">Ngày học</span>
-                        <span class="value" id="popupNgay">—</span>
-                    </div>
-                    <div class="popup-row">
-                        <i class="fas fa-clock"></i>
-                        <span class="label">Tiết / Giờ</span>
-                        <span class="value" id="popupTiet">—</span>
-                    </div>
-                    <div class="popup-row">
-                        <i class="fas fa-door-open"></i>
-                        <span class="label">Phòng học</span>
-                        <span class="value" id="popupPhong">—</span>
-                    </div>
-                    <div class="popup-row">
-                        <i class="fas fa-graduation-cap"></i>
-                        <span class="label">Tín chỉ</span>
-                        <span class="value" id="popupTc">—</span>
-                    </div>
-                    <div class="popup-row" id="popupLoaiRow" style="display:none">
-                        <i class="fas fa-sync-alt"></i>
+                    <div class="popup-row"><i class="fas fa-user-tie"></i><span class="label">Giảng viên</span><span class="value" id="pGv">—</span></div>
+                    <div class="popup-row"><i class="fas fa-calendar-day"></i><span class="label">Ngày học</span><span class="value" id="pNgay">—</span></div>
+                    <div class="popup-row"><i class="fas fa-clock"></i><span class="label">Tiết / Giờ</span><span class="value" id="pTiet">—</span></div>
+                    <div class="popup-row"><i class="fas fa-door-open"></i><span class="label">Phòng học</span><span class="value" id="pPhong">—</span></div>
+                    <div class="popup-row"><i class="fas fa-graduation-cap"></i><span class="label">Tín chỉ</span><span class="value" id="pTc">—</span></div>
+                    <div class="popup-row" id="pBuRow" style="display:none">
+                        <i class="fas fa-sync-alt" style="color:#d97706"></i>
                         <span class="label">Loại lịch</span>
                         <span class="value"><span class="bu-badge">DẠY BÙ</span></span>
                     </div>
                 </div>
                 <div class="popup-actions" id="popupActions">
-                    <button id="btnXinNghi" class="popup-btn popup-btn-leave" onclick="diXinNghi()" style="display:none">
-                        <i class="fas fa-file-medical"></i> Xin nghỉ ngày này
-                    </button>
-                    <button id="btnDuyetDon" class="popup-btn popup-btn-approve" onclick="diDuyetDon()" style="display:none">
-                        <i class="fas fa-clipboard-check"></i> Xem đơn nghỉ
-                    </button>
-                    <button id="btnXepBu" class="popup-btn popup-btn-makeup" onclick="diXepBu()" style="display:none">
-                        <i class="fas fa-calendar-plus"></i> Xếp lịch dạy bù
-                    </button>
+                    <button id="btnXinNghi" class="popup-btn popup-btn-leave" onclick="diXinNghi()" style="display:none"><i class="fas fa-file-medical"></i> Xin nghỉ ngày này</button>
+                    <button id="btnDuyetDon" class="popup-btn popup-btn-approve" onclick="diDuyetDon()" style="display:none"><i class="fas fa-clipboard-check"></i> Xem đơn nghỉ</button>
+                    <button id="btnXepBu" class="popup-btn popup-btn-makeup" onclick="diXepBu()" style="display:none"><i class="fas fa-calendar-plus"></i> Xếp lịch dạy bù</button>
                 </div>
             </div>
-
-            <!-- PANE 2: Tiến độ tiết dạy -->
+            <!-- Pane tiến độ -->
             <div class="popup-pane" id="pane-tien-do">
-                <div class="popup-progress">
+                <div class="pp-progress">
                     <div class="pp-title"><i class="fas fa-chart-line me-1"></i>Tiến độ tiết dạy — môn này</div>
-                    <div id="ppContent">
-                        <div class="pp-loading"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải...</div>
-                    </div>
+                    <div id="ppContent"><div class="pp-loading">Đang tải...</div></div>
                 </div>
             </div>
-
-            <!-- PANE 3: Lịch dạy bù -->
+            <!-- Pane lịch bù -->
             <div class="popup-pane" id="pane-lich-bu">
                 <div class="popup-bu-list">
-                    <div class="pp-title" style="margin-bottom:10px">
-                        <i class="fas fa-calendar-alt me-1"></i>Lịch dạy bù — môn này
-                    </div>
-                    <div id="buContent">
-                        <div class="pp-loading"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải...</div>
-                    </div>
+                    <div class="pp-title" style="margin-bottom:10px"><i class="fas fa-calendar-alt me-1"></i>Lịch dạy bù — môn này</div>
+                    <div id="buContent"><div class="pp-loading">Đang tải...</div></div>
                 </div>
             </div>
-
-            <!-- PANE 4: Chỉnh sửa (Admin only) -->
+            <!-- Pane chỉnh sửa (Admin) -->
             <div class="popup-pane" id="pane-chinh-sua">
                 <div class="edit-form-body">
                     <div class="edit-conflict" id="editConflict">
                         <i class="fas fa-exclamation-triangle me-1"></i>
-                        <span id="editConflictMsg">Xung đột lịch!</span>
+                        <span id="editConflictMsg"></span>
                     </div>
+
+                    <!-- Label tuần đang sửa -->
+                    <div id="editWeekInfo" style="background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;
+             border-radius:8px;padding:8px 12px;font-size:.82rem;font-weight:500;margin-bottom:14px;">
+                        <i class="fas fa-calendar-week me-1"></i>
+                        Đang sửa tuần: <strong id="editWeekLabel">—</strong>
+                    </div>
+
                     <div class="row g-3">
-                        <div class="col-6 edit-row">
-                            <label>Thứ</label>
+                        <div class="col-6 edit-row"><label>Thứ</label>
                             <select id="editThu" class="form-select">
-                                <option value="2">Thứ 2</option>
-                                <option value="3">Thứ 3</option>
-                                <option value="4">Thứ 4</option>
-                                <option value="5">Thứ 5</option>
-                                <option value="6">Thứ 6</option>
-                                <option value="7">Thứ 7</option>
+                                <option value="2">Thứ 2</option><option value="3">Thứ 3</option>
+                                <option value="4">Thứ 4</option><option value="5">Thứ 5</option>
+                                <option value="6">Thứ 6</option><option value="7">Thứ 7</option>
                             </select>
                         </div>
                         <div class="col-6 edit-row">
@@ -580,33 +526,84 @@
                             <label>Phòng học</label>
                             <input type="text" id="editPhong" class="form-control" placeholder="VD: A101">
                         </div>
-                        <div class="col-6 edit-row">
-                            <label>Từ ngày</label>
-                            <input type="date" id="editTuanBd" class="form-control">
-                        </div>
-                        <div class="col-6 edit-row">
-                            <label>Đến ngày</label>
-                            <input type="date" id="editTuanKt" class="form-control">
+
+                        <!-- Từ/Đến ngày — ẩn mặc định, chỉ hiện khi bấm "Tất cả tuần" -->
+                        <div class="col-12" id="editDateRange" style="display:none">
+                            <div class="row g-3">
+                                <div class="col-6 edit-row">
+                                    <label>Từ ngày</label>
+                                    <input type="date" id="editTuanBd" class="form-control">
+                                </div>
+                                <div class="col-6 edit-row">
+                                    <label>Đến ngày</label>
+                                    <input type="date" id="editTuanKt" class="form-control">
+                                </div>
+                            </div>
                         </div>
                     </div>
+
                 </div>
-                <div class="popup-actions">
-                    <button class="popup-btn popup-btn-leave" style="max-width:120px" onclick="dongPopupBtn()">
+
+                <!-- Thêm vào popup-actions của pane-chinh-sua -->
+                <div class="popup-actions" style="gap:6px">
+                    <button class="popup-btn popup-btn-leave" style="max-width:90px;flex:0 0 auto"
+                            onclick="dongPopupBtn()">
                         <i class="fas fa-times me-1"></i>Hủy
                     </button>
-                    <button class="popup-btn popup-btn-save" onclick="luuChinhSua()">
-                        <i class="fas fa-save me-1"></i>Lưu thay đổi
+
+                    <!-- NÚT XÓA TUẦN NÀY — THÊM MỚI -->
+                    <button class="popup-btn" id="btnXoaTuanNay"
+                            style="background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;flex:1"
+                            onclick="xoaTuanNay()">
+                        <i class="fas fa-trash me-1"></i>Xóa tuần này
+                    </button>
+
+                    <button class="popup-btn" id="btnTuanNay"
+                            style="background:#eff6ff;color:#2563eb;border:1.5px solid #bfdbfe;flex:1"
+                            onclick="luuChinhSua('tuan-nay')">
+                        <i class="fas fa-calendar-day me-1"></i>Chỉ tuần này
+                    </button>
+                    <button class="popup-btn popup-btn-save" id="btnTatCa" style="flex:1"
+                            onclick="moTatCaMode()">
+                        <i class="fas fa-calendar-alt me-1"></i>Tất cả tuần
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
 
-        </div><!-- .tkb-popup -->
-    </div><!-- .tkb-overlay -->
+    <!-- ══ POPUP THÔNG BÁO NGHỈ ══ -->
+    <div class="tkb-overlay" id="nghiOverlay" onclick="dongNghiPopup(event)">
+        <div class="tkb-popup" style="max-width:400px">
+            <div class="popup-header-nghi">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <i class="fas fa-user-times fa-lg"></i>
+                    <div>
+                        <div style="font-weight:700;font-size:1rem" id="nghiGvTen">—</div>
+                        <div style="font-size:.8rem;opacity:.85">Thông báo nghỉ có phép</div>
+                    </div>
+                </div>
+                <button class="popup-close" onclick="dongNghiPopup()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="popup-body">
+                <div class="popup-row"><i class="fas fa-calendar-times" style="color:#dc2626"></i><span class="label">Ngày nghỉ</span><span class="value" id="nghiNgay">—</span></div>
+                <div class="popup-row"><i class="fas fa-tag" style="color:#7c3aed"></i><span class="label">Loại nghỉ</span><span class="value" id="nghiLoai">—</span></div>
+                <div class="popup-row"><i class="fas fa-comment-alt" style="color:#64748b"></i><span class="label">Lý do</span><span class="value" id="nghiLyDo" style="font-weight:400;color:var(--text-muted)">—</span></div>
+            </div>
+            <div class="popup-actions" id="nghiActions">
+                <button id="btnXepBuNghi" class="popup-btn popup-btn-makeup" onclick="diXepBuTuNghi()" style="display:none">
+                    <i class="fas fa-calendar-plus"></i> Xếp lịch dạy bù
+                </button>
+                <button class="popup-btn" style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;max-width:100px" onclick="dongNghiPopup()">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Toast thông báo -->
+    <!-- Toast -->
     <div class="toast-notify" id="toastNotify">
-        <i class="fas fa-check-circle" id="toastIcon"></i>
-        <span id="toastMsg">Thông báo</span>
+        <i id="toastIcon"></i><span id="toastMsg"></span>
     </div>
 
     <!-- Server meta -->
@@ -621,64 +618,193 @@
          style="display:none"></div>
 
 </th:block></body></html>
-
 <script th:inline="javascript">
+
+
     /* ═══════════════════════════════════════════════════
-       BIẾN TOÀN CỤC
+       DỮ LIỆU TỪ SERVER
     ═══════════════════════════════════════════════════ */
     const overlay  = document.getElementById('tkbOverlay');
+    const nghiOvl  = document.getElementById('nghiOverlay');
     const meta     = document.getElementById('serverMeta');
 
     const isAdmin  = meta?.dataset.isAdmin  === 'true';
     const isQuanLy = meta?.dataset.isQuanLy === 'true';
     const curNvId  = meta?.dataset.currentNvId || '';
     const hocKy    = meta?.dataset.hocKy || '';
+    const gvIdChon = meta?.dataset.gvIdChon || '';
 
-    let currentId      = null;
-    let currentLhpId   = null;
-    let currentGvId    = null;
-    let currentNgayIso = '';
-    let currentTabData = {};
+    let currentId = null, currentLhpId = '', currentGvId = '', currentNgayIso = '';
+    let currentNghiGvId = '', currentNghiGvTen = '';
+
+    // Parse JSON data
+    let buList   = [];
+    let nghiList = [];
+    let thuISOs  = []; // ['2026-05-26', ...] — Thứ 2 → Thứ 7
+
+    try { buList   = JSON.parse(document.getElementById('dataBuTuan')?.dataset.json   || '[]'); } catch(e){}
+    try { nghiList = JSON.parse(document.getElementById('dataNghiTuan')?.dataset.json || '[]'); } catch(e){}
+    try { thuISOs  = JSON.parse(document.getElementById('dataThuTrongTuan')?.dataset.json || '[]'); } catch(e){}
 
     /* ═══════════════════════════════════════════════════
-       MỞ POPUP
+       RENDER LỊCH BÙ + THÔNG BÁO NGHỈ SAU KHI DOM SẴN SÀNG
+    ═══════════════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', () => {
+        renderLichBu();
+        renderThongBaoNghi();
+    });
+    // Thêm vào <script> trong theo-tuan-v2.html
+
+    async function xoaTuanNay() {
+        if (!currentId || !currentNgayIso) {
+            showToast('error', 'Không xác định được lịch!'); return;
+        }
+        if (!confirm('Xóa lịch tuần này?\n(Các tuần khác không bị ảnh hưởng)')) return;
+
+        const csrf  = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfH = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+        try {
+            const res = await fetch(
+                `/tkb/xoa-tuan/${currentId}?ngay=${currentNgayIso}`,
+                {
+                    method: 'DELETE',
+                    headers: csrfH && csrf ? { [csrfH]: csrf } : {}
+                }
+            );
+            const data = await res.json();
+            if (!res.ok) {
+                showToast('error', data.message || 'Có lỗi!'); return;
+            }
+            dongPopupBtn();
+            showToast('success', data.message || 'Đã xóa!');
+            setTimeout(() => location.reload(), 1200);
+        } catch {
+            showToast('error', 'Lỗi kết nối.');
+        }
+    }
+    /* ── Render ô dạy bù trực tiếp vào grid ── */
+    function renderLichBu() {
+        buList.forEach(bu => {
+            if (!bu.ngayDayBu) return; // yyyy-MM-dd
+            // Tìm cột thứ tương ứng
+            const colIdx = thuISOs.findIndex(iso => iso === bu.ngayDayBu);
+            if (colIdx < 0) return; // ngày bù không trong tuần này
+            const thu = colIdx + 2; // 2→7
+            const tiet = bu.tietBatDau;
+            if (!tiet) return;
+
+            const td = document.getElementById(`cell-${thu}-${tiet}`);
+            if (!td) return;
+
+            const height = (bu.soTiet || 3) * 52 - 4;
+            const div = document.createElement('div');
+            div.className = 'tkb-cell cell-bu';
+            div.style.cssText = `height:${height}px; border-left:3px dashed #d97706; background:#fffbeb;`;
+            div.dataset.loai    = 'BU';
+            div.dataset.mon     = bu.tenMon  || '---';
+            div.dataset.lhp     = bu.maLhp   || '';
+            div.dataset.gv      = bu.hoTenGv || '';
+            div.dataset.phong   = bu.phongHoc || '?';
+            div.dataset.tc      = bu.soTinChi || 0;
+            div.dataset.gio     = bu.gioHoc   || '';
+            div.dataset.lhpId   = bu.lhpId   || '';
+            div.dataset.gvId    = bu.gvId    || '';
+            div.dataset.ngayIso = bu.ngayDayBu;
+            div.dataset.ngay    = formatNgay(bu.ngayDayBu);
+            div.dataset.thu     = 'Thứ ' + thu;
+            div.dataset.tiet    = `T${tiet} → T${tiet + (bu.soTiet||3) - 1}`;
+            div.onclick = () => moPopupTKB(div);
+
+            div.innerHTML = `
+            <span class="bu-badge">DẠY BÙ</span>
+            <span class="mon" style="color:#92400e">${escH(bu.tenMon)}</span>
+            <span class="meta" style="color:#78350f;opacity:.8">P.${escH(bu.phongHoc)} · T${tiet}–${tiet+(bu.soTiet||3)-1}</span>
+            <span class="meta" style="color:#78350f;opacity:.7">${escH(bu.gioHoc)}</span>
+        `;
+            td.appendChild(div);
+        });
+    }
+
+    /* ── Render banner nghỉ vào header cột + ô đỏ vào từng tiết ── */
+    function renderThongBaoNghi() {
+        nghiList.forEach(n => {
+            if (!n.ngayNghiBatDau || !n.ngayNghiKetThuc) return;
+            const dtBd = new Date(n.ngayNghiBatDau);
+            const dtKt = new Date(n.ngayNghiKetThuc);
+
+            thuISOs.forEach((iso, idx) => {
+                const dtCol = new Date(iso);
+                if (dtCol < dtBd || dtCol > dtKt) return;
+                const thu = idx + 2;
+
+                // 1. Banner đầu cột
+                const banner = document.getElementById(`nghi-banner-${thu}`);
+                if (banner) {
+                    banner.style.display = 'flex';
+                    banner.querySelector('span').textContent = n.hoTenGv + ' nghỉ';
+                    banner.dataset.gvId    = n.gvId    || '';
+                    banner.dataset.gvTen   = n.hoTenGv || '';
+                    banner.dataset.ngayBd  = n.ngayNghiBatDau;
+                    banner.dataset.ngayKt  = n.ngayNghiKetThuc;
+                    banner.dataset.lyDo    = n.lyDo    || '';
+                    banner.dataset.loaiNghi= n.loaiNghi|| '';
+                    banner.style.cursor    = 'pointer';
+                    banner.onclick = () => moNghiPopup(banner.dataset);
+                }
+
+                // 2. Tô nền cột (tất cả td trong cột đó)
+                document.querySelectorAll(`td[id^="cell-${thu}-"]`).forEach(td => {
+                    td.classList.add('col-has-nghi');
+                    // Thêm ô đỏ nhỏ ở tiết 1 (chỉ 1 lần)
+                    if (td.id === `cell-${thu}-1` && !td.querySelector('.nghi-cell')) {
+                        const nghiDiv = document.createElement('div');
+                        nghiDiv.className = 'nghi-cell';
+                        nghiDiv.dataset.gvId    = n.gvId    || '';
+                        nghiDiv.dataset.gvTen   = n.hoTenGv || '';
+                        nghiDiv.dataset.ngayBd  = n.ngayNghiBatDau;
+                        nghiDiv.dataset.ngayKt  = n.ngayNghiKetThuc;
+                        nghiDiv.dataset.lyDo    = n.lyDo    || '';
+                        nghiDiv.dataset.loaiNghi= n.loaiNghi|| '';
+                        nghiDiv.innerHTML = `<div class="nghi-cell-label"><i class="fas fa-user-times"></i><br>${escH(n.hoTenGv)}<br>Nghỉ</div>`;
+                        nghiDiv.onclick = (e) => { e.stopPropagation(); moNghiPopup(nghiDiv.dataset); };
+                        td.appendChild(nghiDiv);
+                    }
+                });
+            });
+        });
+    }
+
+    /* ═══════════════════════════════════════════════════
+       POPUP LỊCH CHÍNH / BÙ
     ═══════════════════════════════════════════════════ */
     function moPopupTKB(el) {
         const d = el.dataset;
-        currentId      = d.id;
-        currentLhpId   = d.lhpId   || '';
-        currentGvId    = d.gvId    || '';
-        currentNgayIso = d.ngayIso || '';
+        currentId      = d.id    || null;
+        currentLhpId   = d.lhpId || '';
+        currentGvId    = d.gvId  || '';
+        currentNgayIso = d.ngayIso || d.ngayiso || '';
 
-        // Fill tab Chi tiết
-        document.getElementById('popupMon').textContent   = d.mon  || '—';
-        document.getElementById('popupLhp').textContent   = d.lhp  || '—';
-        document.getElementById('popupGv').textContent    = d.gv   || '—';
-        document.getElementById('popupNgay').textContent  = (d.thu || '') + ', ' + (d.ngay || '—');
-        document.getElementById('popupTiet').textContent  = (d.tiet || '—') + (d.gio ? '  (' + d.gio + ')' : '');
-        document.getElementById('popupPhong').textContent = 'Phòng ' + (d.phong || '?');
-        document.getElementById('popupTc').textContent    = d.tc ? d.tc + ' tín chỉ' : '—';
+        document.getElementById('popupMon').textContent  = d.mon   || '—';
+        document.getElementById('popupLhp').textContent  = d.lhp   || '—';
+        document.getElementById('pGv').textContent       = d.gv    || '—';
+        document.getElementById('pNgay').textContent     = (d.thu  || '') + ', ' + (d.ngay || '—');
+        document.getElementById('pTiet').textContent     = (d.tiet || '—') + (d.gio ? '  (' + d.gio + ')' : '');
+        document.getElementById('pPhong').textContent    = 'Phòng ' + (d.phong || '?');
+        document.getElementById('pTc').textContent       = d.tc ? d.tc + ' tín chỉ' : '—';
 
-        // Nhãn dạy bù
-        const loaiRow = document.getElementById('popupLoaiRow');
-        loaiRow.style.display = d.loai === 'BU' ? '' : 'none';
-
-        // Buttons quyền
-        const laMinhDang = curNvId && currentGvId && curNvId === currentGvId;
         const isBu = d.loai === 'BU';
-        document.getElementById('btnXinNghi').style.display  = (laMinhDang && !isBu) ? '' : 'none';
+        document.getElementById('pBuRow').style.display = isBu ? '' : 'none';
+
+        const laMiNh = curNvId && currentGvId && curNvId === currentGvId;
+        document.getElementById('btnXinNghi').style.display  = (laMiNh && !isBu) ? '' : 'none';
         document.getElementById('btnDuyetDon').style.display = (isAdmin || isQuanLy) ? '' : 'none';
         document.getElementById('btnXepBu').style.display    = (isAdmin || isQuanLy) ? '' : 'none';
-        document.getElementById('popupActions').style.display =
-            (laMinhDang || isAdmin || isQuanLy) ? '' : 'none';
+        document.getElementById('popupActions').style.display = (laMiNh || isAdmin || isQuanLy) ? '' : 'none';
 
-        // Tab Chỉnh sửa — chỉ Admin, chỉ lịch chính
         const tabEdit = document.getElementById('tabEdit');
-        if (tabEdit) {
-            tabEdit.style.display = (isAdmin && !isBu) ? '' : 'none';
-        }
+        if (tabEdit) tabEdit.style.display = (isAdmin && !isBu) ? '' : 'none';
 
-        // Pre-fill form chỉnh sửa
         if (isAdmin && !isBu) {
             document.getElementById('editThu').value    = d.thuNum  || '2';
             document.getElementById('editTietBd').value = d.tietBd  || '1';
@@ -688,156 +814,215 @@
             document.getElementById('editTuanKt').value = d.tuanKetThuc || '';
         }
 
-        // Reset tabs
         chuyenTab('chi-tiet');
         overlay.classList.add('show');
+        if (currentLhpId) { loadTienDo(currentLhpId); loadLichBu(currentLhpId); }
+    }
 
-        // Load tiến độ + lịch bù background
-        if (currentLhpId) {
-            loadTienDo(currentLhpId);
-            loadLichBu(currentLhpId);
-        }
+    /* ═══════════════════════════════════════════════════
+       POPUP THÔNG BÁO NGHỈ
+    ═══════════════════════════════════════════════════ */
+    function moNghiPopup(d) {
+        currentNghiGvId  = d.gvId  || '';
+        currentNghiGvTen = d.gvTen || '—';
+
+        document.getElementById('nghiGvTen').textContent = d.gvTen || '—';
+        const bd = formatNgay(d.ngayBd), kt = formatNgay(d.ngayKt);
+        document.getElementById('nghiNgay').textContent  = bd === kt ? bd : `${bd} → ${kt}`;
+        document.getElementById('nghiLoai').textContent  = d.loaiNghi || 'Nghỉ phép';
+        document.getElementById('nghiLyDo').textContent  = d.lyDo || '—';
+
+        document.getElementById('btnXepBuNghi').style.display = (isAdmin || isQuanLy) ? '' : 'none';
+        nghiOvl.classList.add('show');
+    }
+
+    function dongNghiPopup(e) {
+        if (!e || e.target === nghiOvl) nghiOvl.classList.remove('show');
     }
 
     /* ═══════════════════════════════════════════════════
        CHUYỂN TAB
     ═══════════════════════════════════════════════════ */
-    function chuyenTab(tabName) {
+    function chuyenTab(name) {
         document.querySelectorAll('.popup-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.popup-pane').forEach(p => p.classList.remove('show'));
+        document.querySelector(`.popup-tab[onclick="chuyenTab('${name}')"]`)?.classList.add('active');
+        document.getElementById('pane-' + name)?.classList.add('show');
 
-        const btn = document.querySelector(`.popup-tab[onclick="chuyenTab('${tabName}')"]`);
-        if (btn) btn.classList.add('active');
-        const pane = document.getElementById('pane-' + tabName);
-        if (pane) pane.classList.add('show');
+        // THÊM ĐOẠN NÀY:
+        if (name === 'chinh-sua' && currentNgayIso) {
+            // Reset về trạng thái mặc định mỗi lần mở
+            tatCaMode = false;
+            document.getElementById('editDateRange').style.display = 'none';
+            const btnTatCa = document.getElementById('btnTatCa');
+            btnTatCa.innerHTML = '<i class="fas fa-calendar-alt me-1"></i>Tất cả tuần';
+            btnTatCa.onclick = moTatCaMode;
+
+            // Hiển thị tuần đang sửa
+            const dt   = new Date(currentNgayIso + 'T00:00:00');
+            const dow  = dt.getDay();
+            const diff = dow === 0 ? -6 : 1 - dow;
+            const thu2 = new Date(dt); thu2.setDate(dt.getDate() + diff);
+            const thu7 = new Date(thu2); thu7.setDate(thu2.getDate() + 5);
+            const fmt  = d => String(d.getDate()).padStart(2,'0') + '/'
+                + String(d.getMonth()+1).padStart(2,'0') + '/'
+                + d.getFullYear();
+            document.getElementById('editWeekLabel').textContent = fmt(thu2) + ' – ' + fmt(thu7);
+        }
     }
 
     /* ═══════════════════════════════════════════════════
-       LOAD TIẾN ĐỘ TIẾT DẠY (AJAX)
+       LOAD TIẾN ĐỘ (AJAX)
     ═══════════════════════════════════════════════════ */
     async function loadTienDo(lhpId) {
         const el = document.getElementById('ppContent');
         el.innerHTML = '<div class="pp-loading"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải...</div>';
         try {
             const res = await fetch(`/tkb/tien-do-mon?lhpId=${lhpId}`);
-            if (!res.ok) throw new Error();
+            if (!res.ok) throw 0;
             const d = await res.json();
             const pct = Math.min(100, d.phanTram || 0).toFixed(0);
             el.innerHTML = `
             <div class="pp-stats">
-                <div class="pp-stat">
-                    <div class="pp-num done">${d.tietDaDay}</div>
-                    <div class="pp-label">Tiết đã xếp</div>
-                </div>
-                <div style="font-size:1.2rem;color:#e2e8f0;align-self:center">→</div>
-                <div class="pp-stat">
-                    <div class="pp-num">${d.tietCanDay}</div>
-                    <div class="pp-label">Tổng tiết cần</div>
-                </div>
-                <div style="font-size:1.2rem;color:#e2e8f0;align-self:center">·</div>
-                <div class="pp-stat">
-                    <div class="pp-num left">${d.tietConLai}</div>
-                    <div class="pp-label">Còn lại</div>
-                </div>
+                <div class="pp-stat"><div class="pp-num done">${d.tietDaDay}</div><div class="pp-label">Đã xếp</div></div>
+                <div style="align-self:center;color:#e2e8f0;font-size:1.1rem">→</div>
+                <div class="pp-stat"><div class="pp-num">${d.tietCanDay}</div><div class="pp-label">Cần dạy</div></div>
+                <div style="align-self:center;color:#e2e8f0;font-size:1.1rem">·</div>
+                <div class="pp-stat"><div class="pp-num left">${d.tietConLai}</div><div class="pp-label">Còn lại</div></div>
             </div>
             <div class="pp-track"><div class="pp-fill" style="width:${pct}%"></div></div>
-            <div class="pp-pct">${pct}% tiết đã được xếp lịch</div>
+            <div class="pp-pct">${pct}% tiết đã xếp lịch</div>
             ${d.tietConLai === 0
-                ? '<div style="font-size:.78rem;color:var(--green);margin-top:6px;font-weight:600"><i class="fas fa-check-circle me-1"></i>Đã xếp đủ lịch cho môn này!</div>'
-                : `<div style="font-size:.78rem;color:var(--amber);margin-top:6px;font-weight:600"><i class="fas fa-exclamation-circle me-1"></i>Còn thiếu ${d.tietConLai} tiết cần xếp</div>`}
+                ? '<div style="font-size:.78rem;color:#059669;margin-top:6px;font-weight:600"><i class="fas fa-check-circle me-1"></i>Đã xếp đủ lịch!</div>'
+                : `<div style="font-size:.78rem;color:#d97706;margin-top:6px;font-weight:600"><i class="fas fa-exclamation-circle me-1"></i>Còn thiếu ${d.tietConLai} tiết</div>`}
         `;
-        } catch(e) {
-            el.innerHTML = '<div class="pp-loading">Không thể tải dữ liệu tiến độ.</div>';
-        }
+        } catch { el.innerHTML = '<div class="pp-loading">Không tải được dữ liệu.</div>'; }
     }
 
     /* ═══════════════════════════════════════════════════
-       LOAD LỊCH DẠY BÙ (AJAX)
+       LOAD LỊCH BÙ (AJAX)
     ═══════════════════════════════════════════════════ */
     async function loadLichBu(lhpId) {
         const el = document.getElementById('buContent');
         el.innerHTML = '<div class="pp-loading"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải...</div>';
         try {
             const res = await fetch(`/lich-day-bu/api/theo-lhp?lhpId=${lhpId}`);
-            if (!res.ok) throw new Error();
+            if (!res.ok) throw 0;
             const list = await res.json();
-            if (!list.length) {
-                el.innerHTML = '<div class="bu-empty"><i class="fas fa-calendar-check me-1"></i>Chưa có lịch dạy bù cho môn này.</div>';
-                return;
-            }
-            el.innerHTML = list.map(b => `
-            <div class="bu-item">
+            el.innerHTML = list.length
+                ? list.map(b => `<div class="bu-item">
                 <span class="bu-date">${b.ngayDayBu || '—'}</span>
-                <span class="bu-meta">P.${b.phongHoc || '?'} · T${b.tietBatDau}–${b.tietKetThuc}</span>
-                ${b.ghiChu ? `<span style="font-size:.76rem;color:#78350f;margin-left:auto">${b.ghiChu}</span>` : ''}
-            </div>
-        `).join('');
-        } catch(e) {
-            el.innerHTML = '<div class="bu-empty">Không thể tải lịch dạy bù.</div>';
-        }
+                <span class="bu-meta">P.${b.phongHoc||'?'} · T${b.tietBatDau}–${b.tietKetThuc}</span>
+                ${b.ghiChu ? `<span style="font-size:.72rem;color:#78350f;margin-left:auto">${escH(b.ghiChu)}</span>` : ''}
+              </div>`).join('')
+                : '<div class="bu-empty"><i class="fas fa-calendar-check me-1"></i>Chưa có lịch dạy bù.</div>';
+        } catch { el.innerHTML = '<div class="bu-empty">Không tải được dữ liệu.</div>'; }
     }
 
     /* ═══════════════════════════════════════════════════
-       LƯU CHỈNH SỬA (AJAX PATCH)
+       LƯU CHỈNH SỬA INLINE (ADMIN)
+        ═══════════════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════
+       CHỈNH SỬA — 2 chế độ
     ═══════════════════════════════════════════════════ */
-    async function luuChinhSua() {
+    let tatCaMode = false;
+
+    // Nút "Tất cả tuần": lần đầu bấm → hiện Từ/Đến ngày + đổi nút thành "Xác nhận lưu"
+    // Lần 2 bấm → lưu thật sự
+    function moTatCaMode() {
+        if (!tatCaMode) {
+            tatCaMode = true;
+            document.getElementById('editDateRange').style.display = '';
+            const btn = document.getElementById('btnTatCa');
+            btn.innerHTML = '<i class="fas fa-save me-1"></i>Xác nhận lưu tất cả';
+            btn.onclick = () => luuChinhSua('tat-ca');
+        }
+    }
+
+    async function luuChinhSua(cheDoLuu) {
         if (!currentId) return;
-        const payload = {
-            thuTrongTuan : parseInt(document.getElementById('editThu').value),
-            tietBatDau   : parseInt(document.getElementById('editTietBd').value),
-            soTiet       : parseInt(document.getElementById('editSoTiet').value),
-            phongHoc     : document.getElementById('editPhong').value.trim(),
-            tuanBatDau   : document.getElementById('editTuanBd').value || null,
-            tuanKetThuc  : document.getElementById('editTuanKt').value || null
+        document.getElementById('editConflict').classList.remove('show');
+
+        const csrf  = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfH = document.querySelector('meta[name="_csrf_header"]')?.content;
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(csrfH && csrf ? { [csrfH]: csrf } : {})
         };
 
-        // Lấy CSRF token từ meta tag (Spring Security)
-        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+        const thuVal = +document.getElementById('editThu').value;
+        const tietBd = +document.getElementById('editTietBd').value;
+        const soTiet = +document.getElementById('editSoTiet').value;
+        const phong  = document.getElementById('editPhong').value.trim();
 
         try {
-            const res = await fetch(`/tkb/cap-nhat/${currentId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {})
-                },
-                body: JSON.stringify(payload)
-            });
+            let res;
+            if (cheDoLuu === 'tuan-nay') {
+                if (!currentNgayIso) { showToast('error', 'Không xác định được tuần!'); return; }
+                res = await fetch(`/tkb/override-tuan/${currentId}?ngay=${currentNgayIso}`, {
+                    method: 'PATCH', headers,
+                    body: JSON.stringify({
+                        thuTrongTuan: thuVal, tietBatDau: tietBd,
+                        soTiet: soTiet, phongHoc: phong,
+                        ngayTrongTuan: currentNgayIso
+                    })
+                });
+            } else {
+                res = await fetch(`/tkb/cap-nhat/${currentId}`, {
+                    method: 'PATCH', headers,
+                    body: JSON.stringify({
+                        thuTrongTuan: thuVal, tietBatDau: tietBd,
+                        soTiet: soTiet, phongHoc: phong,
+                        tuanBatDau:  document.getElementById('editTuanBd').value || null,
+                        tuanKetThuc: document.getElementById('editTuanKt').value || null
+                    })
+                });
+            }
+
             const data = await res.json();
             if (!res.ok) {
-                document.getElementById('editConflictMsg').textContent = data.message || 'Có lỗi xảy ra!';
+                document.getElementById('editConflictMsg').textContent = data.message || 'Có lỗi!';
                 document.getElementById('editConflict').classList.add('show');
                 return;
             }
-            document.getElementById('editConflict').classList.remove('show');
             dongPopupBtn();
-            showToast('success', 'Cập nhật lịch học thành công!');
+            showToast('success', data.message || 'Cập nhật thành công!');
             setTimeout(() => location.reload(), 1200);
-        } catch(e) {
-            showToast('error', 'Lỗi kết nối. Vui lòng thử lại.');
-        }
+
+        } catch { showToast('error', 'Lỗi kết nối.'); }
     }
 
     /* ═══════════════════════════════════════════════════
        ĐÓNG POPUP & ĐIỀU HƯỚNG
     ═══════════════════════════════════════════════════ */
-    function dongPopup(e) { if (e.target === overlay) overlay.classList.remove('show'); }
+    function dongPopup(e)   { if (e.target === overlay)  overlay.classList.remove('show'); }
     function dongPopupBtn() { overlay.classList.remove('show'); }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('show'); });
-    function diXinNghi()  { location.href = '/don-nghi/tao?ngayBatDau=' + currentNgayIso + '&ngayKetThuc=' + currentNgayIso; }
-    function diDuyetDon() { location.href = '/don-nghi/duyet?giangVienId=' + currentGvId; }
-    function diXepBu()    { location.href = '/lich-day-bu/xep?lhpId=' + currentLhpId + '&giangVienId=' + currentGvId + '&ngayNghiGoc=' + currentNgayIso; }
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { overlay.classList.remove('show'); nghiOvl.classList.remove('show'); }
+    });
+    function diXinNghi()     { location.href = '/don-nghi/tao?ngayBatDau=' + currentNgayIso + '&ngayKetThuc=' + currentNgayIso; }
+    function diDuyetDon()    { location.href = '/don-nghi/duyet?giangVienId=' + currentGvId; }
+    function diXepBu()       { location.href = '/lich-day-bu/xep?lhpId=' + currentLhpId + '&giangVienId=' + currentGvId + '&ngayNghiGoc=' + currentNgayIso; }
+    function diXepBuTuNghi() { location.href = '/lich-day-bu/xep?giangVienId=' + currentNghiGvId; }
 
     /* ═══════════════════════════════════════════════════
-       TOAST THÔNG BÁO
+       UTILS
     ═══════════════════════════════════════════════════ */
+    function escH(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function formatNgay(iso) {
+        if (!iso) return '';
+        const [y,m,d] = iso.split('-');
+        return `${d}/${m}/${y}`;
+    }
     function showToast(type, msg) {
         const t = document.getElementById('toastNotify');
-        const icon = document.getElementById('toastIcon');
+        const ic = document.getElementById('toastIcon');
         document.getElementById('toastMsg').textContent = msg;
         t.className = 'toast-notify ' + type + ' show';
-        icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+        ic.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
         setTimeout(() => t.classList.remove('show'), 3000);
     }
 </script>

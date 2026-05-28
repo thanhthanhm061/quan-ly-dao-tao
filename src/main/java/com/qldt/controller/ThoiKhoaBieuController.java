@@ -3,10 +3,12 @@ package com.qldt.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.qldt.model.*;
 import com.qldt.model.enums.*;
+import com.qldt.repository.DonNghiRepository;
 import com.qldt.repository.NguoiDungRepository;
 import com.qldt.repository.NhanVienRepository;
 import com.qldt.service.*;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -669,7 +672,7 @@ public class ThoiKhoaBieuController {
     private final TimeSlotService timeSlotService;
     private final ObjectMapper objectMapper;
     private final LichDayBuService lichDayBuService;
-
+    private final DonNghiRepository donNghiRepo;
 
     // ── Xem TKB (Admin / GV chọn giảng viên) ───────────────────────────
     @GetMapping
@@ -732,7 +735,62 @@ public class ThoiKhoaBieuController {
         try { return objectMapper.writeValueAsString(result); }
         catch (Exception e) { return "[]"; }
     }
+    // ── Helper: build JSON cho lịch bù ──────────────────────────────────
+    private String buildJsonBu(List<LichDayBu> list, Map<Integer, TimeSlot> tietMap) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (LichDayBu b : list) {
+            if (b.getTrangThai() == TrangThaiLichBu.HUY) continue; // bỏ qua bị hủy
+            var lhp = b.getLopHocPhan();
+            var mon = lhp != null ? lhp.getMonHoc()    : null;
+            var gv  = b.getGiangVien();
+            Map<String, Object> ev = new java.util.LinkedHashMap<>();
+            ev.put("loai",         "BU");
+            ev.put("ngayDayBu",    b.getNgayDayBu() != null ? b.getNgayDayBu().toString() : null);
+            ev.put("ngayNghiGoc",  b.getNgayNghiGoc() != null ? b.getNgayNghiGoc().toString() : null);
+            ev.put("thuTrongTuan", b.getThuTrongTuan());
+            ev.put("tietBatDau",   b.getTietBatDau());
+            ev.put("soTiet",       b.getSoTiet());
+            ev.put("phongHoc",     b.getPhongHoc());
+            ev.put("tenThu",       b.getTenThu());
+            ev.put("tenMon",  mon != null ? mon.getTenMon()  : "---");
+            ev.put("maLhp",   lhp != null ? lhp.getMaLhp()  : "---");
+            ev.put("lhpId",   lhp != null ? lhp.getId()     : null);
+            ev.put("hoTenGv", gv  != null ? gv.getHoTen()   : "---");
+            ev.put("gvId",    gv  != null ? gv.getId()      : null);
+            ev.put("soTinChi", mon != null ? mon.getSoTinChi() : 0);
+            // Giờ học
+            String gio = "";
+            if (tietMap != null && tietMap.get(b.getTietBatDau()) != null) {
+                var ts  = tietMap.get(b.getTietBatDau());
+                var ts2 = tietMap.get(b.getTietKetThuc());
+                gio = ts.getGioBatDau().toString().substring(0, 5)
+                        + " – " + (ts2 != null ? ts2.getGioKetThuc().toString().substring(0, 5) : "?");
+            }
+            ev.put("gioHoc", gio);
+            result.add(ev);
+        }
+        try { return objectMapper.writeValueAsString(result); }
+        catch (Exception e) { return "[]"; }
+    }
 
+    // ── Helper: build JSON cho thông báo nghỉ ───────────────────────────
+    private String buildJsonNghi(List<DonNghi> list) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (DonNghi d : list) {
+            if (d.getTrangThai() != TrangThaiDonNghi.DA_DUYET) continue;
+            Map<String, Object> ev = new java.util.LinkedHashMap<>();
+            ev.put("loai",            "NGHI");
+            ev.put("ngayNghiBatDau",  d.getNgayBatDau()  != null ? d.getNgayBatDau().toString()  : null);
+            ev.put("ngayNghiKetThuc", d.getNgayKetThuc() != null ? d.getNgayKetThuc().toString() : null);
+            ev.put("hoTenGv",   d.getNguoiNop() != null ? d.getNguoiNop().getHoTen()       : "---");
+            ev.put("gvId",      d.getNguoiNop() != null ? d.getNguoiNop().getId()           : null);
+            ev.put("lyDo",      d.getLyDo());
+            ev.put("loaiNghi",  d.getLoaiNghi());
+            result.add(ev);
+        }
+        try { return objectMapper.writeValueAsString(result); }
+        catch (Exception e) { return "[]"; }
+    }
     private String buildCalendarJson(List<ThoiKhoaBieu> list, Map<Integer, TimeSlot> tietMap) {
         List<Map<String, Object>> result = new ArrayList<>();
         for (ThoiKhoaBieu t : list) {
@@ -799,6 +857,28 @@ public class ThoiKhoaBieuController {
         }
         return "thoikhoabieu/cua-toi";
     }
+    @PatchMapping("/override-tuan/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> overrideTuan(
+            @PathVariable Long id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay,
+            @RequestBody TkbWeekOverrideDTO dto) {
+        try {
+            tkbService.overrideTuan(id, dto, ngay);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Đã cập nhật lịch cho tuần " +
+                            ngay.with(DayOfWeek.MONDAY)
+                                    .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "Lỗi: " + e.getMessage()));
+        }
+    }
 
     // ── TKB theo tuần ───────────────────────────────────────────────────
     @GetMapping("/theo-tuan")
@@ -812,15 +892,14 @@ public class ThoiKhoaBieuController {
 
         if (ngay == null) ngay = LocalDate.now();
         LocalDate thu2 = ngay.with(DayOfWeek.MONDAY);
+        LocalDate thu7 = thu2.plusDays(5);
 
         model.addAttribute("thu2",           thu2);
         model.addAttribute("danhSachHocKy",  lhpService.findAllHocKy());
         model.addAttribute("hocKyChon",      hocKy);
         model.addAttribute("ngayChon",       ngay);
         model.addAttribute("tietMap",        timeSlotService.buildTietMap());
-        model.addAttribute("thuTrongTuan",   List.of(
-                thu2, thu2.plusDays(1), thu2.plusDays(2),
-                thu2.plusDays(3), thu2.plusDays(4), thu2.plusDays(5)));
+        model.addAttribute("thuTrongTuan",   List.of(thu2, thu2.plusDays(1), thu2.plusDays(2),thu2.plusDays(3), thu2.plusDays(4), thu2.plusDays(5)));
 
         NguoiDung nd = nguoiDungRepo.findByUsername(auth.getName()).orElseThrow();
 
@@ -834,16 +913,45 @@ public class ThoiKhoaBieuController {
                         nhanVienService.findById(giangVienId).orElse(null));
                 model.addAttribute("thongKeTinChi",
                         tkbService.thongKeTinChi(giangVienId, hocKy));
+                // THÊM MỚI:
+                List<LichDayBu> lichBuTuan = lichDayBuService
+                        .findByGiangVienAndKhoangNgay(giangVienId, thu2, thu7);
+                List<DonNghi> donNghiTuan  = donNghiRepo
+                        .findDaDuyetByGvAndKhoang(giangVienId, thu2, thu7);
+                model.addAttribute("lichDayBuTuan",  lichBuTuan);
+                model.addAttribute("jsonBuTuan",     buildJsonBu(lichBuTuan, timeSlotService.buildTietMap()));
+                model.addAttribute("jsonNghiTuan",   buildJsonNghi(donNghiTuan));
             }
+
 
         } else if (nd.getVaiTro() == VaiTro.NHAN_VIEN) {
             NhanVien nv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
+
+            // Quyền quản lý — set trước
+            if (nv != null) {
+                model.addAttribute("currentNvId", nv.getId());
+                boolean isQL = nv.getChucVu() != null &&
+                        List.of("Trưởng khoa","Phó khoa","Tổ trưởng BM")
+                                .contains(nv.getChucVu().getTenChucVu());
+                model.addAttribute("isQuanLy", isQL);
+            }
+
+            // Lịch + tiến độ + bù + nghỉ
             if (nv != null && hocKy != null) {
                 model.addAttribute("thoiKhoaBieus",
                         tkbService.findByGiangVienTuan(nv.getId(), hocKy, ngay));
                 model.addAttribute("giangVien", nv);
                 model.addAttribute("thongKeTinChi",
-                        tkbService.thongKeTinChi(giangVienId, hocKy));
+                        tkbService.thongKeTinChi(nv.getId(), hocKy)); // ← sửa: nv.getId()
+
+                List<LichDayBu> lichBuTuan = lichDayBuService
+                        .findByGiangVienAndKhoangNgay(nv.getId(), thu2, thu7);
+                List<DonNghi> donNghiTuan = donNghiRepo
+                        .findDaDuyetByGvAndKhoang(nv.getId(), thu2, thu7);
+                model.addAttribute("lichDayBuTuan", lichBuTuan);
+                model.addAttribute("jsonBuTuan",
+                        buildJsonBu(lichBuTuan, timeSlotService.buildTietMap()));
+                model.addAttribute("jsonNghiTuan", buildJsonNghi(donNghiTuan));
             }
 
         } else if (nd.getVaiTro() == VaiTro.SINH_VIEN) {
@@ -852,24 +960,58 @@ public class ThoiKhoaBieuController {
                 model.addAttribute("thoiKhoaBieus",
                         tkbService.findBySinhVienTuan(sv.getId(), hocKy, ngay));
                 model.addAttribute("sinhVien", sv);
+                // ── THÊM MỚI: thông báo nghỉ của các GV trong tuần ──
+                // Lấy tất cả GV đang dạy SV này trong tuần
+                List<ThoiKhoaBieu> dsSv = tkbService.findBySinhVienTuan(sv.getId(), hocKy, ngay);
+                List<Long> gvIds = dsSv.stream()
+                        .map(t -> t.getLopHocPhan().getGiangVien())
+                        .filter(gv -> gv != null)
+                        .map(gv -> gv.getId())
+                        .distinct()
+                        .toList();
 
-            }
-        }
-        if (nd.getVaiTro() == VaiTro.NHAN_VIEN) {
-            NhanVien nv = nhanVienService.findByNguoiDungId(nd.getId()).orElse(null);
-            if (nv != null) {
-                model.addAttribute("currentNvId", nv.getId());
-                // isQuanLy = true nếu chức vụ là Trưởng khoa / Phó khoa / Tổ trưởng bộ môn
-                boolean isQL = nv.getChucVu() != null &&
-                        List.of("Trưởng khoa","Phó khoa","Tổ trưởng BM").contains(nv.getChucVu().getTenChucVu());
-                model.addAttribute("isQuanLy", isQL);
-                model.addAttribute("thongKeTinChi",
-                        tkbService.thongKeTinChi(giangVienId, hocKy));
+                List<DonNghi> donNghiTuan = gvIds.stream()
+                        .flatMap(gvId -> donNghiRepo
+                                .findDaDuyetByGvAndKhoang(gvId, thu2, thu7).stream())
+                        .toList();
+
+                model.addAttribute("jsonNghiTuan", buildJsonNghi(donNghiTuan));
+                model.addAttribute("jsonBuTuan",   "[]");
+
             }
         }
 
         return "thoikhoabieu/theo-tuan";
     }
+
+    @DeleteMapping("/xoa-tuan/{id}")
+    @ResponseBody
+    public ResponseEntity<?> xoaTuan(
+            @PathVariable Long id,
+            @RequestParam String ngay) {
+        try {
+            LocalDate ngayDate = LocalDate.parse(ngay);
+            tkbService.xoaTuan(id, ngayDate);
+            return ResponseEntity.ok(Map.of("message", "Đã xóa lịch tuần này!"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/huy-override/{id}")
+    @ResponseBody
+    public ResponseEntity<?> huyOverride(
+            @PathVariable Long id,
+            @RequestParam String ngay) {
+        try {
+            LocalDate ngayDate = LocalDate.parse(ngay);
+            tkbService.huyOverride(id, ngayDate);
+            return ResponseEntity.ok(Map.of("message", "Đã hủy chỉnh sửa, lịch gốc được khôi phục!"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     // ── TKB theo tháng ──────────────────────────────────────────────────────────
     @GetMapping("/theo-thang")
     @PreAuthorize("hasAnyRole('ADMIN', 'NHAN_VIEN', 'SINH_VIEN')")
@@ -957,7 +1099,15 @@ public class ThoiKhoaBieuController {
 
                 model.addAttribute("lichDayBuTuan",
                         lichDayBuService.findByGiangVienTuan(giangVienId, ngay.atDay(1)));
+                List<LichDayBu> lichBuThang = lichDayBuService
+                        .findByGiangVienAndKhoangNgay(giangVienId, dauThang, cuoiThang);
+                List<DonNghi> donNghiThang  = donNghiRepo
+                        .findDaDuyetByGvAndKhoang(giangVienId, dauThang, cuoiThang);
+                model.addAttribute("calendarJsonBu",   buildJsonBu(lichBuThang, tietMap));
+                model.addAttribute("calendarJsonNghi", buildJsonNghi(donNghiThang));
+
             }
+
 
             // ───────────────── NHÂN VIÊN ─────────────────
         } else if (nd.getVaiTro() == VaiTro.NHAN_VIEN) {
@@ -984,7 +1134,13 @@ public class ThoiKhoaBieuController {
                 model.addAttribute("thongKeTinChi",
                         tkbService.thongKeTinChi(nv.getId(), hocKy));
                 model.addAttribute("lichDayBuTuan",
-                        lichDayBuService.findByGiangVienTuan(giangVienId, ngay.atDay(1)));
+                        lichDayBuService.findByGiangVienTuan(nv.getId(), ngay.atDay(1))); // ← sửa
+                List<LichDayBu> lichBuThang = lichDayBuService
+                        .findByGiangVienAndKhoangNgay(nv.getId(), dauThang, cuoiThang);
+                List<DonNghi> donNghiThang  = donNghiRepo
+                        .findDaDuyetByGvAndKhoang(nv.getId(), dauThang, cuoiThang);
+                model.addAttribute("calendarJsonBu",   buildJsonBu(lichBuThang, tietMap));
+                model.addAttribute("calendarJsonNghi", buildJsonNghi(donNghiThang));
             }
 
             // ───────────────── SINH VIÊN ─────────────────
@@ -995,7 +1151,10 @@ public class ThoiKhoaBieuController {
                 model.addAttribute("thoiKhoaBieus", ds);
                 model.addAttribute("calendarJson", buildCalendarJson(ds, tietMap));
                 model.addAttribute("sinhVien", sv);
-                // Sinh viên không xem lịch dạy bù của GV → bỏ dòng lichDayBuTuan
+                model.addAttribute("calendarJsonBu",   "[]");
+                model.addAttribute("calendarJsonNghi", "[]");
+
+
             }
         }
 

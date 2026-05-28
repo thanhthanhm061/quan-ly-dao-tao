@@ -18,11 +18,30 @@ public interface LichDayBuRepository extends JpaRepository<LichDayBu, Long> {
     List<LichDayBu> findByLopHocPhanIdOrderByNgayDayBuAsc(Long lhpId);
 
 
+    @Query("""
+    SELECT l FROM LichDayBu l
+    JOIN FETCH l.lopHocPhan lhp
+    LEFT JOIN FETCH lhp.monHoc
+    LEFT JOIN FETCH lhp.giangVien
+    JOIN FETCH l.giangVien gv
+    WHERE gv.id = :gvId
+      AND l.ngayDayBu BETWEEN :from AND :to
+    ORDER BY l.ngayDayBu ASC, l.tietBatDau ASC
+    """)
     List<LichDayBu> findByGiangVienIdAndNgayDayBuBetween(
-            Long giangVienId,
-            LocalDate from,
-            LocalDate to
-    );
+            @Param("gvId") Long gvId,
+            @Param("from") LocalDate from,
+            @Param("to")   LocalDate to);
+    // Lịch bù của khoa trong khoảng ngày
+    @Query("""
+        SELECT l FROM LichDayBu l
+        WHERE l.giangVien.khoa.id = :khoaId
+          AND l.ngayDayBu BETWEEN :from AND :to
+    """)
+    List<LichDayBu> findByKhoaAndNgayDayBuBetween(
+            @Param("khoaId") Long khoaId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to);
 
     // Lịch bù của một giảng viên
     List<LichDayBu> findByGiangVienIdOrderByNgayDayBuAsc(Long giangVienId);
@@ -34,17 +53,22 @@ public interface LichDayBuRepository extends JpaRepository<LichDayBu, Long> {
     List<LichDayBu> findByTrangThaiOrderByNgayDayBuAsc(TrangThaiLichBu trangThai);
 
     // Lịch bù của giảng viên trong khoảng ngày
+    // SAU (thêm JOIN FETCH)
     @Query("""
-            SELECT l FROM LichDayBu l
-            WHERE l.giangVien.id = :gvId
-              AND l.ngayDayBu BETWEEN :from AND :to
-              AND l.trangThai <> com.qldt.model.enums.TrangThaiLichBu.HUY
-            ORDER BY l.ngayDayBu ASC, l.tietBatDau ASC
-            """)
+    SELECT l FROM LichDayBu l
+    JOIN FETCH l.lopHocPhan lhp
+    LEFT JOIN FETCH lhp.monHoc
+    LEFT JOIN FETCH lhp.giangVien
+    JOIN FETCH l.giangVien gv
+    WHERE gv.id = :gvId
+      AND l.ngayDayBu BETWEEN :from AND :to
+      AND l.trangThai <> com.qldt.model.enums.TrangThaiLichBu.HUY
+    ORDER BY l.ngayDayBu ASC, l.tietBatDau ASC
+    """)
     List<LichDayBu> findByGiangVienAndKhoangNgay(
             @Param("gvId") Long gvId,
             @Param("from") LocalDate from,
-            @Param("to") LocalDate to);
+            @Param("to")   LocalDate to);
 
     // Kiểm tra trùng phòng trong cùng buổi
     @Query("""
@@ -100,9 +124,12 @@ public interface LichDayBuRepository extends JpaRepository<LichDayBu, Long> {
     // Lịch bù thuộc khoa (dùng cho TK/PTK dashboard)
 
     @Query("""
-        SELECT l FROM LichDayBu l
-        WHERE l.lopHocPhan.monHoc.khoa.id = :khoaId
-        ORDER BY l.ngayDayBu DESC
-        """)
+    SELECT l FROM LichDayBu l
+    JOIN FETCH l.lopHocPhan lhp
+    LEFT JOIN FETCH lhp.monHoc
+    JOIN FETCH l.giangVien
+    WHERE lhp.monHoc.khoa.id = :khoaId
+    ORDER BY l.ngayDayBu DESC
+    """)
     List<LichDayBu> findByKhoaId(@Param("khoaId") Long khoaId);
 }
