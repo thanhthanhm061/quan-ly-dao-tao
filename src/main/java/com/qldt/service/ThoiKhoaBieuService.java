@@ -31,4 +31,7 @@ public interface ThoiKhoaBieuService {
     // Lấy tất cả TKB của 1 LHP
     List<ThoiKhoaBieu> findByLopHocPhanId(Long lhpId);
     void capNhatNhanh(Long id, TkbQuickUpdateDTO dto);
+    void overrideTuan(Long id, TkbWeekOverrideDTO dto, LocalDate ngayTrongTuan);
+    void xoaTuan(Long id, LocalDate ngayTrongTuan);
+    void huyOverride(Long id, LocalDate ngayTrongTuan);
 }

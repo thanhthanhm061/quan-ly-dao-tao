@@ -494,7 +494,18 @@
             <!-- Pane chỉnh sửa (Admin) -->
             <div class="popup-pane" id="pane-chinh-sua">
                 <div class="edit-form-body">
-                    <div class="edit-conflict" id="editConflict"><i class="fas fa-exclamation-triangle me-1"></i><span id="editConflictMsg"></span></div>
+                    <div class="edit-conflict" id="editConflict">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <span id="editConflictMsg"></span>
+                    </div>
+
+                    <!-- Label tuần đang sửa -->
+                    <div id="editWeekInfo" style="background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;
+             border-radius:8px;padding:8px 12px;font-size:.82rem;font-weight:500;margin-bottom:14px;">
+                        <i class="fas fa-calendar-week me-1"></i>
+                        Đang sửa tuần: <strong id="editWeekLabel">—</strong>
+                    </div>
+
                     <div class="row g-3">
                         <div class="col-6 edit-row"><label>Thứ</label>
                             <select id="editThu" class="form-select">
@@ -503,16 +514,59 @@
                                 <option value="6">Thứ 6</option><option value="7">Thứ 7</option>
                             </select>
                         </div>
-                        <div class="col-6 edit-row"><label>Tiết bắt đầu</label><input type="number" id="editTietBd" min="1" max="12" class="form-control"></div>
-                        <div class="col-6 edit-row"><label>Số tiết</label><input type="number" id="editSoTiet" min="1" max="6" class="form-control"></div>
-                        <div class="col-6 edit-row"><label>Phòng học</label><input type="text" id="editPhong" class="form-control" placeholder="VD: A101"></div>
-                        <div class="col-6 edit-row"><label>Từ ngày</label><input type="date" id="editTuanBd" class="form-control"></div>
-                        <div class="col-6 edit-row"><label>Đến ngày</label><input type="date" id="editTuanKt" class="form-control"></div>
+                        <div class="col-6 edit-row">
+                            <label>Tiết bắt đầu</label>
+                            <input type="number" id="editTietBd" min="1" max="12" class="form-control">
+                        </div>
+                        <div class="col-6 edit-row">
+                            <label>Số tiết</label>
+                            <input type="number" id="editSoTiet" min="1" max="6" class="form-control">
+                        </div>
+                        <div class="col-6 edit-row">
+                            <label>Phòng học</label>
+                            <input type="text" id="editPhong" class="form-control" placeholder="VD: A101">
+                        </div>
+
+                        <!-- Từ/Đến ngày — ẩn mặc định, chỉ hiện khi bấm "Tất cả tuần" -->
+                        <div class="col-12" id="editDateRange" style="display:none">
+                            <div class="row g-3">
+                                <div class="col-6 edit-row">
+                                    <label>Từ ngày</label>
+                                    <input type="date" id="editTuanBd" class="form-control">
+                                </div>
+                                <div class="col-6 edit-row">
+                                    <label>Đến ngày</label>
+                                    <input type="date" id="editTuanKt" class="form-control">
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
-                <div class="popup-actions">
-                    <button class="popup-btn popup-btn-leave" style="max-width:110px" onclick="dongPopupBtn()"><i class="fas fa-times me-1"></i>Hủy</button>
-                    <button class="popup-btn popup-btn-save" onclick="luuChinhSua()"><i class="fas fa-save me-1"></i>Lưu thay đổi</button>
+
+                <!-- Thêm vào popup-actions của pane-chinh-sua -->
+                <div class="popup-actions" style="gap:6px">
+                    <button class="popup-btn popup-btn-leave" style="max-width:90px;flex:0 0 auto"
+                            onclick="dongPopupBtn()">
+                        <i class="fas fa-times me-1"></i>Hủy
+                    </button>
+
+                    <!-- NÚT XÓA TUẦN NÀY — THÊM MỚI -->
+                    <button class="popup-btn" id="btnXoaTuanNay"
+                            style="background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;flex:1"
+                            onclick="xoaTuanNay()">
+                        <i class="fas fa-trash me-1"></i>Xóa tuần này
+                    </button>
+
+                    <button class="popup-btn" id="btnTuanNay"
+                            style="background:#eff6ff;color:#2563eb;border:1.5px solid #bfdbfe;flex:1"
+                            onclick="luuChinhSua('tuan-nay')">
+                        <i class="fas fa-calendar-day me-1"></i>Chỉ tuần này
+                    </button>
+                    <button class="popup-btn popup-btn-save" id="btnTatCa" style="flex:1"
+                            onclick="moTatCaMode()">
+                        <i class="fas fa-calendar-alt me-1"></i>Tất cả tuần
+                    </button>
                 </div>
             </div>
         </div>
@@ -565,6 +619,8 @@
 
 </th:block></body></html>
 <script th:inline="javascript">
+
+
     /* ═══════════════════════════════════════════════════
        DỮ LIỆU TỪ SERVER
     ═══════════════════════════════════════════════════ */
@@ -597,7 +653,36 @@
         renderLichBu();
         renderThongBaoNghi();
     });
+    // Thêm vào <script> trong theo-tuan-v2.html
 
+    async function xoaTuanNay() {
+        if (!currentId || !currentNgayIso) {
+            showToast('error', 'Không xác định được lịch!'); return;
+        }
+        if (!confirm('Xóa lịch tuần này?\n(Các tuần khác không bị ảnh hưởng)')) return;
+
+        const csrf  = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfH = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+        try {
+            const res = await fetch(
+                `/tkb/xoa-tuan/${currentId}?ngay=${currentNgayIso}`,
+                {
+                    method: 'DELETE',
+                    headers: csrfH && csrf ? { [csrfH]: csrf } : {}
+                }
+            );
+            const data = await res.json();
+            if (!res.ok) {
+                showToast('error', data.message || 'Có lỗi!'); return;
+            }
+            dongPopupBtn();
+            showToast('success', data.message || 'Đã xóa!');
+            setTimeout(() => location.reload(), 1200);
+        } catch {
+            showToast('error', 'Lỗi kết nối.');
+        }
+    }
     /* ── Render ô dạy bù trực tiếp vào grid ── */
     function renderLichBu() {
         buList.forEach(bu => {
@@ -763,6 +848,27 @@
         document.querySelectorAll('.popup-pane').forEach(p => p.classList.remove('show'));
         document.querySelector(`.popup-tab[onclick="chuyenTab('${name}')"]`)?.classList.add('active');
         document.getElementById('pane-' + name)?.classList.add('show');
+
+        // THÊM ĐOẠN NÀY:
+        if (name === 'chinh-sua' && currentNgayIso) {
+            // Reset về trạng thái mặc định mỗi lần mở
+            tatCaMode = false;
+            document.getElementById('editDateRange').style.display = 'none';
+            const btnTatCa = document.getElementById('btnTatCa');
+            btnTatCa.innerHTML = '<i class="fas fa-calendar-alt me-1"></i>Tất cả tuần';
+            btnTatCa.onclick = moTatCaMode;
+
+            // Hiển thị tuần đang sửa
+            const dt   = new Date(currentNgayIso + 'T00:00:00');
+            const dow  = dt.getDay();
+            const diff = dow === 0 ? -6 : 1 - dow;
+            const thu2 = new Date(dt); thu2.setDate(dt.getDate() + diff);
+            const thu7 = new Date(thu2); thu7.setDate(thu2.getDate() + 5);
+            const fmt  = d => String(d.getDate()).padStart(2,'0') + '/'
+                + String(d.getMonth()+1).padStart(2,'0') + '/'
+                + d.getFullYear();
+            document.getElementById('editWeekLabel').textContent = fmt(thu2) + ' – ' + fmt(thu7);
+        }
     }
 
     /* ═══════════════════════════════════════════════════
@@ -815,33 +921,74 @@
 
     /* ═══════════════════════════════════════════════════
        LƯU CHỈNH SỬA INLINE (ADMIN)
+        ═══════════════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════
+       CHỈNH SỬA — 2 chế độ
     ═══════════════════════════════════════════════════ */
-    async function luuChinhSua() {
+    let tatCaMode = false;
+
+    // Nút "Tất cả tuần": lần đầu bấm → hiện Từ/Đến ngày + đổi nút thành "Xác nhận lưu"
+    // Lần 2 bấm → lưu thật sự
+    function moTatCaMode() {
+        if (!tatCaMode) {
+            tatCaMode = true;
+            document.getElementById('editDateRange').style.display = '';
+            const btn = document.getElementById('btnTatCa');
+            btn.innerHTML = '<i class="fas fa-save me-1"></i>Xác nhận lưu tất cả';
+            btn.onclick = () => luuChinhSua('tat-ca');
+        }
+    }
+
+    async function luuChinhSua(cheDoLuu) {
         if (!currentId) return;
-        const csrf = document.querySelector('meta[name="_csrf"]')?.content;
+        document.getElementById('editConflict').classList.remove('show');
+
+        const csrf  = document.querySelector('meta[name="_csrf"]')?.content;
         const csrfH = document.querySelector('meta[name="_csrf_header"]')?.content;
-        const payload = {
-            thuTrongTuan: +document.getElementById('editThu').value,
-            tietBatDau  : +document.getElementById('editTietBd').value,
-            soTiet      : +document.getElementById('editSoTiet').value,
-            phongHoc    : document.getElementById('editPhong').value.trim(),
-            tuanBatDau  : document.getElementById('editTuanBd').value || null,
-            tuanKetThuc : document.getElementById('editTuanKt').value || null
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(csrfH && csrf ? { [csrfH]: csrf } : {})
         };
+
+        const thuVal = +document.getElementById('editThu').value;
+        const tietBd = +document.getElementById('editTietBd').value;
+        const soTiet = +document.getElementById('editSoTiet').value;
+        const phong  = document.getElementById('editPhong').value.trim();
+
         try {
-            const res = await fetch(`/tkb/cap-nhat/${currentId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', ...(csrfH && csrf ? {[csrfH]: csrf} : {}) },
-                body: JSON.stringify(payload)
-            });
+            let res;
+            if (cheDoLuu === 'tuan-nay') {
+                if (!currentNgayIso) { showToast('error', 'Không xác định được tuần!'); return; }
+                res = await fetch(`/tkb/override-tuan/${currentId}?ngay=${currentNgayIso}`, {
+                    method: 'PATCH', headers,
+                    body: JSON.stringify({
+                        thuTrongTuan: thuVal, tietBatDau: tietBd,
+                        soTiet: soTiet, phongHoc: phong,
+                        ngayTrongTuan: currentNgayIso
+                    })
+                });
+            } else {
+                res = await fetch(`/tkb/cap-nhat/${currentId}`, {
+                    method: 'PATCH', headers,
+                    body: JSON.stringify({
+                        thuTrongTuan: thuVal, tietBatDau: tietBd,
+                        soTiet: soTiet, phongHoc: phong,
+                        tuanBatDau:  document.getElementById('editTuanBd').value || null,
+                        tuanKetThuc: document.getElementById('editTuanKt').value || null
+                    })
+                });
+            }
+
             const data = await res.json();
             if (!res.ok) {
                 document.getElementById('editConflictMsg').textContent = data.message || 'Có lỗi!';
-                document.getElementById('editConflict').classList.add('show'); return;
+                document.getElementById('editConflict').classList.add('show');
+                return;
             }
             dongPopupBtn();
-            showToast('success', 'Cập nhật lịch học thành công!');
+            showToast('success', data.message || 'Cập nhật thành công!');
             setTimeout(() => location.reload(), 1200);
+
         } catch { showToast('error', 'Lỗi kết nối.'); }
     }
 

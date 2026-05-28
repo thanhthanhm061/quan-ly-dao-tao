@@ -5,16 +5,14 @@ import com.qldt.model.PhongHoc;
 import com.qldt.model.ThoiKhoaBieu;
 import com.qldt.repository.LopHocPhanRepository;
 import com.qldt.repository.ThoiKhoaBieuRepository;
-import com.qldt.service.TKBNotificationService;
-import com.qldt.service.TaiGiangDayDTO;
-import com.qldt.service.ThoiKhoaBieuService;
-import com.qldt.service.TkbQuickUpdateDTO;
+import com.qldt.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -160,6 +158,59 @@ public class ThoiKhoaBieuServiceImpl implements ThoiKhoaBieuService {
 
         tkbRepo.save(tkb);
     }
+    @Override
+    @Transactional
+    public void overrideTuan(Long id, TkbWeekOverrideDTO dto, LocalDate ngayTrongTuan) {
+        ThoiKhoaBieu tkb = tkbRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch ID=" + id));
+
+        LocalDate thu2Tuan = ngayTrongTuan.with(DayOfWeek.MONDAY);
+        LocalDate thu7Tuan = thu2Tuan.plusDays(5);
+
+        // Nếu đây là bản override → xóa override cũ, tìm về bản gốc
+        if (tkb.isOverride()) {
+            Long parentId = tkb.getOverrideParentId();
+            tkbRepo.delete(tkb);
+            tkbRepo.flush();
+            if (parentId != null) {
+                tkb = tkbRepo.findById(parentId)
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "Không tìm thấy bản gốc ID=" + parentId));
+            }
+        }
+
+        final ThoiKhoaBieu goc = tkb;
+        final Long gocId = goc.getId();
+
+        // Kiểm tra xung đột phòng
+        if (dto.phongHoc() != null && !dto.phongHoc().isBlank()) {
+            boolean trung = tkbRepo.existsConflictInRange(
+                    dto.thuTrongTuan() != null ? dto.thuTrongTuan() : goc.getThuTrongTuan(),
+                    dto.tietBatDau()   != null ? dto.tietBatDau()   : goc.getTietBatDau(),
+                    dto.soTiet()       != null ? dto.soTiet()        : goc.getSoTiet(),
+                    dto.phongHoc(), gocId, thu2Tuan, thu7Tuan);
+            if (trung) throw new IllegalStateException(
+                    "Phòng " + dto.phongHoc() + " đã có lịch trong tuần " +
+                            thu2Tuan.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "!");
+        }
+
+        // Bản gốc vẫn giữ nguyên, query sẽ tự lọc
+        ThoiKhoaBieu override = ThoiKhoaBieu.builder()
+                .lopHocPhan(goc.getLopHocPhan())
+                .thuTrongTuan(dto.thuTrongTuan() != null ? dto.thuTrongTuan() : goc.getThuTrongTuan())
+                .tietBatDau(dto.tietBatDau()    != null ? dto.tietBatDau()   : goc.getTietBatDau())
+                .soTiet(dto.soTiet()             != null ? dto.soTiet()        : goc.getSoTiet())
+                .phongHoc(dto.phongHoc() != null && !dto.phongHoc().isBlank()
+                        ? dto.phongHoc() : goc.getPhongHoc())
+                .tuanBatDau(thu2Tuan)
+                .tuanKetThuc(thu7Tuan)
+                .isOverride(true)
+                .overrideParentId(gocId)
+                .build();
+        tkbRepo.save(override);
+    }
+
+
     public int demTietByLhp(Long lhpId) {
         return tkbRepo.findByLopHocPhanId(lhpId)
                 .stream()
@@ -266,5 +317,64 @@ public class ThoiKhoaBieuServiceImpl implements ThoiKhoaBieuService {
     @Override
     public List<PhongHoc> findAllPhong() {
         return List.of();
+    }
+    @Override
+    @Transactional
+    public void xoaTuan(Long id, LocalDate ngayTrongTuan) {
+        LocalDate thu2 = ngayTrongTuan.with(DayOfWeek.MONDAY);
+        LocalDate thu7 = thu2.plusDays(5);
+
+        ThoiKhoaBieu tkb = tkbRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch ID=" + id));
+
+        if (tkb.isOverride()) {
+            // Xóa override → bản gốc tự hiện lại
+            tkbRepo.delete(tkb);
+        } else {
+            // Bản gốc → tạo 1 override đặc biệt đánh dấu "đã xóa tuần này"
+            LocalDate tuanBdGoc = tkb.getTuanBatDau();
+            LocalDate tuanKtGoc = tkb.getTuanKetThuc();
+
+            boolean tuanNayLaDau  = tuanBdGoc != null
+                    && !tuanBdGoc.isBefore(thu2) && !tuanBdGoc.isAfter(thu7);
+            boolean tuanNayLaCuoi = tuanKtGoc != null
+                    && !tuanKtGoc.isBefore(thu2) && !tuanKtGoc.isAfter(thu7);
+            boolean chiMotTuan    = tuanNayLaDau && tuanNayLaCuoi;
+
+            if (chiMotTuan) {
+                tkbRepo.delete(tkb);
+            } else if (tuanNayLaDau) {
+                tkbRepo.updateTuanBatDau(tkb.getId(),
+                        thu7.plusDays(1).with(DayOfWeek.MONDAY));
+            } else if (tuanNayLaCuoi) {
+                tkbRepo.updateTuanKetThuc(tkb.getId(), thu2.minusDays(1));
+            } else {
+                tkbRepo.updateTuanKetThuc(tkb.getId(), thu2.minusDays(1));
+                ThoiKhoaBieu sau = ThoiKhoaBieu.builder()
+                        .lopHocPhan(tkb.getLopHocPhan())
+                        .thuTrongTuan(tkb.getThuTrongTuan())
+                        .tietBatDau(tkb.getTietBatDau())
+                        .soTiet(tkb.getSoTiet())
+                        .phongHoc(tkb.getPhongHoc())
+                        .tuanBatDau(thu7.plusDays(1).with(DayOfWeek.MONDAY))
+                        .tuanKetThuc(tuanKtGoc)
+                        .build();
+                tkbRepo.save(sau);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void huyOverride(Long id, LocalDate ngayTrongTuan) {
+        ThoiKhoaBieu tkb = tkbRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch ID=" + id));
+
+        if (!tkb.isOverride()) {
+            throw new IllegalStateException("Bản ghi này không phải override, không thể hủy!");
+        }
+
+        tkbRepo.delete(tkb);
+        // Bản gốc (đã bị thu hẹp trước đó) tự hiện lại khi reload
     }
 }

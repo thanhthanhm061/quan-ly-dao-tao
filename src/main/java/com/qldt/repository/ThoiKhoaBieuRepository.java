@@ -3,11 +3,13 @@ package com.qldt.repository;
 import com.qldt.model.PhongHoc;
 import com.qldt.model.ThoiKhoaBieu;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface ThoiKhoaBieuRepository
         extends JpaRepository<ThoiKhoaBieu, Long> {
@@ -77,17 +79,27 @@ public interface ThoiKhoaBieuRepository
     // =========================
 
     @Query("""
-        SELECT DISTINCT t
-        FROM ThoiKhoaBieu t
-        JOIN FETCH t.lopHocPhan l
-        JOIN FETCH l.giangVien gv
-        JOIN FETCH l.monHoc
-        WHERE gv.id = :nhanVienId
-          AND l.hocKy = :hocKy
-          AND t.tuanBatDau <= :ngayKetThuc
-          AND t.tuanKetThuc >= :ngayBatDau
-        ORDER BY t.thuTrongTuan, t.tietBatDau
-    """)
+    SELECT DISTINCT t
+    FROM ThoiKhoaBieu t
+    JOIN FETCH t.lopHocPhan l
+    JOIN FETCH l.giangVien gv
+    JOIN FETCH l.monHoc
+    WHERE gv.id = :nhanVienId
+      AND l.hocKy = :hocKy
+      AND t.tuanBatDau <= :ngayKetThuc
+      AND t.tuanKetThuc >= :ngayBatDau
+      AND (
+          t.isOverride = true
+          OR NOT EXISTS (
+              SELECT 1 FROM ThoiKhoaBieu ov
+              WHERE ov.isOverride = true
+                AND ov.overrideParentId = t.id
+                AND ov.tuanBatDau <= :ngayKetThuc
+                AND ov.tuanKetThuc >= :ngayBatDau
+          )
+      )
+    ORDER BY t.thuTrongTuan, t.tietBatDau
+""")
     List<ThoiKhoaBieu> findByGiangVienAndTuan(
             @Param("nhanVienId") Long nhanVienId,
             @Param("hocKy") String hocKy,
@@ -270,4 +282,51 @@ public interface ThoiKhoaBieuRepository
             @Param("tietKetThuc") int tietKetThuc,
             @Param("sucCanThiet") int sucCanThiet
     );
+    // Kiểm tra xung đột phòng trong 1 khoảng ngày cụ thể
+    @Query("""
+        SELECT COUNT(t) > 0 FROM ThoiKhoaBieu t
+        WHERE t.thuTrongTuan = :thu
+          AND t.phongHoc = :phong
+          AND t.id <> :excludeId
+          AND t.tietBatDau < (:tietBd + :soTiet)
+          AND (t.tietBatDau + t.soTiet - 1) >= :tietBd
+          AND (t.tuanBatDau IS NULL OR t.tuanBatDau <= :tuanKt)
+          AND (t.tuanKetThuc IS NULL OR t.tuanKetThuc >= :tuanBd)
+    """)
+    boolean existsConflictInRange(
+            @Param("thu")      int       thu,
+            @Param("tietBd")   int       tietBd,
+            @Param("soTiet")   int       soTiet,
+            @Param("phong")    String    phong,
+            @Param("excludeId") Long     excludeId,
+            @Param("tuanBd")   LocalDate tuanBd,
+            @Param("tuanKt")   LocalDate tuanKt
+    );
+    // =========================
+// OVERRIDE TUẦN
+// =========================
+
+    // Tìm override theo parentId + tuần cụ thể
+    @Query("""
+    SELECT t FROM ThoiKhoaBieu t
+    WHERE t.isOverride = true
+      AND t.overrideParentId = :parentId
+      AND t.tuanBatDau = :thu2
+      AND t.tuanKetThuc = :thu7
+""")
+    Optional<ThoiKhoaBieu> findOverride(
+            @Param("parentId") Long parentId,
+            @Param("thu2") LocalDate thu2,
+            @Param("thu7") LocalDate thu7
+    );
+    @Modifying
+    @Query("UPDATE ThoiKhoaBieu t SET t.tuanBatDau = :tuanBd WHERE t.id = :id")
+    void updateTuanBatDau(@Param("id") Long id, @Param("tuanBd") LocalDate tuanBd);
+
+    @Modifying
+    @Query("UPDATE ThoiKhoaBieu t SET t.tuanKetThuc = :tuanKt WHERE t.id = :id")
+    void updateTuanKetThuc(@Param("id") Long id, @Param("tuanKt") LocalDate tuanKt);
+
+    // Xóa tất cả override của 1 bản gốc
+    void deleteByOverrideParentId(Long parentId);
 }
