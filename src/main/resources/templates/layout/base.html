@@ -34,9 +34,10 @@
             transition: transform 0.28s cubic-bezier(.4,0,.2,1), box-shadow 0.28s ease;
             box-shadow: none;
         }
-        .sidebar.open {
-            transform: translateX(0);
-            box-shadow: 4px 0 24px rgba(0,0,0,.22);
+        .sidebar.open,
+        .sidebar.pinned{
+            transform:translateX(0);
+            box-shadow:4px 0 24px rgba(0,0,0,.22);
         }
 
         .sidebar-brand {
@@ -101,7 +102,16 @@
         }
         #sidebarOverlay.show { display: block; }
 
-        .main-content { margin-left: 0; padding: 20px; min-height: 100vh; }
+        .main-content{
+        margin-left:0;
+        padding:20px;
+        min-height:100vh;
+        transition:margin-left .28s cubic-bezier(.4,0,.2,1);
+        }
+
+.main-content.shifted{
+    margin-left:240px;
+}
 
         .topbar {
             background: #fff; border-radius: 10px;
@@ -110,12 +120,19 @@
             display: flex; justify-content: space-between; align-items: center;
         }
 
-        #sidebarToggle {
-            background: none; border: none;
-            width: 36px; height: 36px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; color: #4a5568;
-            cursor: default; flex-shrink: 0;
+        #sidebarToggle{
+        background:none;
+        border:none;
+        width:36px;
+        height:36px;
+        border-radius:8px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:1.1rem;
+        color:#4a5568;
+        cursor:pointer;
+        flex-shrink:0;
         }
 
         .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
@@ -148,7 +165,7 @@
 <div id="sidebarOverlay"></div>
 
 <!-- ══ SIDEBAR ══════════════════════════════════════════════════════════ -->
-<div class="sidebar" id="sidebar">
+<div class="sidebar open pinned" id="sidebar">
 
     <a class="sidebar-brand" th:href="@{/}">
         <i class="fas fa-graduation-cap"></i>
@@ -477,7 +494,7 @@
 </div>
 
 <!-- ══ MAIN CONTENT ══════════════════════════════════════════════════════ -->
-<div class="main-content" id="mainContent">
+<div class="main-content shifted" id="mainContent">
 
     <div class="topbar">
         <div class="d-flex align-items-center gap-3">
@@ -521,41 +538,106 @@
 </div>
 
 <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+
+<script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+
 <script>
     (function () {
+
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         const trigger = document.getElementById('sidebarTrigger');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const mainContent = document.getElementById('mainContent');
+
         let closeTimer = null;
+        let pinned = true;
 
         function openSidebar() {
             clearTimeout(closeTimer);
             sidebar.classList.add('open');
-            overlay.classList.add('show');
-        }
-        function schedulClose() {
-            closeTimer = setTimeout(() => {
-                sidebar.classList.remove('open');
-                overlay.classList.remove('show');
-            }, 180);
+
+            if (!pinned) {
+                overlay.classList.add('show');
+            }
         }
 
-        trigger.addEventListener('mouseenter', openSidebar);
-        sidebar.addEventListener('mouseenter', () => clearTimeout(closeTimer));
-        sidebar.addEventListener('mouseleave', schedulClose);
-        overlay.addEventListener('click', () => {
+        function closeSidebar() {
+
+            if (pinned) return;
+
             clearTimeout(closeTimer);
+
             sidebar.classList.remove('open');
             overlay.classList.remove('show');
+        }
+
+        function pinSidebar() {
+
+            pinned = !pinned;
+
+            if (pinned) {
+
+                sidebar.classList.add('pinned');
+                sidebar.classList.add('open');
+
+                mainContent.classList.add('shifted');
+                overlay.classList.remove('show');
+
+            } else {
+
+                sidebar.classList.remove('pinned');
+                sidebar.classList.remove('open');
+
+                mainContent.classList.remove('shifted');
+                overlay.classList.remove('show');
+            }
+        }
+
+        function scheduleClose() {
+
+            if (pinned) return;
+
+            closeTimer = setTimeout(() => {
+                closeSidebar();
+            },180);
+        }
+
+        // Hover mép trái
+        trigger.addEventListener('mouseenter', openSidebar);
+
+        // Hover sidebar
+        sidebar.addEventListener('mouseenter', () => {
+            clearTimeout(closeTimer);
         });
 
+        sidebar.addEventListener('mouseleave', scheduleClose);
+
+        // Click overlay đóng
+        overlay.addEventListener('click', closeSidebar);
+
+        // Click dấu 3 gạch -> ghim / bỏ ghim
+        toggleBtn.addEventListener('click', pinSidebar);
+
+        // Collapse arrow
         document.querySelectorAll('.nav-group-toggle').forEach(btn => {
+
             const targetId = btn.getAttribute('data-bs-target');
             const collapseEl = document.querySelector(targetId);
+
             if (!collapseEl) return;
-            collapseEl.addEventListener('hide.bs.collapse', () => btn.classList.add('collapsed'));
-            collapseEl.addEventListener('show.bs.collapse', () => btn.classList.remove('collapsed'));
+
+            collapseEl.addEventListener('hide.bs.collapse', () => {
+                btn.classList.add('collapsed');
+            });
+
+            collapseEl.addEventListener('show.bs.collapse', () => {
+                btn.classList.remove('collapsed');
+            });
+
         });
+
     })();
 </script>
 
