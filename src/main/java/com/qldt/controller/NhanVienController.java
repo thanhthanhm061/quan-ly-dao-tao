@@ -228,7 +228,7 @@ public class NhanVienController {
 
         model.addAttribute("nhanVien", nv);
         model.addAttribute("tieuDe", "Thêm Nhân Viên Mới");
-
+        model.addAttribute("coVanHocTaps", nhanVienService.findAllCoVanHocTap());
         addFormData(model);
 
         return "nhan-vien/them-sua";
@@ -290,6 +290,7 @@ public class NhanVienController {
     public String suaForm(@PathVariable Long id, Model model) {
         model.addAttribute("nhanVien", nhanVienService.findById(id).orElseThrow());
         model.addAttribute("tieuDe", "Chỉnh Sửa Nhân Viên");
+        model.addAttribute("coVanHocTaps", nhanVienService.findAllCoVanHocTap());
         addFormData(model);
         return "nhan-vien/them-sua";
     }

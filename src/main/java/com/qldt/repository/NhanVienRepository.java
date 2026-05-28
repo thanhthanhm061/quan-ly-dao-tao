@@ -34,16 +34,22 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, Long> {
             SELECT nv FROM NhanVien nv
             JOIN nv.chucVu cv
             WHERE cv.maChucVu LIKE 'GV%'
-               OR cv.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT')
+               OR cv.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT', 'CVHT')
             """)
     List<NhanVien> findAllGiangVien();
+    @Query("""
+        SELECT nv FROM NhanVien nv
+        JOIN nv.chucVu cv
+        WHERE cv.maChucVu = 'CVHT'
+        """)
+    List<NhanVien> findAllCoVanHocTap();
 
     @Query("""
             SELECT nv FROM NhanVien nv
             JOIN nv.chucVu cv
             WHERE nv.khoa.id = :khoaId
               AND (cv.maChucVu LIKE 'GV%'
-               OR cv.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT'))
+               OR cv.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT', 'CVHT'))
             """)
     List<NhanVien> findGiangVienByKhoa(@Param("khoaId") Long khoaId);
 
@@ -52,7 +58,7 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, Long> {
             SELECT nv FROM NhanVien nv
             WHERE nv.nguoiDung.id = :nguoiDungId
               AND (nv.chucVu.maChucVu LIKE 'GV%'
-               OR nv.chucVu.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT'))
+               OR nv.chucVu.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT', 'CVHT'))
             """)
     Optional<NhanVien> findGiangVienByNguoiDungId(@Param("nguoiDungId") Long nguoiDungId);
 
@@ -60,7 +66,7 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, Long> {
     @Query("""
             SELECT nv FROM NhanVien nv
             JOIN nv.chucVu cv
-            WHERE (cv.maChucVu LIKE 'GV%' OR cv.maChucVu IN ('TBM','TK','PTK', 'CNTT'))
+            WHERE (cv.maChucVu LIKE 'GV%' OR cv.maChucVu IN ('TBM','TK','PTK', 'CNTT', 'CVHT'))
               AND (LOWER(nv.hoTen)      LIKE LOWER(CONCAT('%', :q, '%'))
                OR  LOWER(nv.maNhanVien) LIKE LOWER(CONCAT('%', :q, '%')))
             """)
@@ -71,7 +77,7 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, Long> {
             SELECT COUNT(nv) FROM NhanVien nv
             JOIN nv.chucVu cv
             WHERE cv.maChucVu LIKE 'GV%'
-               OR cv.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT')
+               OR cv.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT', 'CVHT')
             """)
     long countGiangVien();
 
