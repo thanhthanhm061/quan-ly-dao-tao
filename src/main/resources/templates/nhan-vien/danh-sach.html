@@ -3,45 +3,605 @@
       th:replace="~{layout/base :: layout(~{::main}, 'Quản lý Nhân viên')}">
 
 <main>
-    <div class="container-fluid px-4">
 
-        <!-- Alert -->
+    <style>
+
+        :root{
+            --primary:#16a34a;
+            --primary-light:#dcfce7;
+            --primary-dark:#166534;
+
+            --warning:#f59e0b;
+            --danger:#dc2626;
+
+            --gray:#64748b;
+            --border:#e2e8f0;
+            --bg:#f8fafc;
+        }
+
+        body{
+            background:var(--bg);
+        }
+
+        /* ================= CONTAINER ================= */
+
+        .page-wrapper{
+            max-width:100%;
+            overflow:hidden;
+        }
+
+        /* ================= HEADER ================= */
+
+        .header-box{
+            background:#fff;
+            border-radius:18px;
+            padding:18px 22px;
+            box-shadow:0 6px 24px rgba(0,0,0,.05);
+        }
+
+        .btn-add{
+            border-radius:12px;
+            padding:10px 18px;
+            font-weight:700;
+        }
+
+        /* ================= ALERT ================= */
+
+        .alert-custom{
+            width:100%;
+            border:none;
+            border-radius:18px;
+            padding:16px 20px;
+
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+
+            box-shadow:0 8px 24px rgba(0,0,0,.05);
+
+            margin-bottom:20px;
+
+            animation:showAlert .25s ease;
+        }
+
+        .alert-success-custom{
+            background:#ecfdf5;
+            color:#166534;
+            border:1px solid #bbf7d0;
+        }
+
+        .alert-danger-custom{
+            background:#fef2f2;
+            color:#991b1b;
+            border:1px solid #fecaca;
+        }
+
+        .alert-left{
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+
+        .alert-icon{
+            width:42px;
+            height:42px;
+            border-radius:12px;
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+
+            font-size:18px;
+            flex-shrink:0;
+        }
+
+        .alert-success-custom .alert-icon{
+            background:#dcfce7;
+            color:#16a34a;
+        }
+
+        .alert-danger-custom .alert-icon{
+            background:#fee2e2;
+            color:#dc2626;
+        }
+
+        .alert-text{
+            font-size:14px;
+            font-weight:600;
+        }
+
+        .alert-close{
+            border:none;
+            background:transparent;
+            font-size:18px;
+            cursor:pointer;
+            opacity:.7;
+            transition:.2s;
+        }
+
+        .alert-close:hover{
+            opacity:1;
+        }
+
+        @keyframes showAlert{
+            from{
+                opacity:0;
+                transform:translateY(-8px);
+            }
+            to{
+                opacity:1;
+                transform:translateY(0);
+            }
+        }
+
+        /* ================= FILTER ================= */
+
+        .filter-box{
+            background:#fff;
+            padding:18px;
+            border-radius:18px;
+            margin-bottom:20px;
+            box-shadow:0 6px 24px rgba(0,0,0,.04);
+        }
+
+        .search-wrapper{
+            position:relative;
+        }
+
+        .search-input{
+            height:46px;
+            border-radius:14px;
+            border:1px solid var(--border);
+            padding-left:42px;
+            font-size:14px;
+        }
+
+        .search-input:focus{
+            border-color:var(--primary);
+            box-shadow:0 0 0 4px rgba(22,163,74,.10);
+        }
+
+        .search-icon{
+            position:absolute;
+            left:15px;
+            top:50%;
+            transform:translateY(-50%);
+            color:#94a3b8;
+            font-size:14px;
+        }
+
+        .form-select{
+            height:46px;
+            border-radius:14px;
+            border:1px solid var(--border);
+        }
+
+        /* ================= TABLE ================= */
+
+        .table-card{
+            background:#fff;
+            border-radius:18px;
+            overflow:hidden;
+            box-shadow:0 8px 28px rgba(0,0,0,.05);
+        }
+
+        .table{
+            margin:0;
+            width:100%;
+        }
+
+        .table thead{
+            background:#f0fdf4;
+        }
+
+        .table thead th{
+            font-size:12px;
+            font-weight:800;
+            color:#475569;
+            padding:14px 10px;
+            border:none;
+            white-space:nowrap;
+        }
+
+        .table tbody td{
+            padding:12px 10px;
+            vertical-align:middle;
+            border-color:#eef2f7;
+            font-size:13px;
+        }
+
+        .table tbody tr{
+            transition:.2s;
+        }
+
+        .table tbody tr:hover{
+            background:#f8fafc;
+        }
+
+        /* ================= COLUMN ================= */
+
+        .col-stt{width:50px;}
+        .col-ma{width:90px;}
+        .col-ten{width:170px;}
+        .col-hocvi{width:100px;}
+        .col-chucvu{width:120px;}
+        .col-email{width:180px;}
+        .col-khoa{width:120px;}
+        .col-hd{width:110px;}
+        .col-trangthai{width:110px;}
+        .col-action{width:150px;}
+
+        /* ================= TEXT ================= */
+
+        .name-text{
+            font-weight:700;
+            color:#0f172a;
+            line-height:1.4;
+
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+            max-width:160px;
+        }
+
+        .sub-text{
+            font-size:11px;
+            color:#94a3b8;
+
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+            max-width:160px;
+        }
+
+        .email-text{
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+            display:block;
+            max-width:170px;
+            font-size:12px;
+        }
+
+        /* ================= BADGE ================= */
+
+        .code-badge{
+            background:#dcfce7;
+            color:#166534;
+            border-radius:10px;
+            padding:6px 10px;
+            font-weight:700;
+            font-size:11px;
+            display:inline-block;
+        }
+
+        .mini-badge{
+            font-size:10px;
+            padding:5px 7px;
+            border-radius:8px;
+        }
+
+        .badge-contract{
+            background:#e0f2fe;
+            color:#0284c7;
+            border-radius:999px;
+            padding:6px 10px;
+            font-size:11px;
+            font-weight:700;
+        }
+
+        .status-active,
+        .status-stop{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+
+            min-width:80px;
+
+            padding:6px 10px;
+            border-radius:999px;
+
+            font-size:11px;
+            font-weight:700;
+        }
+
+        .status-active{
+            background:#dcfce7;
+            color:#166534;
+        }
+
+        .status-stop{
+            background:#e5e7eb;
+            color:#374151;
+        }
+
+        /* ================= ACTION ================= */
+
+        .action-group{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:6px;
+        }
+
+        .action-btn{
+            width:34px;
+            height:34px;
+
+            border:none;
+            border-radius:10px;
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+
+            transition:.2s;
+            text-decoration:none;
+            cursor:pointer;
+
+            font-size:13px;
+        }
+
+        .action-btn:hover{
+            transform:translateY(-2px);
+        }
+
+        .btn-view{
+            background:#ecfdf5;
+            color:#16a34a;
+        }
+
+        .btn-view:hover{
+            background:#16a34a;
+            color:#fff;
+        }
+
+        .btn-edit{
+            background:#fef3c7;
+            color:#d97706;
+        }
+
+        .btn-edit:hover{
+            background:#f59e0b;
+            color:#fff;
+        }
+
+        .btn-toggle{
+            background:#eff6ff;
+            color:#2563eb;
+        }
+
+        .btn-toggle:hover{
+            background:#2563eb;
+            color:#fff;
+        }
+
+        .btn-delete{
+            background:#fef2f2;
+            color:#dc2626;
+        }
+
+        .btn-delete:hover{
+            background:#dc2626;
+            color:#fff;
+        }
+
+        /* ================= EMPTY ================= */
+
+        .empty-box{
+            text-align:center;
+            padding:50px 20px;
+            color:#94a3b8;
+        }
+
+        .empty-box i{
+            font-size:48px;
+            margin-bottom:12px;
+        }
+
+        /* ================= MODAL ================= */
+
+        .overlay{
+            position:fixed;
+            inset:0;
+
+            display:none;
+
+            justify-content:center;
+            align-items:flex-start;
+
+            padding-top:25px;
+
+            background:rgba(15,23,42,.45);
+
+            z-index:99999;
+
+            opacity:0;
+            transition:.2s;
+        }
+
+        .overlay.show{
+            display:flex;
+            opacity:1;
+        }
+
+        .modal-box{
+            width:320px;
+            background:#fff;
+
+            border-radius:20px;
+
+            padding:22px;
+
+            box-shadow:0 25px 60px rgba(0,0,0,.25);
+
+            animation:showModal .18s ease;
+        }
+
+        .modal-icon{
+            width:55px;
+            height:55px;
+
+            border-radius:50%;
+
+            background:#fef2f2;
+            color:#dc2626;
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+
+            margin:auto auto 14px;
+
+            font-size:20px;
+        }
+
+        .modal-title{
+            text-align:center;
+            font-size:20px;
+            font-weight:800;
+            margin-bottom:8px;
+        }
+
+        .modal-text{
+            text-align:center;
+            color:#6b7280;
+            line-height:1.6;
+            margin-bottom:20px;
+            font-size:14px;
+        }
+
+        .modal-actions{
+            display:flex;
+            gap:10px;
+        }
+
+        .modal-btn{
+            flex:1;
+            border:none;
+            border-radius:12px;
+            padding:11px;
+            font-weight:700;
+            cursor:pointer;
+            transition:.2s;
+        }
+
+        .btn-cancel{
+            background:#f1f5f9;
+            color:#475569;
+        }
+
+        .btn-confirm{
+            background:linear-gradient(135deg,#ef4444,#dc2626);
+            color:#fff;
+        }
+
+        .btn-confirm:hover{
+            transform:translateY(-1px);
+        }
+
+        @keyframes showModal{
+            from{
+                opacity:0;
+                transform:translateY(-10px) scale(.96);
+            }
+            to{
+                opacity:1;
+                transform:translateY(0) scale(1);
+            }
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media(max-width:1200px){
+
+            .table-responsive{
+                overflow-x:auto;
+            }
+
+        }
+
+        @media(max-width:768px){
+
+            .header-box{
+                flex-direction:column;
+                align-items:flex-start !important;
+                gap:14px;
+            }
+
+            .modal-box{
+                width:92%;
+            }
+
+        }
+
+    </style>
+
+    <div class="container-fluid px-4 page-wrapper">
+
+        <!-- SUCCESS -->
+
         <div th:if="${thanhCong}"
-             class="alert alert-success alert-dismissible fade show">
+             class="alert-custom alert-success-custom">
 
-            <i class="fas fa-check-circle me-2"></i>
+            <div class="alert-left">
 
-            <span th:text="${thanhCong}"></span>
+                <div class="alert-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+
+                <div class="alert-text"
+                     th:text="${thanhCong}">
+                </div>
+
+            </div>
 
             <button type="button"
-                    class="btn-close"
+                    class="alert-close"
                     data-bs-dismiss="alert">
+
+                <i class="fas fa-times"></i>
+
             </button>
 
         </div>
+
+        <!-- ERROR -->
 
         <div th:if="${loiLam}"
-             class="alert alert-danger alert-dismissible fade show">
+             class="alert-custom alert-danger-custom">
 
-            <i class="fas fa-exclamation-circle me-2"></i>
+            <div class="alert-left">
 
-            <span th:text="${loiLam}"></span>
+                <div class="alert-icon">
+                    <i class="fas fa-exclamation"></i>
+                </div>
+
+                <div class="alert-text"
+                     th:text="${loiLam}">
+                </div>
+
+            </div>
 
             <button type="button"
-                    class="btn-close"
+                    class="alert-close"
                     data-bs-dismiss="alert">
+
+                <i class="fas fa-times"></i>
+
             </button>
 
         </div>
 
-        <!-- Header -->
-        <div class="d-flex align-items-center justify-content-between py-3 mb-3 border-bottom">
+        <!-- HEADER -->
+
+        <div class="header-box d-flex justify-content-between align-items-center mb-4">
 
             <div>
 
-                <h4 class="mb-0 fw-bold">
+                <h4 class="fw-bold mb-1">
 
-                    <i class="fas fa-user-tie me-2 text-success"></i>
+                    <i class="fas fa-user-tie text-success me-2"></i>
 
                     Quản Lý Nhân Viên / Giảng Viên
 
@@ -50,9 +610,7 @@
                 <small class="text-muted">
 
                     Tổng:
-                    <strong th:text="${tongSo}">
-                        0
-                    </strong>
+                    <strong th:text="${tongSo}">0</strong>
                     nhân viên
 
                 </small>
@@ -60,7 +618,7 @@
             </div>
 
             <a th:href="@{/admin/nhan-vien/them}"
-               class="btn btn-success">
+               class="btn btn-success btn-add">
 
                 <i class="fas fa-plus-circle me-1"></i>
                 Thêm Nhân Viên
@@ -69,296 +627,42 @@
 
         </div>
 
-        <!-- Filter -->
-        <div class="row g-2 mb-3">
+        <!-- FILTER -->
 
-            <!-- Search -->
-            <div class="col-md-4">
+        <div class="filter-box">
 
-                <form method="get"
-                      th:action="@{/admin/nhan-vien}"
-                      class="input-group">
+            <div class="row g-3">
 
-                    <input type="text"
-                           name="search"
-                           class="form-control"
-                           th:value="${timKiem}"
-                           placeholder="Tìm theo tên, mã, email..."/>
+                <div class="col-md-5">
 
-                    <button class="btn btn-outline-secondary"
-                            type="submit">
+                    <div class="search-wrapper">
 
-                        <i class="fas fa-search"></i>
+                        <i class="fas fa-search search-icon"></i>
 
-                    </button>
+                        <input type="text"
+                               id="searchInput"
+                               class="form-control search-input"
+                               placeholder="Tìm theo mã hoặc tên...">
 
-                    <a th:if="${timKiem}"
-                       th:href="@{/admin/nhan-vien}"
-                       class="btn btn-outline-danger">
+                    </div>
 
-                        <i class="fas fa-times"></i>
+                </div>
 
-                    </a>
+                <div class="col-md-3">
 
-                </form>
-
-            </div>
-
-            <!-- Khoa -->
-            <div class="col-md-3">
-
-                <form method="get"
-                      th:action="@{/admin/nhan-vien}">
-
-                    <select name="khoaId"
-                            class="form-select"
-                            onchange="this.form.submit()">
+                    <select id="khoaFilter"
+                            class="form-select">
 
                         <option value="">
                             -- Tất cả khoa --
                         </option>
 
                         <option th:each="k : ${dsKhoa}"
-                                th:value="${k.id}"
-                                th:text="${k.tenKhoa}"
-                                th:selected="${khoaId != null and khoaId == k.id}">
+                                th:value="${k.tenKhoa}"
+                                th:text="${k.tenKhoa}">
                         </option>
 
                     </select>
-
-                </form>
-
-            </div>
-
-        </div>
-
-        <!-- Table -->
-        <div class="card shadow-sm border-0">
-
-            <div class="card-body p-0">
-
-                <div class="table-responsive">
-
-                    <table class="table table-hover align-middle mb-0">
-
-                        <thead class="table-success">
-
-                        <tr>
-
-                            <th class="ps-3">#</th>
-                            <th>Mã NV</th>
-                            <th>Họ Tên</th>
-                            <th>Học Vị</th>
-                            <th>Chức Vụ</th>
-                            <th>Email</th>
-                            <th>Khoa</th>
-                            <th class="text-center">Loại HĐ</th>
-                            <th class="text-center">Trạng Thái</th>
-                            <th class="text-center">Thao Tác</th>
-
-                        </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                        <tr th:each="nv, stat : ${dsNhanVien}">
-
-                            <td class="ps-3 text-muted"
-                                th:text="${stat.count}">
-                            </td>
-
-                            <td>
-
-                                <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold"
-                                      th:text="${nv.maNhanVien}">
-                                </span>
-
-                            </td>
-
-                            <td>
-
-                                <div class="fw-semibold"
-                                     th:text="${nv.hoTen}">
-                                </div>
-
-                                <small class="text-muted"
-                                       th:if="${nv.chuyenMon}"
-                                       th:text="${#strings.abbreviate(nv.chuyenMon,30)}">
-                                </small>
-
-                            </td>
-
-                            <td>
-
-                                <span th:if="${nv.hocHam}"
-                                      class="badge bg-dark-subtle text-dark border me-1"
-                                      th:text="${nv.hocHam}">
-                                </span>
-
-                                <span th:if="${nv.hocVi}"
-                                      class="badge bg-secondary-subtle text-secondary border"
-                                      th:text="${nv.hocVi}">
-                                </span>
-
-                                <span th:if="${nv.hocVi == null and nv.hocHam == null}"
-                                      class="text-muted small">
-
-                                    —
-
-                                </span>
-
-                            </td>
-
-                            <td>
-
-                                <span th:if="${nv.chucVu}"
-                                      class="small"
-                                      th:text="${nv.chucVu.tenChucVu}">
-                                </span>
-
-                                <span th:unless="${nv.chucVu}"
-                                      class="text-muted small">
-
-                                    —
-
-                                </span>
-
-                            </td>
-
-                            <td>
-
-                                <small th:text="${nv.email ?: '—'}"></small>
-
-                            </td>
-
-                            <td>
-
-                                <small th:if="${nv.khoa}"
-                                       th:text="${nv.khoa.tenKhoa}">
-                                </small>
-
-                                <small th:unless="${nv.khoa}"
-                                       class="text-muted">
-
-                                    —
-
-                                </small>
-
-                            </td>
-
-                            <td class="text-center">
-
-                                <span th:if="${nv.loaiHopDong}"
-                                      class="badge bg-info-subtle text-info border small"
-                                      th:text="${nv.loaiHopDong}">
-                                </span>
-
-                                <span th:unless="${nv.loaiHopDong}"
-                                      class="text-muted small">
-
-                                    —
-
-                                </span>
-
-                            </td>
-
-                            <td class="text-center">
-
-                                <span th:if="${nv.trangThai}"
-                                      class="badge bg-success">
-
-                                    Đang làm
-
-                                </span>
-
-                                <span th:unless="${nv.trangThai}"
-                                      class="badge bg-secondary">
-
-                                    Đã nghỉ
-
-                                </span>
-
-                            </td>
-
-                            <td class="text-center">
-
-                                <div class="btn-group btn-group-sm">
-
-                                    <a th:href="@{/admin/nhan-vien/chi-tiet/{id}(id=${nv.id})}"
-                                       class="btn btn-outline-success">
-
-                                        <i class="fas fa-eye"></i>
-
-                                    </a>
-
-                                    <a th:href="@{/admin/nhan-vien/sua/{id}(id=${nv.id})}"
-                                       class="btn btn-outline-warning">
-
-                                        <i class="fas fa-edit"></i>
-
-                                    </a>
-
-                                    <form th:action="@{/admin/nhan-vien/doi-trang-thai/{id}(id=${nv.id})}"
-                                          method="post"
-                                          class="d-inline">
-
-                                        <input type="hidden"
-                                               th:name="${_csrf.parameterName}"
-                                               th:value="${_csrf.token}"/>
-
-                                        <button type="submit"
-                                                class="btn btn-outline-secondary">
-
-                                            <i th:class="${nv.trangThai
-                                                ? 'fas fa-toggle-on'
-                                                : 'fas fa-toggle-off'}">
-                                            </i>
-
-                                        </button>
-
-                                    </form>
-
-                                    <form th:action="@{/admin/nhan-vien/xoa/{id}(id=${nv.id})}"
-                                          method="post"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Xóa nhân viên này? Tài khoản đăng nhập cũng sẽ bị xóa!')">
-
-                                        <input type="hidden"
-                                               th:name="${_csrf.parameterName}"
-                                               th:value="${_csrf.token}"/>
-
-                                        <button type="submit"
-                                                class="btn btn-outline-danger">
-
-                                            <i class="fas fa-trash"></i>
-
-                                        </button>
-
-                                    </form>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                        <tr th:if="${#lists.isEmpty(dsNhanVien)}">
-
-                            <td colspan="10"
-                                class="text-center py-5 text-muted">
-
-                                <i class="fas fa-inbox fs-1 d-block mb-2"></i>
-
-                                Không tìm thấy nhân viên nào
-
-                            </td>
-
-                        </tr>
-
-                        </tbody>
-
-                    </table>
 
                 </div>
 
@@ -366,7 +670,374 @@
 
         </div>
 
+        <!-- TABLE -->
+
+        <div class="table-card">
+
+            <div class="table-responsive">
+
+                <table class="table align-middle">
+
+                    <thead>
+
+                    <tr>
+
+                        <th class="col-stt">#</th>
+                        <th class="col-ma">MÃ</th>
+                        <th class="col-ten">HỌ TÊN</th>
+                        <th class="col-hocvi">HỌC VỊ</th>
+                        <th class="col-chucvu">CHỨC VỤ</th>
+                        <th class="col-email">EMAIL</th>
+                        <th class="col-khoa">KHOA</th>
+                        <th class="col-hd text-center">HĐ</th>
+                        <th class="col-trangthai text-center">TRẠNG THÁI</th>
+                        <th class="col-action text-center">THAO TÁC</th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="nv, stat : ${dsNhanVien}"
+                        class="data-row">
+
+                        <td th:text="${stat.count}"></td>
+
+                        <td class="ma-column">
+
+                            <span class="code-badge"
+                                  th:text="${nv.maNhanVien}">
+                            </span>
+
+                        </td>
+
+                        <td class="ten-column">
+
+                            <div class="name-text"
+                                 th:text="${nv.hoTen}">
+                            </div>
+
+                            <div class="sub-text"
+                                 th:text="${#strings.abbreviate(nv.chuyenMon,25)}">
+                            </div>
+
+                        </td>
+
+                        <td>
+
+                            <span th:if="${nv.hocHam}"
+                                  class="badge bg-dark mini-badge me-1"
+                                  th:text="${nv.hocHam}">
+                            </span>
+
+                            <span th:if="${nv.hocVi}"
+                                  class="badge bg-secondary mini-badge"
+                                  th:text="${nv.hocVi}">
+                            </span>
+
+                            <span th:if="${nv.hocHam == null and nv.hocVi == null}">
+                                —
+                            </span>
+
+                        </td>
+
+                        <td>
+                            <span th:text="${nv.chucVu != null ? nv.chucVu.tenChucVu : '—'}"></span>
+                        </td>
+
+                        <td>
+
+                            <span class="email-text"
+                                  th:text="${nv.email ?: '—'}">
+                            </span>
+
+                        </td>
+
+                        <td class="khoa-column">
+
+                            <span th:text="${nv.khoa != null ? nv.khoa.tenKhoa : '—'}"></span>
+
+                        </td>
+
+                        <td class="text-center">
+
+                            <span class="badge-contract"
+                                  th:text="${nv.loaiHopDong ?: '—'}">
+                            </span>
+
+                        </td>
+
+                        <td class="text-center">
+
+                            <span th:if="${nv.trangThai}"
+                                  class="status-active">
+
+                                Đang làm
+
+                            </span>
+
+                            <span th:unless="${nv.trangThai}"
+                                  class="status-stop">
+
+                                Đã nghỉ
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <div class="action-group">
+
+                                <a th:href="@{/admin/nhan-vien/chi-tiet/{id}(id=${nv.id})}"
+                                   class="action-btn btn-view">
+
+                                    <i class="fas fa-eye"></i>
+
+                                </a>
+
+                                <a th:href="@{/admin/nhan-vien/sua/{id}(id=${nv.id})}"
+                                   class="action-btn btn-edit">
+
+                                    <i class="fas fa-edit"></i>
+
+                                </a>
+
+                                <form th:action="@{/admin/nhan-vien/doi-trang-thai/{id}(id=${nv.id})}"
+                                      method="post">
+
+                                    <input type="hidden"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}"/>
+
+                                    <button type="submit"
+                                            class="action-btn btn-toggle">
+
+                                        <i th:class="${nv.trangThai
+                                            ? 'fas fa-toggle-on'
+                                            : 'fas fa-toggle-off'}">
+                                        </i>
+
+                                    </button>
+
+                                </form>
+
+                                <form th:action="@{/admin/nhan-vien/xoa/{id}(id=${nv.id})}"
+                                      method="post"
+                                      class="delete-form">
+
+                                    <input type="hidden"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}"/>
+
+                                    <button type="button"
+                                            class="action-btn btn-delete open-delete">
+
+                                        <i class="fas fa-trash"></i>
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(dsNhanVien)}">
+
+                        <td colspan="10">
+
+                            <div class="empty-box">
+
+                                <i class="fas fa-inbox"></i>
+
+                                <div>
+                                    Không tìm thấy nhân viên nào
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
     </div>
+
+    <!-- DELETE MODAL -->
+
+    <div class="overlay"
+         id="deleteModal">
+
+        <div class="modal-box">
+
+            <div class="modal-icon">
+
+                <i class="fas fa-trash"></i>
+
+            </div>
+
+            <div class="modal-title">
+                Xác nhận xoá
+            </div>
+
+            <div class="modal-text">
+
+                Bạn có chắc muốn xoá nhân viên này không?
+                Dữ liệu sẽ không thể khôi phục.
+
+            </div>
+
+            <div class="modal-actions">
+
+                <button class="modal-btn btn-cancel"
+                        onclick="closeModal()">
+
+                    Huỷ
+
+                </button>
+
+                <button class="modal-btn btn-confirm"
+                        id="confirmDelete">
+
+                    Xoá
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        /* ================= SEARCH ================= */
+
+        const searchInput =
+            document.getElementById("searchInput");
+
+        const khoaFilter =
+            document.getElementById("khoaFilter");
+
+        const rows =
+            document.querySelectorAll(".data-row");
+
+        function filterTable(){
+
+            const keyword =
+                searchInput.value.toLowerCase().trim();
+
+            const khoa =
+                khoaFilter.value.toLowerCase();
+
+            rows.forEach(row => {
+
+                const ma =
+                    row.querySelector(".ma-column")
+                        .innerText
+                        .toLowerCase();
+
+                const ten =
+                    row.querySelector(".ten-column")
+                        .innerText
+                        .toLowerCase();
+
+                const khoaText =
+                    row.querySelector(".khoa-column")
+                        .innerText
+                        .toLowerCase();
+
+                const matchKeyword =
+                    ma.includes(keyword)
+                    || ten.includes(keyword);
+
+                const matchKhoa =
+                    khoa === ""
+                    || khoaText.includes(khoa);
+
+                row.style.display =
+                    matchKeyword && matchKhoa
+                        ? ""
+                        : "none";
+
+            });
+
+        }
+
+        searchInput.addEventListener("input", filterTable);
+
+        khoaFilter.addEventListener("change", filterTable);
+
+        /* ================= DELETE MODAL ================= */
+
+        const modal =
+            document.getElementById("deleteModal");
+
+        const confirmDelete =
+            document.getElementById("confirmDelete");
+
+        let activeForm = null;
+
+        document.querySelectorAll(".open-delete")
+            .forEach(btn => {
+
+                btn.addEventListener("click", function(){
+
+                    activeForm =
+                        this.closest("form");
+
+                    modal.style.display = "flex";
+
+                    requestAnimationFrame(() => {
+                        modal.classList.add("show");
+                    });
+
+                });
+
+            });
+
+        function closeModal(){
+
+            modal.classList.remove("show");
+
+            setTimeout(() => {
+                modal.style.display = "none";
+            }, 180);
+
+            activeForm = null;
+        }
+
+        confirmDelete.addEventListener("click", () => {
+
+            if(activeForm){
+
+                activeForm.submit();
+            }
+
+        });
+
+        modal.addEventListener("click", function(e){
+
+            if(e.target === modal){
+
+                closeModal();
+            }
+
+        });
+
+    </script>
+
 </main>
 
 </html>

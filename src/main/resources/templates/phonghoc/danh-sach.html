@@ -4,6 +4,28 @@
 <body><th:block th:fragment="content">
 
     <style>
+        /* overlay mờ nền */
+.delete-overlay{
+    position:fixed;
+    inset:0;
+
+    background:rgba(15,23,42,.22);
+
+    backdrop-filter:blur(5px);
+    -webkit-backdrop-filter:blur(5px);
+
+    opacity:0;
+    visibility:hidden;
+
+    transition:.22s ease;
+
+    z-index:9998;
+}
+
+.delete-overlay.show{
+    opacity:1;
+    visibility:visible;
+}
         .tkb-tabs {
             display:flex;
             gap:4px;
@@ -300,8 +322,6 @@
     <div class="card">
         <div class="card-header">
             <span><i class="fas fa-list me-2"></i>Danh sách phòng học</span>
-            <span class="tag tag-muted" id="roomCount"
-                  th:text="${#lists.size(danhSachPhong)} + ' phòng'"></span>
         </div>
         <div class="card-body p-0">
             <div th:if="${#lists.isEmpty(danhSachPhong)}" class="empty-state">
@@ -423,10 +443,13 @@
             </div>
         </div>
     </div>
+    <div class="delete-overlay" id="disableOverlay"></div>
     <script>
         (function () {
 
             const toast = document.getElementById('disableToast');
+            const overlay = document.getElementById('disableOverlay');
+
             const btnCancel = document.getElementById('btnCancelDisable');
             const btnConfirm = document.getElementById('btnConfirmDisable');
 
@@ -437,10 +460,11 @@
 
             let currentForm = null;
 
-            // ===============================
-            // CONFIRM VÔ HIỆU
-            // ===============================
+            /* ===============================
+               OPEN TOAST
+            =============================== */
             document.querySelectorAll('.btn-disable-room').forEach(btn => {
+
                 btn.addEventListener('click', function () {
 
                     currentForm = this.closest('form');
@@ -452,34 +476,48 @@
                         this.dataset.tenphong || '-';
 
                     toast.classList.add('show');
+
+                    requestAnimationFrame(() => {
+                        overlay.classList.add('show');
+                    });
                 });
             });
 
-            btnCancel.addEventListener('click', function () {
-                toast.classList.remove('show');
-            });
+            /* ===============================
+               CLOSE TOAST
+            =============================== */
+            function closeToast() {
 
+                toast.classList.remove('show');
+
+                overlay.classList.remove('show');
+            }
+
+            btnCancel.addEventListener('click', closeToast);
+
+            overlay.addEventListener('click', closeToast);
+
+            /* ===============================
+               CONFIRM
+            =============================== */
             btnConfirm.addEventListener('click', function () {
-                toast.classList.remove('show');
-                if (currentForm) currentForm.submit();
-            });
 
-            document.addEventListener('click', function (e) {
-                if (
-                    toast.classList.contains('show') &&
-                    !toast.contains(e.target) &&
-                    !e.target.closest('.btn-disable-room')
-                ) {
-                    toast.classList.remove('show');
+                closeToast();
+
+                if (currentForm) {
+                    currentForm.submit();
                 }
             });
 
-            // ===============================
-            // FILTER + SEARCH
-            // ===============================
+            /* ===============================
+               FILTER + SEARCH
+            =============================== */
             function filterRooms() {
+
                 const keyword = searchInput.value.toLowerCase().trim();
+
                 const loaiValue = loaiFilter.value;
+
                 const trangThaiValue = trangThaiFilter.value;
 
                 const rows = document.querySelectorAll('#roomTable tbody tr');
@@ -487,10 +525,18 @@
                 let visibleCount = 0;
 
                 rows.forEach(row => {
-                    const maPhong = (row.dataset.ma || '').toLowerCase();
-                    const tenPhong = row.children[1].innerText.toLowerCase();
-                    const loaiPhong = row.dataset.loai || '';
-                    const active = row.dataset.active === 'true';
+
+                    const maPhong =
+                        (row.dataset.ma || '').toLowerCase();
+
+                    const tenPhong =
+                        row.children[1].innerText.toLowerCase();
+
+                    const loaiPhong =
+                        row.dataset.loai || '';
+
+                    const active =
+                        row.dataset.active === 'true';
 
                     const matchKeyword =
                         maPhong.includes(keyword) ||
@@ -505,9 +551,13 @@
                         (trangThaiValue === 'inactive' && !active);
 
                     if (matchKeyword && matchLoai && matchTrangThai) {
+
                         row.style.display = '';
+
                         visibleCount++;
+
                     } else {
+
                         row.style.display = 'none';
                     }
                 });
@@ -516,7 +566,9 @@
             }
 
             searchInput.addEventListener('input', filterRooms);
+
             loaiFilter.addEventListener('change', filterRooms);
+
             trangThaiFilter.addEventListener('change', filterRooms);
 
         })();

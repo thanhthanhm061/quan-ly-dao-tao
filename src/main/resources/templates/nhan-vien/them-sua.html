@@ -1,24 +1,233 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/base :: layout(~{::#page-content}, ${tieuDe})}">
+
 <body>
+
 <div id="page-content">
 
-    <div class="container-fluid px-4">
+    <style>
+
+        body{
+            background:#f4f7fb;
+        }
+
+        #page-content{
+            animation:fadePage .3s ease;
+        }
+
+        @keyframes fadePage{
+            from{
+                opacity:0;
+                transform:translateY(8px);
+            }
+            to{
+                opacity:1;
+                transform:translateY(0);
+            }
+        }
+
+        .container-fluid{
+            max-width:1400px;
+        }
+
+        .page-header{
+            background:#fff;
+            border-radius:20px;
+            padding:20px 24px;
+            margin-top:20px;
+            margin-bottom:20px;
+            border:1px solid #eef2f7;
+            box-shadow:0 2px 14px rgba(15,23,42,.05);
+        }
+
+        .form-card{
+            border:none;
+            border-radius:24px;
+            overflow:hidden;
+            background:#fff;
+            box-shadow:0 6px 22px rgba(15,23,42,.06);
+        }
+
+        .form-card .card-body{
+            padding:32px;
+        }
+
+        .section-title{
+            font-size:15px;
+            font-weight:700;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            margin-bottom:20px;
+            padding-bottom:12px;
+            border-bottom:1px solid #eef2f7;
+        }
+
+        .section-title.primary{
+            color:#2563eb;
+        }
+
+        .section-title.success{
+            color:#16a34a;
+        }
+
+        .section-title.warning{
+            color:#d97706;
+        }
+
+        .form-label{
+            font-size:14px;
+            font-weight:600;
+            margin-bottom:8px;
+            color:#334155;
+        }
+
+        .form-control,
+        .form-select{
+            border-radius:14px;
+            border:1px solid #dbe4ee;
+            min-height:48px;
+            padding:10px 14px;
+            font-size:14px;
+            transition:.2s ease;
+            box-shadow:none !important;
+        }
+
+        .form-control:focus,
+        .form-select:focus{
+            border-color:#22c55e;
+            box-shadow:0 0 0 4px rgba(34,197,94,.12) !important;
+        }
+
+        .form-control[readonly]{
+            background:#f8fafc;
+        }
+
+        .invalid-feedback{
+            font-size:12px;
+            margin-top:5px;
+        }
+
+        .form-section{
+            background:#fcfdff;
+            border:1px solid #eef2f7;
+            border-radius:20px;
+            padding:22px;
+            margin-bottom:24px;
+        }
+
+        .btn{
+            border-radius:14px !important;
+            font-weight:600;
+            padding:11px 20px;
+            transition:.2s ease;
+        }
+
+        .btn:hover{
+            transform:translateY(-1px);
+        }
+
+        .btn-success{
+            background:linear-gradient(135deg,#16a34a,#22c55e);
+            border:none;
+        }
+
+        .btn-secondary{
+            background:#64748b;
+            border:none;
+        }
+
+        .header-title{
+            font-size:24px;
+            font-weight:800;
+            margin-bottom:2px;
+        }
+
+        .header-subtitle{
+            color:#64748b;
+            font-size:14px;
+        }
+
+        .top-icon{
+            width:48px;
+            height:48px;
+            border-radius:14px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:#ecfdf3;
+            color:#16a34a;
+            font-size:20px;
+        }
+
+        hr{
+            opacity:.08;
+        }
+
+        @media(max-width:768px){
+
+            .page-header{
+                padding:18px;
+            }
+
+            .form-card .card-body{
+                padding:18px;
+            }
+
+            .form-section{
+                padding:16px;
+            }
+
+            .header-title{
+                font-size:20px;
+            }
+
+        }
+
+    </style>
+
+    <div class="container-fluid px-4 pb-4">
 
         <!-- HEADER -->
-        <div class="d-flex align-items-center py-3 mb-3 border-bottom">
+        <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="top-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+
+                <div>
+                    <div class="header-title" th:text="${tieuDe}">
+                        Quản Lý Nhân Viên
+                    </div>
+
+                    <div class="header-subtitle">
+                        Cập nhật đầy đủ thông tin hồ sơ nhân sự
+                    </div>
+                </div>
+
+            </div>
+
             <a th:href="@{/admin/nhan-vien}"
-               class="btn btn-outline-secondary btn-sm me-3">
-                <i class="fas fa-arrow-left"></i>
+               class="btn btn-outline-secondary">
+
+                <i class="fas fa-arrow-left me-1"></i>
+                Quay lại
+
             </a>
-            <h4 class="mb-0 fw-bold" th:text="${tieuDe}">Nhân viên</h4>
+
         </div>
 
+        <!-- FORM -->
         <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-4">
+
+            <div class="col-xl-10">
+
+                <div class="card form-card">
+
+                    <div class="card-body">
 
                         <form th:action="${nhanVien.id == null}
                                 ? @{/admin/nhan-vien/them}
@@ -31,200 +240,365 @@
                                    th:value="${_csrf.token}"/>
 
                             <!-- THÔNG TIN CƠ BẢN -->
-                            <h6 class="text-primary fw-bold border-bottom pb-2 mb-3">
-                                <i class="fas fa-user me-1"></i>
-                                Thông Tin Cơ Bản
-                            </h6>
+                            <div class="form-section">
 
-                            <div class="row g-3">
+                                <div class="section-title primary">
 
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Mã Nhân Viên</label>
-                                    <input type="text"
-                                           th:field="*{maNhanVien}"
-                                           class="form-control"
-                                           th:readonly="${nhanVien.id != null}"/>
-                                    <div class="invalid-feedback d-block"
-                                         th:errors="*{maNhanVien}"></div>
+                                    <i class="fas fa-user"></i>
+
+                                    Thông Tin Cơ Bản
+
                                 </div>
 
-                                <div class="col-md-5">
-                                    <label class="form-label fw-semibold">Họ Tên</label>
-                                    <input type="text"
-                                           th:field="*{hoTen}"
-                                           class="form-control"/>
-                                    <div class="invalid-feedback d-block"
-                                         th:errors="*{hoTen}"></div>
-                                </div>
-                                <div class="col-md-2">
-                                    <label class="form-label fw-semibold">Giới Tính</label>
-                                    <select name="gioiTinh" class="form-select">
-                                        <option value="">-- Chọn --</option>
-                                        <option value="Nam"  th:selected="${nhanVien.gioiTinh == 'Nam'}">Nam</option>
-                                        <option value="Nữ"   th:selected="${nhanVien.gioiTinh == 'Nữ'}">Nữ</option>
-                                        <option value="Khác" th:selected="${nhanVien.gioiTinh == 'Khác'}">Khác</option>
-                                    </select>
-                                </div>
+                                <div class="row g-4">
 
-                                <div class="col-md-2">
-                                    <label class="form-label fw-semibold">Ngày Sinh</label>
-                                    <input type="date"
-                                           th:field="*{ngaySinh}"
-                                           class="form-control"/>
-                                </div>
+                                    <div class="col-md-3">
 
-                                <div class="col-md-5">
-                                    <label class="form-label fw-semibold">Email</label>
-                                    <input type="email"
-                                           th:field="*{email}"
-                                           class="form-control"/>
-                                    <div class="invalid-feedback d-block"
-                                         th:errors="*{email}"></div>
-                                </div>
+                                        <label class="form-label">
+                                            Mã Nhân Viên
+                                        </label>
 
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">SĐT</label>
-                                    <input type="text"
-                                           th:field="*{soDienThoai}"
-                                           class="form-control"/>
-                                </div>
+                                        <input type="text"
+                                               th:field="*{maNhanVien}"
+                                               class="form-control"
+                                               th:readonly="${nhanVien.id != null}"/>
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Địa Chỉ</label>
-                                    <input type="text"
-                                           th:field="*{diaChi}"
-                                           class="form-control"/>
+                                        <div class="invalid-feedback d-block"
+                                             th:errors="*{maNhanVien}"></div>
+
+                                    </div>
+
+                                    <div class="col-md-5">
+
+                                        <label class="form-label">
+                                            Họ Tên
+                                        </label>
+
+                                        <input type="text"
+                                               th:field="*{hoTen}"
+                                               class="form-control"/>
+
+                                        <div class="invalid-feedback d-block"
+                                             th:errors="*{hoTen}"></div>
+
+                                    </div>
+
+                                    <div class="col-md-2">
+
+                                        <label class="form-label">
+                                            Giới Tính
+                                        </label>
+
+                                        <select name="gioiTinh"
+                                                class="form-select">
+
+                                            <option value="">
+                                                -- Chọn --
+                                            </option>
+
+                                            <option value="Nam"
+                                                    th:selected="${nhanVien.gioiTinh == 'Nam'}">
+                                                Nam
+                                            </option>
+
+                                            <option value="Nữ"
+                                                    th:selected="${nhanVien.gioiTinh == 'Nữ'}">
+                                                Nữ
+                                            </option>
+
+                                            <option value="Khác"
+                                                    th:selected="${nhanVien.gioiTinh == 'Khác'}">
+                                                Khác
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-md-2">
+
+                                        <label class="form-label">
+                                            Ngày Sinh
+                                        </label>
+
+                                        <input type="date"
+                                               th:field="*{ngaySinh}"
+                                               class="form-control"/>
+
+                                    </div>
+
+                                    <div class="col-md-5">
+
+                                        <label class="form-label">
+                                            Email
+                                        </label>
+
+                                        <input type="email"
+                                               th:field="*{email}"
+                                               class="form-control"/>
+
+                                        <div class="invalid-feedback d-block"
+                                             th:errors="*{email}"></div>
+
+                                    </div>
+
+                                    <div class="col-md-3">
+
+                                        <label class="form-label">
+                                            Số Điện Thoại
+                                        </label>
+
+                                        <input type="text"
+                                               th:field="*{soDienThoai}"
+                                               class="form-control"/>
+
+                                    </div>
+
+                                    <div class="col-md-4">
+
+                                        <label class="form-label">
+                                            Địa Chỉ
+                                        </label>
+
+                                        <input type="text"
+                                               th:field="*{diaChi}"
+                                               class="form-control"/>
+
+                                    </div>
+
                                 </div>
 
                             </div>
 
                             <!-- HỌC VẤN -->
-                            <h6 class="text-success fw-bold border-bottom pb-2 mb-3 mt-4">
-                                <i class="fas fa-graduation-cap me-1"></i>
-                                Học Vấn & Chuyên Nghành
-                            </h6>
+                            <div class="form-section">
 
-                            <div class="row g-3">
+                                <div class="section-title success">
 
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Học Vị</label>
-                                    <select th:field="*{hocVi}" class="form-select">
-                                        <option value="">-- Học vị --</option>
-                                        <option th:each="hv : ${dsHocVi}"
-                                                th:value="${hv}"
-                                                th:text="${hv}">
-                                        </option>
-                                    </select>
+                                    <i class="fas fa-graduation-cap"></i>
+
+                                    Học Vấn & Chuyên Ngành
+
                                 </div>
 
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Học Hàm</label>
-                                    <select th:field="*{hocHam}" class="form-select">
-                                        <option value="">-- Học hàm --</option>
-                                        <option th:each="hh : ${dsHocHam}"
-                                                th:value="${hh}"
-                                                th:text="${hh == '' ? '(Không có)' : hh}">
-                                        </option>
-                                    </select>
-                                </div>
+                                <div class="row g-4">
 
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Chuyên Ngành</label>
-                                    <input type="text"
-                                           th:field="*{chuyenMon}"
-                                           class="form-control"
-                                           placeholder="Ví dụ: Công nghệ phần mềm..."/>
+                                    <div class="col-md-3">
+
+                                        <label class="form-label">
+                                            Học Vị
+                                        </label>
+
+                                        <select th:field="*{hocVi}"
+                                                class="form-select">
+
+                                            <option value="">
+                                                -- Học vị --
+                                            </option>
+
+                                            <option th:each="hv : ${dsHocVi}"
+                                                    th:value="${hv}"
+                                                    th:text="${hv}">
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-md-3">
+
+                                        <label class="form-label">
+                                            Học Hàm
+                                        </label>
+
+                                        <select th:field="*{hocHam}"
+                                                class="form-select">
+
+                                            <option value="">
+                                                -- Học hàm --
+                                            </option>
+
+                                            <option th:each="hh : ${dsHocHam}"
+                                                    th:value="${hh}"
+                                                    th:text="${hh == '' ? '(Không có)' : hh}">
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label">
+                                            Chuyên Ngành
+                                        </label>
+
+                                        <input type="text"
+                                               th:field="*{chuyenMon}"
+                                               class="form-control"
+                                               placeholder="Ví dụ: Công nghệ phần mềm"/>
+
+                                    </div>
+
                                 </div>
 
                             </div>
 
                             <!-- CÔNG TÁC -->
-                            <h6 class="text-warning fw-bold border-bottom pb-2 mb-3 mt-4">
-                                <i class="fas fa-briefcase me-1"></i>
-                                Thông Tin Công Tác
-                            </h6>
+                            <div class="form-section">
 
-                            <div class="row g-3">
+                                <div class="section-title warning">
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Khoa</label>
-                                    <select th:field="*{khoa}" class="form-select">
-                                        <option value="">-- Chọn khoa --</option>
-                                        <option th:each="k : ${dsKhoa}"
-                                                th:value="${k.id}"
-                                                th:text="${k.tenKhoa}">
-                                        </option>
-                                    </select>
+                                    <i class="fas fa-briefcase"></i>
+
+                                    Thông Tin Công Tác
+
                                 </div>
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Chức Vụ</label>
-                                    <select th:field="*{chucVu}" class="form-select">
-                                        <option value="">-- Chọn chức vụ --</option>
-                                        <option th:each="cv : ${dsChucVu}"
-                                                th:value="${cv.id}"
-                                                th:text="${cv.tenChucVu}">
-                                        </option>
-                                    </select>
-                                </div>
+                                <div class="row g-4">
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Loại Hợp Đồng</label>
-                                    <select th:field="*{loaiHopDong}" class="form-select">
-                                        <option value="">-- Loại hợp đồng --</option>
-                                        <option th:each="hd : ${dsLoaiHopDong}"
-                                                th:value="${hd}"
-                                                th:text="${hd}">
-                                        </option>
-                                    </select>
-                                </div>
+                                    <div class="col-md-4">
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Ngày Tuyển Dụng</label>
-                                    <input type="date"
-                                           th:field="*{ngayTuyenDung}"
-                                           class="form-control"/>
-                                </div>
+                                        <label class="form-label">
+                                            Khoa
+                                        </label>
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Ngày Bắt Đầu Làm Việc</label>
-                                    <input type="date"
-                                           th:field="*{batDauLamViec}"
-                                           class="form-control"/>
-                                </div>
+                                        <select th:field="*{khoa}"
+                                                class="form-select">
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Hệ Số Lương</label>
-                                    <input type="number"
-                                           th:field="*{heSoLuong}"
-                                           class="form-control"
-                                           step="0.01"
-                                           placeholder="Ví dụ: 2.34"/>
+                                            <option value="">
+                                                -- Chọn khoa --
+                                            </option>
+
+                                            <option th:each="k : ${dsKhoa}"
+                                                    th:value="${k.id}"
+                                                    th:text="${k.tenKhoa}">
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-md-4">
+
+                                        <label class="form-label">
+                                            Chức Vụ
+                                        </label>
+
+                                        <select th:field="*{chucVu}"
+                                                class="form-select">
+
+                                            <option value="">
+                                                -- Chọn chức vụ --
+                                            </option>
+
+                                            <option th:each="cv : ${dsChucVu}"
+                                                    th:value="${cv.id}"
+                                                    th:text="${cv.tenChucVu}">
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-md-4">
+
+                                        <label class="form-label">
+                                            Loại Hợp Đồng
+                                        </label>
+
+                                        <select th:field="*{loaiHopDong}"
+                                                class="form-select">
+
+                                            <option value="">
+                                                -- Loại hợp đồng --
+                                            </option>
+
+                                            <option th:each="hd : ${dsLoaiHopDong}"
+                                                    th:value="${hd}"
+                                                    th:text="${hd}">
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-md-4">
+
+                                        <label class="form-label">
+                                            Ngày Tuyển Dụng
+                                        </label>
+
+                                        <input type="date"
+                                               th:field="*{ngayTuyenDung}"
+                                               class="form-control"/>
+
+                                    </div>
+
+                                    <div class="col-md-4">
+
+                                        <label class="form-label">
+                                            Ngày Bắt Đầu Làm Việc
+                                        </label>
+
+                                        <input type="date"
+                                               th:field="*{batDauLamViec}"
+                                               class="form-control"/>
+
+                                    </div>
+
+                                    <div class="col-md-4">
+
+                                        <label class="form-label">
+                                            Hệ Số Lương
+                                        </label>
+
+                                        <input type="number"
+                                               th:field="*{heSoLuong}"
+                                               class="form-control"
+                                               step="0.01"
+                                               placeholder="Ví dụ: 2.34"/>
+
+                                    </div>
+
                                 </div>
 
                             </div>
 
-                            <hr class="my-4"/>
+                            <!-- BUTTON -->
+                            <div class="d-flex justify-content-end gap-3 mt-4">
 
-                            <div class="d-flex justify-content-end gap-2">
                                 <a th:href="@{/admin/nhan-vien}"
                                    class="btn btn-secondary">
-                                    <i class="fas fa-times me-1"></i>Hủy
+
+                                    <i class="fas fa-times me-1"></i>
+                                    Hủy
+
                                 </a>
-                                <button class="btn btn-success" type="submit">
-                                    <i class="fas fa-save me-1"></i>Lưu Nhân Viên
+
+                                <button type="submit"
+                                        class="btn btn-success">
+
+                                    <i class="fas fa-save me-1"></i>
+                                    Lưu Nhân Viên
+
                                 </button>
+
                             </div>
 
                         </form>
 
                     </div>
+
                 </div>
+
             </div>
+
         </div>
 
     </div>
 
 </div>
+
 </body>
 </html>

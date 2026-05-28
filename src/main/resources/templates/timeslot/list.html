@@ -73,6 +73,95 @@
             border-radius:10px;
             font-weight:600;
         }
+        /* =========================
+   ACTION BUTTON
+========================= */
+
+.action-wrap{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+}
+
+.action-icon{
+    width:38px;
+    height:38px;
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:12px;
+
+    transition:all .18s ease;
+
+    text-decoration:none;
+
+    border:1px solid transparent;
+}
+
+.action-icon i{
+    font-size:14px;
+    line-height:1;
+}
+
+/* EDIT */
+.action-edit{
+    background:#fff7ed;
+    color:#ea580c;
+    border-color:#fed7aa;
+}
+
+.action-edit:hover{
+    background:#ea580c;
+    color:#fff;
+    transform:translateY(-1px);
+}
+
+/* DELETE */
+.action-delete{
+    background:#fef2f2;
+    color:#dc2626;
+    border-color:#fecaca;
+}
+
+.action-delete:hover{
+    background:#dc2626;
+    color:#fff;
+    transform:translateY(-1px);
+}
+
+/* =========================
+   OVERLAY MỜ NỀN
+========================= */
+
+.delete-overlay{
+    position:fixed;
+    inset:0;
+
+    background:rgba(15,23,42,.28);
+
+    backdrop-filter:blur(4px);
+    -webkit-backdrop-filter:blur(4px);
+
+    opacity:0;
+    visibility:hidden;
+
+    transition:.22s ease;
+
+    z-index:9998;
+}
+
+.delete-overlay.show{
+    opacity:1;
+    visibility:visible;
+}
+
+/* toast nằm trên overlay */
+.delete-toast{
+    z-index:9999;
+}
     </style>
     <div class="card" style="border:none;border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.07)">
 
@@ -126,27 +215,32 @@
                           th:text="${ts.active ? 'Đang dùng' : 'Tắt'}"></span>
                     </td>
                     <td class="text-center">
-                        <a th:href="@{/admin/time-slots/sua/{id}(id=${ts.id})}"
-                           class="btn btn-sm btn-outline-warning me-1">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <form th:action="@{/admin/time-slots/xoa/{id}(id=${ts.id})}"
-                              method="post"
-                              class="d-inline delete-form">
+                        <div class="action-wrap">
 
-                            <input type="hidden"
-                                   th:name="${_csrf.parameterName}"
-                                   th:value="${_csrf.token}"/>
+                            <a th:href="@{/admin/time-slots/sua/{id}(id=${ts.id})}"
+                               class="action-icon action-edit">
+                                <i class="fas fa-pen"></i>
+                            </a>
 
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-danger btn-delete-slot"
-                                    th:attr="
-                                        data-tiet=${ts.tietSo},
-                                        data-tenca=${ts.tenCa}
-                                    ">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
+                            <form th:action="@{/admin/time-slots/xoa/{id}(id=${ts.id})}"
+                                  method="post"
+                                  class="d-inline delete-form">
+
+                                <input type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+
+                                <button type="button"
+                                        class="action-icon action-delete btn-delete-slot"
+                                        th:attr="
+                        data-tiet=${ts.tietSo},
+                        data-tenca=${ts.tenCa}
+                    ">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+
+                        </div>
                     </td>
                 </tr>
                 </tbody>
@@ -154,6 +248,8 @@
         </div>
     </div>
     <!-- Toast xác nhận xóa -->
+    <div class="delete-overlay" id="deleteOverlay"></div>
+
     <div class="delete-toast" id="deleteToast">
 
         <div class="delete-toast-header">
@@ -182,49 +278,53 @@
 
     </div>
     <script>
-    (function () {
+        (function () {
 
-        const toast = document.getElementById('deleteToast');
-        const btnCancel = document.getElementById('btnCancelDelete');
-        const btnConfirm = document.getElementById('btnConfirmDelete');
+         const toast = document.getElementById('deleteToast');
+         const overlay = document.getElementById('deleteOverlay');
 
-        let currentForm = null;
+         const btnCancel = document.getElementById('btnCancelDelete');
+         const btnConfirm = document.getElementById('btnConfirmDelete');
 
-        document.querySelectorAll('.btn-delete-slot').forEach(btn => {
-            btn.addEventListener('click', function () {
+         let currentForm = null;
 
-                currentForm = this.closest('form');
+         function closeToast(){
+             toast.classList.remove('show');
+             overlay.classList.remove('show');
+         }
 
-                document.getElementById('toastTiet').textContent =
-                    'Tiết ' + (this.dataset.tiet || '-');
+         document.querySelectorAll('.btn-delete-slot').forEach(btn => {
 
-                document.getElementById('toastTenCa').textContent =
-                    this.dataset.tenca || '-';
+             btn.addEventListener('click', function () {
 
-                toast.classList.add('show');
-            });
-        });
+                 currentForm = this.closest('form');
 
-        btnCancel.addEventListener('click', function () {
-            toast.classList.remove('show');
-        });
+                 document.getElementById('toastTiet').textContent =
+                     'Tiết ' + (this.dataset.tiet || '-');
 
-        btnConfirm.addEventListener('click', function () {
-            toast.classList.remove('show');
-            if (currentForm) currentForm.submit();
-        });
+                 document.getElementById('toastTenCa').textContent =
+                     this.dataset.tenca || '-';
 
-        document.addEventListener('click', function (e) {
-            if (
-                toast.classList.contains('show') &&
-                !toast.contains(e.target) &&
-                !e.target.closest('.btn-delete-slot')
-            ) {
-                toast.classList.remove('show');
-            }
-        });
+                 toast.classList.add('show');
+                 overlay.classList.add('show');
+             });
 
-    })();
+         });
+
+         btnCancel.addEventListener('click', closeToast);
+
+         overlay.addEventListener('click', closeToast);
+
+         btnConfirm.addEventListener('click', function () {
+
+             closeToast();
+
+             if (currentForm) {
+                 currentForm.submit();
+             }
+         });
+
+     })();
 </script>
 </th:block>
 </body></html>

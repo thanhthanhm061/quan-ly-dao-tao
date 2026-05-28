@@ -419,94 +419,151 @@
             </div>
         </div>
     </div>
-
-
     <!-- ═══════════════════════════════════════════════════════════
          STYLES
     ═══════════════════════════════════════════════════════════ -->
     <style>
-        .custom-toast-container {
-            position: fixed;
-            top: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 99999;
-        }
+        /* Modal backdrop sáng nhẹ */
+  .modal-backdrop.show{
+      opacity: 0.06 !important;
+      background-color: #000 !important;
+      backdrop-filter: blur(1px);
+  }
 
-        .custom-toast {
-            width: 360px;
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
-            overflow: hidden;
-            animation: slideIn .25s ease;
-            border: 1px solid #e2e8f0;
-            margin-bottom: 10px;
-        }
+  /* Modal nổi đẹp hơn */
+  .modal-content{
+      border-radius: 18px;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.10) !important;
+      border: none;
+  }
+          /* Overlay nền mờ */
+          .toast-overlay{
+              position: fixed;
+              inset: 0;
+              background: rgba(0, 0, 0, 0.55);
+              backdrop-filter: blur(2px);
+              z-index: 99998;
+              animation: fadeOverlay .2s ease;
+          }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(30px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
+          @keyframes fadeOverlay{
+              from{ opacity:0; }
+              to{ opacity:1; }
+          }
 
-        .toast-confirm    { border-left: 5px solid #ef4444; }
-        .toast-success    { border-left: 5px solid #22c55e; }
-        .toast-error      { border-left: 5px solid #ef4444; }
+          .custom-toast-container {
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              z-index: 99999;
+          }
 
-        .toast-header-custom {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 16px 10px;
-        }
+          .custom-toast {
+              width: 400px;
+              background: #fff;
+              border-radius: 18px;
+              box-shadow: 0 20px 60px rgba(0,0,0,.25);
+              overflow: hidden;
+              animation: toastShow .25s ease;
+              border: 1px solid #e2e8f0;
+          }
 
-        .toast-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #fee2e2;
-            color: #dc2626;
-            font-size: 16px;
-            flex-shrink: 0;
-        }
+          @keyframes toastShow{
+              from{
+                  opacity:0;
+                  transform: scale(.92) translateY(10px);
+              }
+              to{
+                  opacity:1;
+                  transform: scale(1) translateY(0);
+              }
+          }
 
-        .toast-content { flex: 1; }
+          .toast-confirm{
+              border-top: 5px solid #ef4444;
+          }
 
-        .toast-title {
-            font-size: 15px;
-            font-weight: 700;
-            margin-bottom: 2px;
-            color: #0f172a;
-        }
+          .toast-success{
+              border-top: 5px solid #22c55e;
+          }
 
-        .toast-message {
-            font-size: 13px;
-            color: #64748b;
-            line-height: 1.4;
-        }
+          .toast-error{
+              border-top: 5px solid #ef4444;
+          }
 
-        .toast-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            padding: 12px 16px 16px;
-        }
+          .toast-header-custom{
+              display:flex;
+              align-items:flex-start;
+              gap:14px;
+              padding:22px 22px 10px;
+          }
 
-        .toast-btn {
-            border: none;
-            border-radius: 10px;
-            padding: 7px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-        }
+          .toast-icon{
+              width:48px;
+              height:48px;
+              border-radius:50%;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              background:#fee2e2;
+              color:#dc2626;
+              font-size:20px;
+              flex-shrink:0;
+          }
 
-        .toast-btn-cancel  { background: #f1f5f9; color: #334155; }
-        .toast-btn-confirm { background: #dc2626; color: #fff; }
-        .toast-btn-confirm:hover { background: #b91c1c; }
+          .toast-content{
+              flex:1;
+          }
+
+          .toast-title{
+              font-size:18px;
+              font-weight:700;
+              color:#0f172a;
+              margin-bottom:6px;
+          }
+
+          .toast-message{
+              font-size:14px;
+              color:#475569;
+              line-height:1.6;
+          }
+
+          .toast-actions{
+              display:flex;
+              justify-content:flex-end;
+              gap:10px;
+              padding:18px 22px 22px;
+          }
+
+          .toast-btn{
+              border:none;
+              border-radius:12px;
+              padding:10px 18px;
+              font-size:14px;
+              font-weight:600;
+              cursor:pointer;
+              transition:.2s;
+          }
+
+          .toast-btn-cancel{
+              background:#e2e8f0;
+              color:#334155;
+          }
+
+          .toast-btn-cancel:hover{
+              background:#cbd5e1;
+          }
+
+          .toast-btn-confirm{
+              background:#dc2626;
+              color:#fff;
+          }
+
+          .toast-btn-confirm:hover{
+              background:#b91c1c;
+          }
+
     </style>
 
     <!-- Toast container -->
@@ -525,112 +582,195 @@
         let _allSvs = [];
 
         // ─────────────────────────────────────────────────────────
-        // TOAST
+        // TOAST THƯỜNG
         // ─────────────────────────────────────────────────────────
 
         function showToast(type, title, message, autoHide = true) {
+
             const container = document.querySelector('.custom-toast-container');
+
             const icons = {
                 success: 'fa-circle-check',
-                error:   'fa-circle-xmark',
-                info:    'fa-circle-info'
+                error: 'fa-circle-xmark',
+                info: 'fa-circle-info'
             };
 
             const toast = document.createElement('div');
+
             toast.className = `custom-toast toast-${type}`;
-            toast.innerHTML = `
-                <div class="p-4">
-                    <div class="d-flex gap-3">
-                        <div class="toast-icon">
-                            <i class="fas ${icons[type] ?? 'fa-circle-info'}"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="toast-title">${title}</div>
-                            <div class="toast-message">${message}</div>
-                        </div>
-                        <button class="btn-close"></button>
-                    </div>
-                </div>`;
 
-            container.appendChild(toast);
-            toast.querySelector('.btn-close').onclick = () => toast.remove();
-
-            if (autoHide) {
-                setTimeout(() => toast.remove(), 3500);
-            }
-        }
-
-        function showConfirmToast(title, message, onConfirm) {
-            const container = document.querySelector('.custom-toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'custom-toast toast-confirm';
             toast.innerHTML = `
                 <div class="toast-header-custom">
                     <div class="toast-icon">
-                        <i class="fas fa-user-minus"></i>
+                        <i class="fas ${icons[type] ?? 'fa-circle-info'}"></i>
                     </div>
+
                     <div class="toast-content">
                         <div class="toast-title">${title}</div>
                         <div class="toast-message">${message}</div>
                     </div>
+
+                    <button class="btn-close"></button>
                 </div>
-                <div class="toast-actions">
-                    <button class="toast-btn toast-btn-cancel">Hủy</button>
-                    <button class="toast-btn toast-btn-confirm">Xác nhận</button>
-                </div>`;
+            `;
 
             container.appendChild(toast);
-            toast.querySelector('.toast-btn-cancel').onclick  = () => toast.remove();
-            toast.querySelector('.toast-btn-confirm').onclick = () => { toast.remove(); onConfirm(); };
 
-            setTimeout(() => { if (toast.parentNode) toast.remove(); }, 10000);
+            toast.querySelector('.btn-close').onclick = () => {
+                toast.remove();
+            };
+
+            if (autoHide) {
+                setTimeout(() => {
+                    toast.remove();
+                }, 3500);
+            }
         }
+
+
+        // ─────────────────────────────────────────────────────────
+        // CONFIRM TOAST - NỀN SẨM NHẸ
+        // ─────────────────────────────────────────────────────────
+
+        function showConfirmToast(title, message, onConfirm) {
+
+            const container = document.querySelector('.custom-toast-container');
+
+            // overlay sẩm nhẹ
+            const overlay = document.createElement('div');
+
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+
+            // CHỈ SẨM NHẸ
+            overlay.style.background = 'rgba(15,23,42,0.15)';
+
+            overlay.style.backdropFilter = 'blur(1px)';
+            overlay.style.zIndex = '99998';
+
+            document.body.appendChild(overlay);
+
+            const toast = document.createElement('div');
+
+            toast.className = 'custom-toast toast-confirm';
+
+            toast.innerHTML = `
+                <div class="toast-header-custom">
+
+                    <div class="toast-icon">
+                        <i class="fas fa-triangle-exclamation"></i>
+                    </div>
+
+                    <div class="toast-content">
+                        <div class="toast-title">${title}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+
+                </div>
+
+                <div class="toast-actions">
+
+                    <button class="toast-btn toast-btn-cancel">
+                        Hủy
+                    </button>
+
+                    <button class="toast-btn toast-btn-confirm">
+                        Xác nhận
+                    </button>
+
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            function closeToast() {
+                toast.remove();
+                overlay.remove();
+            }
+
+            toast.querySelector('.toast-btn-cancel').onclick = closeToast;
+
+            overlay.onclick = closeToast;
+
+            toast.querySelector('.toast-btn-confirm').onclick = () => {
+                closeToast();
+                onConfirm();
+            };
+        }
+
 
         // ─────────────────────────────────────────────────────────
         // MODAL THÊM SINH VIÊN
         // ─────────────────────────────────────────────────────────
 
         document.getElementById('modalThemSV').addEventListener('show.bs.modal', function () {
+
             _allSvs = [];
-            document.getElementById('svLoading').style.display     = 'block';
-            document.getElementById('svTable').style.display       = 'none';
-            document.getElementById('svEmpty').style.display       = 'none';
-            document.getElementById('svSearchInput').value         = '';
+
+            document.getElementById('svLoading').style.display = 'block';
+            document.getElementById('svTable').style.display = 'none';
+            document.getElementById('svEmpty').style.display = 'none';
+
+            document.getElementById('svSearchInput').value = '';
             document.getElementById('svSelectedCount').textContent = '0 đã chọn';
-            document.getElementById('btnDangKy').disabled          = true;
-            document.getElementById('checkAll').checked            = false;
+
+            document.getElementById('btnDangKy').disabled = true;
+
+            document.getElementById('checkAll').checked = false;
 
             fetch(`/admin/lop-hoc-phan/${LHP_ID}/sinh-vien-chua-dk`)
                 .then(r => r.json())
                 .then(svs => {
+
                     _allSvs = svs;
+
                     document.getElementById('svLoading').style.display = 'none';
+
                     renderSVTable(svs);
+
                 })
                 .catch(() => {
+
                     document.getElementById('svLoading').style.display = 'none';
-                    document.getElementById('svEmpty').style.display   = 'block';
-                    showToast('error', 'Lỗi tải dữ liệu', 'Không thể tải danh sách sinh viên.');
+
+                    document.getElementById('svEmpty').style.display = 'block';
+
+                    showToast(
+                        'error',
+                        'Lỗi tải dữ liệu',
+                        'Không thể tải danh sách sinh viên.'
+                    );
                 });
         });
 
+
         function renderSVTable(list) {
+
             const checkedIds = new Set(
-                [...document.querySelectorAll('.sv-check:checked')].map(c => c.value)
+                [...document.querySelectorAll('.sv-check:checked')]
+                    .map(c => c.value)
             );
 
             document.getElementById('svTotalInfo').textContent =
                 `Tổng ${list.length} sinh viên chưa đăng ký`;
 
             if (!list.length) {
+
                 document.getElementById('svEmpty').style.display = 'block';
+
                 document.getElementById('svTable').style.display = 'none';
+
                 return;
             }
 
             document.getElementById('svEmpty').style.display = 'none';
+
             document.getElementById('svTableBody').innerHTML = list.map(sv => `
                 <tr>
+
                     <td>
                         <input type="checkbox"
                                class="sv-check"
@@ -638,159 +778,295 @@
                                ${checkedIds.has(String(sv.id)) ? 'checked' : ''}
                                onchange="updateSelected()"/>
                     </td>
-                    <td><code style="font-size:11px">${sv.maSv}</code></td>
-                    <td class="fw-semibold">${sv.hoTen}</td>
-                    <td class="text-muted small">${sv.lop}</td>
+
+                    <td>
+                        <code style="font-size:11px">
+                            ${sv.maSv}
+                        </code>
+                    </td>
+
+                    <td class="fw-semibold">
+                        ${sv.hoTen}
+                    </td>
+
+                    <td class="text-muted small">
+                        ${sv.lop}
+                    </td>
+
                 </tr>
             `).join('');
 
             document.getElementById('svTable').style.display = 'table';
+
             updateSelected();
         }
 
+
         function searchSV() {
-            const q = document.getElementById('svSearchInput').value.toLowerCase();
+
+            const q = document.getElementById('svSearchInput')
+                .value
+                .toLowerCase();
+
             renderSVTable(
+
                 _allSvs.filter(sv =>
+
                     sv.hoTen.toLowerCase().includes(q) ||
                     sv.maSv.toLowerCase().includes(q)
+
                 )
+
             );
         }
 
+
         function toggleAll(cb) {
-            document.querySelectorAll('.sv-check').forEach(c => c.checked = cb.checked);
+
+            document.querySelectorAll('.sv-check')
+                .forEach(c => c.checked = cb.checked);
+
             updateSelected();
         }
 
-        function updateSelected() {
-            const checked = document.querySelectorAll('.sv-check:checked').length;
-            const all     = document.querySelectorAll('.sv-check').length;
 
-            document.getElementById('svSelectedCount').textContent = checked + ' đã chọn';
-            document.getElementById('btnDangKy').disabled          = checked === 0;
-            document.getElementById('checkAll').checked            = checked > 0 && checked === all;
-            document.getElementById('checkAll').indeterminate      = checked > 0 && checked < all;
+        function updateSelected() {
+
+            const checked =
+                document.querySelectorAll('.sv-check:checked').length;
+
+            const all =
+                document.querySelectorAll('.sv-check').length;
+
+            document.getElementById('svSelectedCount').textContent =
+                checked + ' đã chọn';
+
+            document.getElementById('btnDangKy').disabled =
+                checked === 0;
+
+            document.getElementById('checkAll').checked =
+                checked > 0 && checked === all;
+
+            document.getElementById('checkAll').indeterminate =
+                checked > 0 && checked < all;
         }
 
+
         function dangKySelected() {
-            const ids = [...document.querySelectorAll('.sv-check:checked')].map(c => +c.value);
+
+            const ids = [...document.querySelectorAll('.sv-check:checked')]
+                .map(c => +c.value);
+
             if (!ids.length) return;
 
             const btn = document.getElementById('btnDangKy');
-            btn.disabled  = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý...';
+
+            btn.disabled = true;
+
+            btn.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý...';
 
             fetch(`/admin/lop-hoc-phan/${LHP_ID}/dang-ky-nhieu`, {
+
                 method: 'POST',
+
                 headers: {
                     'Content-Type': 'application/json',
                     [CSRF_HDR]: CSRF_TOK
                 },
+
                 body: JSON.stringify(ids)
+
             })
-                .then(r => r.json())
-                .then(res => {
-                    showToast('success', 'Đăng ký thành công',
-                        `Đã thêm ${res.success} sinh viên vào lớp học phần`);
-                    setTimeout(() => location.reload(), 1500);
-                })
-                .catch(() => {
-                    showToast('error', 'Có lỗi xảy ra', 'Không thể đăng ký sinh viên.');
-                    btn.disabled  = false;
-                    btn.innerHTML = '<i class="fas fa-user-plus me-1"></i>Đăng ký đã chọn';
-                });
+
+            .then(r => r.json())
+
+            .then(res => {
+
+                showToast(
+                    'success',
+                    'Đăng ký thành công',
+                    `Đã thêm ${res.success} sinh viên vào lớp học phần`
+                );
+
+                setTimeout(() => location.reload(), 1500);
+
+            })
+
+            .catch(() => {
+
+                showToast(
+                    'error',
+                    'Có lỗi xảy ra',
+                    'Không thể đăng ký sinh viên.'
+                );
+
+                btn.disabled = false;
+
+                btn.innerHTML =
+                    '<i class="fas fa-user-plus me-1"></i>Đăng ký đã chọn';
+            });
         }
 
+
         // ─────────────────────────────────────────────────────────
-        // MODAL IMPORT LỚP HÀNH CHÍNH
+        // IMPORT LỚP HÀNH CHÍNH
         // ─────────────────────────────────────────────────────────
 
-        // Reset modal mỗi lần mở
-        document.getElementById('modalImportLop').addEventListener('show.bs.modal', function () {
-            document.getElementById('selectLopImport').value    = '';
-            document.getElementById('importResult').innerHTML   = '';
+        document.getElementById('modalImportLop')
+            .addEventListener('show.bs.modal', function () {
+
+            document.getElementById('selectLopImport').value = '';
+
+            document.getElementById('importResult').innerHTML = '';
+
             document.getElementById('lopPreview').style.display = 'none';
+
             const btn = document.getElementById('btnImportLop');
-            btn.disabled  = false;
-            btn.innerHTML = '<i class="fas fa-file-import me-1"></i>Import';
+
+            btn.disabled = false;
+
+            btn.innerHTML =
+                '<i class="fas fa-file-import me-1"></i>Import';
         });
 
+
         function previewLop(sel) {
+
             const preview = document.getElementById('lopPreview');
+
             if (!sel.value) {
+
                 preview.style.display = 'none';
+
                 return;
             }
-            const siSo = sel.options[sel.selectedIndex].dataset.siso ?? '?';
+
+            const siSo =
+                sel.options[sel.selectedIndex].dataset.siso ?? '?';
+
             document.getElementById('previewSiSo').textContent = siSo;
+
             preview.style.display = 'block';
+
             document.getElementById('importResult').innerHTML = '';
         }
 
+
         function importLop() {
-            const lopId = document.getElementById('selectLopImport').value;
+
+            const lopId =
+                document.getElementById('selectLopImport').value;
+
             if (!lopId) {
-                showToast('error', 'Chưa chọn lớp', 'Vui lòng chọn lớp hành chính.');
+
+                showToast(
+                    'error',
+                    'Chưa chọn lớp',
+                    'Vui lòng chọn lớp hành chính.'
+                );
+
                 return;
             }
 
             const btn = document.getElementById('btnImportLop');
-            btn.disabled  = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang import...';
+
+            btn.disabled = true;
+
+            btn.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-1"></span>Đang import...';
+
             document.getElementById('importResult').innerHTML = '';
 
             fetch(`/admin/lop-hoc-phan/${LHP_ID}/import-lop/${lopId}`, {
+
                 method: 'POST',
-                headers: { [CSRF_HDR]: CSRF_TOK }
+
+                headers: {
+                    [CSRF_HDR]: CSRF_TOK
+                }
+
             })
-                .then(r => r.json())
-                .then(res => {
-                    const errHtml = res.errors && res.errors.length
+
+            .then(r => r.json())
+
+            .then(res => {
+
+                const errHtml =
+                    res.errors && res.errors.length
                         ? `<br><small class="text-danger">${res.errors.join('<br>')}</small>`
                         : '';
-                    document.getElementById('importResult').innerHTML = `
+
+                document.getElementById('importResult').innerHTML = `
                     <div class="alert alert-success mb-0">
                         <i class="fas fa-check-circle me-1"></i>
-                        Import thành công <strong>${res.success}/${res.total}</strong> sinh viên.
+                        Import thành công
+                        <strong>${res.success}/${res.total}</strong>
+                        sinh viên.
                         ${errHtml}
-                    </div>`;
-                    setTimeout(() => location.reload(), 1800);
-                })
-                .catch(() => {
-                    showToast('error', 'Lỗi', 'Không thể import lớp hành chính.');
-                    btn.disabled  = false;
-                    btn.innerHTML = '<i class="fas fa-file-import me-1"></i>Import';
-                });
+                    </div>
+                `;
+
+                setTimeout(() => location.reload(), 1800);
+
+            })
+
+            .catch(() => {
+
+                showToast(
+                    'error',
+                    'Lỗi',
+                    'Không thể import lớp hành chính.'
+                );
+
+                btn.disabled = false;
+
+                btn.innerHTML =
+                    '<i class="fas fa-file-import me-1"></i>Import';
+            });
         }
 
+
         // ─────────────────────────────────────────────────────────
-        // HỦY ĐĂNG KÝ → CONFIRM TOAST
+        // HỦY ĐĂNG KÝ
         // ─────────────────────────────────────────────────────────
 
-        document.querySelectorAll('form[action*="huy-dang-ky"]').forEach(form => {
+        document.querySelectorAll('form[action*="huy-dang-ky"]')
+            .forEach(form => {
+
             form.addEventListener('submit', function (e) {
+
                 e.preventDefault();
+
                 const ten = this.dataset.ten;
+
                 showConfirmToast(
                     'Xác nhận hủy đăng ký',
-                    `Bạn có chắc muốn hủy đăng ký của sinh viên "<strong>${ten}</strong>"?`,
+                    `Bạn có chắc muốn hủy đăng ký của sinh viên "<strong>${ten}</strong>" khỏi lớp học phần không?`,
                     () => this.submit()
                 );
             });
         });
 
+
         // ─────────────────────────────────────────────────────────
         // MODAL ĐIỂM
         // ─────────────────────────────────────────────────────────
 
-        document.getElementById('modalDiem').addEventListener('show.bs.modal', function (e) {
+        document.getElementById('modalDiem')
+            .addEventListener('show.bs.modal', function (e) {
+
             const b = e.relatedTarget;
-            document.getElementById('dkId').value              = b.dataset.dkid;
-            document.getElementById('lhpId').value             = b.dataset.lhpid;
-            document.getElementById('diemQT').value            = b.dataset.qt;
-            document.getElementById('diemThi').value           = b.dataset.thi;
-            document.getElementById('tenSV').textContent       = b.dataset.ten;
+
+            document.getElementById('dkId').value = b.dataset.dkid;
+
+            document.getElementById('lhpId').value = b.dataset.lhpid;
+
+            document.getElementById('diemQT').value = b.dataset.qt;
+
+            document.getElementById('diemThi').value = b.dataset.thi;
+
+            document.getElementById('tenSV').textContent = b.dataset.ten;
         });
 
     </script>

@@ -1,70 +1,320 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: layout(~{::main}, 'Quản lý Chức Vụ')}">
+      th:replace="~{layout/base :: layout(~{::content}, 'Quản lý Chức Vụ')}">
 
-<title>Quản lý Chức Vụ</title>
+<th:block th:fragment="content">
 
-<main>
+    <style>
+
+        /* ===== BASE ===== */
+        body{
+            background:#f6f7fb;
+        }
+
+        .header-box{
+            background:#fff;
+            border-radius:14px;
+            padding:16px 18px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* ===== TABLE ===== */
+        .table-custom th{
+            background:#fff3cd;
+            font-weight:600;
+        }
+
+        .table-custom td,
+        .table-custom th{
+            vertical-align:middle;
+            padding:14px;
+        }
+
+        .table-hover tbody tr:hover{
+            background:#f9fafb;
+        }
+
+        /* ===== BADGE ===== */
+        .badge-status{
+            padding:5px 10px;
+            border-radius:999px;
+            font-size:12px;
+        }
+
+        .active{
+            background:#dcfce7;
+            color:#166534;
+        }
+
+        .inactive{
+            background:#f3f4f6;
+            color:#6b7280;
+        }
+
+        /* ===== BUTTON ===== */
+        .btn-icon{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            border-radius:10px;
+        }
+
+        /* ===== SEARCH ===== */
+        .search-wrapper{
+            display:flex;
+            justify-content:flex-end;
+            margin-bottom:22px;
+        }
+
+        .search-form{
+            position:relative;
+            width:320px;
+        }
+
+        .search-input{
+            width:100%;
+            height:46px;
+            border:none;
+            border-radius:14px;
+            background:#f8fafc;
+            padding:0 48px 0 18px;
+            font-size:14px;
+            transition:0.25s;
+            border:1px solid #e2e8f0;
+        }
+
+        .search-input:focus{
+            outline:none;
+            background:#fff;
+            border-color:#2563eb;
+            box-shadow:0 0 0 4px rgba(37,99,235,0.08);
+        }
+
+        .search-icon-btn{
+            position:absolute;
+            right:10px;
+            top:50%;
+            transform:translateY(-50%);
+            border:none;
+            background:transparent;
+            color:#64748b;
+            cursor:pointer;
+        }
+
+        /* ===== ACTION ===== */
+        .action-group{
+            display:flex;
+            justify-content:center;
+            gap:8px;
+        }
+
+        .action-btn{
+            width:38px;
+            height:38px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:12px;
+            transition:all .2s ease;
+            cursor:pointer;
+        }
+
+        .action-btn:hover{
+            transform:translateY(-2px);
+        }
+
+        /* ===== EMPTY ===== */
+        .empty-box{
+            text-align:center;
+            padding:30px;
+            color:#6b7280;
+        }
+
+        /* ===== MODAL ===== */
+        .overlay{
+            position:fixed;
+            inset:0;
+            display:none;
+            justify-content:center;
+            align-items:flex-start;
+            padding-top:24px;
+            background:rgba(15,23,42,.42);
+            z-index:99999;
+            opacity:0;
+            transition:opacity .18s ease;
+        }
+
+        .overlay.show{
+            display:flex;
+            opacity:1;
+        }
+
+        .modal-box{
+            width:340px;
+            background:#fff;
+            border-radius:20px;
+            padding:22px;
+            box-shadow:0 25px 60px rgba(0,0,0,.22);
+            animation:showModal .18s ease;
+        }
+
+        .modal-icon{
+            width:58px;
+            height:58px;
+            border-radius:50%;
+            background:#fef2f2;
+            color:#dc2626;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin:auto auto 14px;
+            font-size:22px;
+        }
+
+        .modal-title{
+            text-align:center;
+            font-size:20px;
+            font-weight:800;
+            color:#111827;
+            margin-bottom:8px;
+        }
+
+        .modal-text{
+            text-align:center;
+            color:#6b7280;
+            line-height:1.6;
+            margin-bottom:20px;
+            font-size:14px;
+        }
+
+        .modal-actions{
+            display:flex;
+            gap:10px;
+        }
+
+        .modal-btn{
+            flex:1;
+            border:none;
+            border-radius:12px;
+            padding:11px;
+            font-weight:700;
+            cursor:pointer;
+            transition:.2s;
+        }
+
+        .btn-cancel{
+            background:#f1f5f9;
+            color:#475569;
+        }
+
+        .btn-cancel:hover{
+            background:#e2e8f0;
+        }
+
+        .btn-confirm{
+            background:linear-gradient(135deg,#ef4444,#dc2626);
+            color:#fff;
+        }
+
+        .btn-confirm:hover{
+            transform:translateY(-1px);
+        }
+
+        @keyframes showModal{
+            from{
+                opacity:0;
+                transform:translateY(-10px) scale(.96);
+            }
+            to{
+                opacity:1;
+                transform:translateY(0) scale(1);
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+
+        @media(max-width:1200px){
+
+            .table{
+                min-width:1150px;
+            }
+
+        }
+
+        @media(max-width:768px){
+
+            .header-box{
+                flex-direction:column;
+                align-items:flex-start !important;
+                gap:14px;
+            }
+
+            .modal-box{
+                width:92%;
+            }
+
+            .search-form{
+                width:100%;
+            }
+
+        }
+
+    </style>
+
     <div class="container-fluid px-4">
 
-        <div th:if="${thanhCong}" class="alert alert-success alert-dismissible fade show">
-            <span th:text="${thanhCong}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+        <!-- HEADER -->
+        <div class="header-box d-flex justify-content-between align-items-center mb-3">
 
-        <div th:if="${loiLam}" class="alert alert-danger alert-dismissible fade show">
-            <span th:text="${loiLam}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-
-        <div class="d-flex align-items-center justify-content-between py-3 mb-2 border-bottom">
             <div>
-                <h4 class="mb-0 fw-bold">
+                <h5 class="fw-bold mb-1">
+                    <i class="bi bi-person-badge text-warning me-1"></i>
                     Quản Lý Chức Vụ / Vị Trí
-                </h4>
+                </h5>
 
                 <small class="text-muted">
                     Tổng:
                     <strong th:text="${tongSo}">0</strong>
-                    chức vụ
                 </small>
             </div>
 
             <a th:href="@{/admin/chuc-vu/them}"
-               class="btn btn-warning text-white">
-                Thêm Chức Vụ
+               class="btn btn-warning text-white btn-icon">
+
+                <i class="bi bi-plus-circle"></i>
+                Thêm
+
             </a>
+
         </div>
 
-        <div class="row mb-3">
-            <div class="col-md-4">
+        <!-- SEARCH -->
+        <div class="search-wrapper">
 
-                <form method="get"
-                      th:action="@{/admin/chuc-vu}"
-                      class="input-group">
+            <div class="search-form">
 
-                    <input type="text"
-                           name="search"
-                           class="form-control"
-                           th:value="${timKiem}"
-                           placeholder="Tìm theo tên chức vụ..."/>
+                <input type="text"
+                       id="searchInput"
+                       class="search-input"
+                       placeholder="Tìm kiếm chức vụ..." />
 
-                    <button class="btn btn-outline-secondary"
-                            type="submit">
-                        Tìm
-                    </button>
-
-                </form>
+                <button type="button" class="search-icon-btn">
+                    <i class="bi bi-search"></i>
+                </button>
 
             </div>
+
         </div>
 
+        <!-- TABLE -->
         <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
 
-                <table class="table table-hover align-middle mb-0">
+            <div class="card-body p-0 table-responsive">
 
-                    <thead class="table-warning">
+                <table id="chucVuTable"
+                       class="table table-hover table-custom mb-0">
+
+                    <thead>
                     <tr>
                         <th>#</th>
                         <th>Mã</th>
@@ -78,56 +328,88 @@
 
                     <tbody>
 
-                    <tr th:each="cv, stat : ${dsChucVu}">
+                    <tr th:each="cv, stat : ${dsChucVu}"
+                        class="data-row">
+
                         <td th:text="${stat.count}"></td>
 
                         <td th:text="${cv.maChucVu}"></td>
 
-                        <td th:text="${cv.tenChucVu}"></td>
-
-                        <td th:text="${cv.capBac}"></td>
+                        <td class="fw-semibold"
+                            th:text="${cv.tenChucVu}"></td>
 
                         <td>
-                            <span th:if="${cv.khoa != null}"
-                                  th:text="${cv.khoa.tenKhoa}">
-                            </span>
-
-                            <span th:if="${cv.khoa == null}">
-                                Cấp trường
-                            </span>
+                            <span class="badge bg-primary"
+                                  th:text="${cv.capBac}"></span>
                         </td>
 
                         <td>
+
+                            <span th:if="${cv.khoa != null}"
+                                  th:text="${cv.khoa.tenKhoa}"></span>
+
+                            <span th:if="${cv.khoa == null}"
+                                  class="text-muted">
+
+                                Cấp trường
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
                             <span th:if="${cv.trangThai}"
-                                  class="badge bg-success">
+                                  class="badge-status active">
+
                                 Hoạt động
+
                             </span>
 
                             <span th:unless="${cv.trangThai}"
-                                  class="badge bg-secondary">
+                                  class="badge-status inactive">
+
                                 Dừng
+
                             </span>
+
                         </td>
 
                         <td class="text-center">
 
-                            <a th:href="@{/admin/chuc-vu/sua/{id}(id=${cv.id})}"
-                               class="btn btn-sm btn-warning">
-                                Sửa
-                            </a>
+                            <div class="action-group">
 
-                            <form th:action="@{/admin/chuc-vu/xoa/{id}(id=${cv.id})}"
+                                <!-- EDIT -->
+                                <a th:href="@{/admin/chuc-vu/sua/{id}(id=${cv.id})}"
+                                   class="btn btn-sm btn-outline-warning action-btn"
+                                   title="Chỉnh sửa">
+
+                                    <i class="fas fa-edit"></i>
+
+                                </a>
+
+                                <!-- DELETE -->
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger action-btn"
+                                        th:data-id="${cv.id}"
+                                        onclick="openConfirm(this)"
+                                        title="Xóa">
+
+                                    <i class="fas fa-trash"></i>
+
+                                </button>
+
+                            </div>
+
+                            <!-- FORM DELETE -->
+                            <form th:id="'deleteForm-' + ${cv.id}"
+                                  th:action="@{/admin/chuc-vu/xoa/{id}(id=${cv.id})}"
                                   method="post"
-                                  class="d-inline">
+                                  class="d-none">
 
                                 <input type="hidden"
                                        th:name="${_csrf.parameterName}"
-                                       th:value="${_csrf.token}"/>
-
-                                <button type="submit"
-                                        class="btn btn-sm btn-danger">
-                                    Xóa
-                                </button>
+                                       th:value="${_csrf.token}" />
 
                             </form>
 
@@ -135,11 +417,23 @@
 
                     </tr>
 
+                    <!-- EMPTY -->
                     <tr th:if="${#lists.isEmpty(dsChucVu)}">
-                        <td colspan="7"
-                            class="text-center py-4">
-                            Chưa có dữ liệu
+
+                        <td colspan="7">
+
+                            <div class="empty-box">
+
+                                <i class="bi bi-inbox fs-2"></i>
+
+                                <div>
+                                    Không có dữ liệu phù hợp
+                                </div>
+
+                            </div>
+
                         </td>
+
                     </tr>
 
                     </tbody>
@@ -147,9 +441,140 @@
                 </table>
 
             </div>
+
         </div>
 
     </div>
-</main>
+
+    <!-- MODAL DELETE -->
+    <div class="overlay" id="deleteModal">
+
+        <div class="modal-box">
+
+            <div class="modal-icon">
+
+                <i class="fas fa-trash"></i>
+
+            </div>
+
+            <div class="modal-title">
+
+                Xác nhận xoá
+
+            </div>
+
+            <div class="modal-text">
+
+                Bạn có chắc muốn xoá chức vụ này không?
+                Dữ liệu sẽ không thể khôi phục.
+
+            </div>
+
+            <div class="modal-actions">
+
+                <button class="modal-btn btn-cancel"
+                        onclick="closeModal()">
+
+                    Huỷ
+
+                </button>
+
+                <button class="modal-btn btn-confirm"
+                        id="confirmDelete">
+
+                    Xoá
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        let deleteId = null;
+
+        /* ===== OPEN MODAL ===== */
+        function openConfirm(btn){
+
+            deleteId = btn.getAttribute("data-id");
+
+            document.getElementById("deleteModal")
+                .classList.add("show");
+        }
+
+        /* ===== CLOSE MODAL ===== */
+        function closeModal(){
+
+            deleteId = null;
+
+            document.getElementById("deleteModal")
+                .classList.remove("show");
+        }
+
+        /* ===== DELETE ===== */
+        document.getElementById("confirmDelete")
+            .addEventListener("click", function(){
+
+            if(deleteId){
+
+                document.getElementById(
+                    "deleteForm-" + deleteId
+                ).submit();
+            }
+
+        });
+
+        /* ===== SEARCH REALTIME ===== */
+
+        const searchInput =
+            document.getElementById("searchInput");
+
+        const rows =
+            document.querySelectorAll(".data-row");
+
+        searchInput.addEventListener("input", function(){
+
+            const keyword =
+                this.value.toLowerCase().trim();
+
+            rows.forEach(row => {
+
+                const text =
+                    row.innerText.toLowerCase();
+
+                if(text.includes(keyword)){
+
+                    row.style.display = "";
+
+                }else{
+
+                    row.style.display = "none";
+                }
+
+            });
+
+        });
+
+        /* ===== CLOSE MODAL WHEN CLICK OUTSIDE ===== */
+
+        window.addEventListener("click", function(e){
+
+            const overlay =
+                document.getElementById("deleteModal");
+
+            if(e.target === overlay){
+
+                closeModal();
+            }
+
+        });
+
+    </script>
+
+</th:block>
 
 </html>
+
