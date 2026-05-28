@@ -3,6 +3,7 @@ package com.qldt.controller;
 import com.qldt.model.LichDayBu;
 import com.qldt.model.NhanVien;
 import com.qldt.model.PhongHoc;
+import com.qldt.model.enums.TrangThaiLichBu;
 import com.qldt.repository.LopHocPhanRepository;
 import com.qldt.repository.NhanVienRepository;
 import com.qldt.service.DonNghiService;
@@ -18,6 +19,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -181,6 +183,28 @@ public class LichDayBuController {
             return "redirect:/lich-day-bu/xep";
         }
         return "redirect:/lich-day-bu";
+    }
+    @GetMapping("/api/tuan")
+    @PreAuthorize("hasAnyRole('ADMIN','NHAN_VIEN','SINH_VIEN')")
+    @ResponseBody
+    public List<LichDayBuApiDTO> lichBuTuan(
+            @RequestParam Long giangVienId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay) {
+        LocalDate thu2 = ngay.with(DayOfWeek.MONDAY);
+        LocalDate thu7 = thu2.plusDays(5);
+        return lichDayBuService.findByGiangVienAndKhoangNgay(giangVienId, thu2, thu7)
+                .stream()
+                .filter(b -> b.getTrangThai() != TrangThaiLichBu.HUY)
+                .map(b -> new LichDayBuApiDTO(
+                        b.getNgayDayBu() != null
+                                ? b.getNgayDayBu().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                                : null,
+                        b.getPhongHoc(),
+                        b.getTietBatDau(),
+                        b.getTietKetThuc(),
+                        b.getGhiChu()
+                ))
+                .toList();
     }
     @GetMapping("/api/theo-lhp")
     @PreAuthorize("hasAnyRole('ADMIN','NHAN_VIEN','SINH_VIEN')")

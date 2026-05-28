@@ -276,6 +276,7 @@ public class LichDayBuServiceImpl implements LichDayBuService {
                 .findByLopHocPhanIdOrderByNgayDayBuAsc(lhpId);
     }
 
+
     /* =========================================================
        QUERY
     ========================================================= */
@@ -296,10 +297,12 @@ public class LichDayBuServiceImpl implements LichDayBuService {
     }
 
     @Override @Transactional(readOnly = true)
-    public List<LichDayBu> findByGiangVienAndKhoangNgay(Long giangVienId,
+    public List<LichDayBu> findByGiangVienAndKhoangNgay(Long gvId,
                                                         LocalDate from, LocalDate to) {
-        return lichBuRepo.findByGiangVienAndKhoangNgay(giangVienId, from, to);
+        return lichBuRepo.findByGiangVienAndKhoangNgay(gvId, from, to);
     }
+
+
 
     @Override
     public List<LichDayBu> findByKhoa(Long khoaId) {
