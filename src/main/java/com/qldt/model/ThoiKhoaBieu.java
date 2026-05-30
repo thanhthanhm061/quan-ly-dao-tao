@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name = "thoi_khoa_bieu")
@@ -22,71 +23,6 @@ public class ThoiKhoaBieu {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
-//
-//    public Long getId() {
-//        return id;
-//    }
-//
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
-//
-//    public LopHocPhan getLopHocPhan() {
-//        return lopHocPhan;
-//    }
-//
-//    public void setLopHocPhan(LopHocPhan lopHocPhan) {
-//        this.lopHocPhan = lopHocPhan;
-//    }
-//
-//    public int getThuTrongTuan() {
-//        return thuTrongTuan;
-//    }
-//
-//    public void setThuTrongTuan(int thuTrongTuan) {
-//        this.thuTrongTuan = thuTrongTuan;
-//    }
-//
-//    public int getTietBatDau() {
-//        return tietBatDau;
-//    }
-//
-//    public void setTietBatDau(int tietBatDau) {
-//        this.tietBatDau = tietBatDau;
-//    }
-//
-//    public int getSoTiet() {
-//        return soTiet;
-//    }
-//
-//    public void setSoTiet(int soTiet) {
-//        this.soTiet = soTiet;
-//    }
-//
-//    public String getPhongHoc() {
-//        return phongHoc;
-//    }
-//
-//    public void setPhongHoc(String phongHoc) {
-//        this.phongHoc = phongHoc;
-//    }
-//
-//    public LocalDate getTuanBatDau() {
-//        return tuanBatDau;
-//    }
-//
-//    public void setTuanBatDau(LocalDate tuanBatDau) {
-//        this.tuanBatDau = tuanBatDau;
-//    }
-//
-//    public LocalDate getTuanKetThuc() {
-//        return tuanKetThuc;
-//    }
-//
-//    public void setTuanKetThuc(LocalDate tuanKetThuc) {
-//        this.tuanKetThuc = tuanKetThuc;
-//    }
-
     @ManyToOne
     @JoinColumn(name = "lhp_id", nullable = false)
     private LopHocPhan lopHocPhan;
@@ -108,9 +44,11 @@ public class ThoiKhoaBieu {
     private String phongHoc;
 
     @Column(name = "tuan_bat_dau")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate tuanBatDau;
 
     @Column(name = "tuan_ket_thuc")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate tuanKetThuc;
 
     @ManyToOne
