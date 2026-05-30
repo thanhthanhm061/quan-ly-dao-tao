@@ -181,23 +181,6 @@
                 </select>
             </form>
         </div>
-
-        <!-- Alerts -->
-        <div th:if="${success}"
-             class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-3"
-             style="border-radius:10px;">
-            <i class="bi bi-check-circle-fill"></i>
-            <span th:text="${success}"></span>
-            <button class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-        </div>
-        <div th:if="${error}"
-             class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-3"
-             style="border-radius:10px;">
-            <i class="bi bi-exclamation-circle-fill"></i>
-            <span th:text="${error}"></span>
-            <button class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-        </div>
-
         <!-- Stat cards -->
         <div class="ddn-stats">
             <div class="ddn-stat">

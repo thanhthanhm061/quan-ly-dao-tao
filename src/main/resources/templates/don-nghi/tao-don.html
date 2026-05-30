@@ -15,11 +15,6 @@
             </div>
         </div>
 
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-exclamation-circle me-2"></i><span th:text="${error}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-
         <div class="card shadow-sm" style="max-width: 720px;">
             <div class="card-body p-4">
                 <form action="/don-nghi/tao" method="post">

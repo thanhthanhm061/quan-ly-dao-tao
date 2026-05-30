@@ -224,14 +224,6 @@
                 <small>Chọn lớp, giảng viên và thời gian dạy bù</small>
             </div>
         </div>
-
-        <!-- ── Error alert ─────────────────────────────────── -->
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-3" style="border-radius:10px;">
-            <i class="bi bi-exclamation-circle-fill"></i>
-            <span th:text="${error}"></span>
-            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-        </div>
-
         <!-- ── Info banner (đơn nghỉ) ──────────────────────── -->
         <div th:if="${donNghi != null}" class="xldb-banner">
             <i class="bi bi-info-circle-fill"></i>
