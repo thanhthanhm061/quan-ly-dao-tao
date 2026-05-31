@@ -52,16 +52,19 @@ public class LichDayBuController {
         if (isAdmin(auth)) {
             danhSach = lichDayBuService.findAll();
         } else {
-            NhanVien nv = getNhanVien(auth).orElseThrow(() ->
-                    new IllegalStateException("Không tìm thấy hồ sơ nhân viên: " + auth.getName()));
-            Long khoaId = nv.getKhoa() != null ? nv.getKhoa().getId() : null;
-            danhSach = (khoaId != null) ? lichDayBuService.findByKhoa(khoaId) : List.of();
+            Optional<NhanVien> nvOpt = getNhanVien(auth);
+            Long khoaId = nvOpt
+                    .map(nv -> nv.getKhoa() != null ? nv.getKhoa().getId() : null)
+                    .orElse(null);
+
+            danhSach = (khoaId != null)
+                    ? lichDayBuService.findByKhoa(khoaId)
+                    : List.of();
         }
         model.addAttribute("danhSach", danhSach);
         model.addAttribute("activePage", "lich-day-bu");
         return "lich-day-bu/danh-sach";
     }
-
     @GetMapping("/cua-toi")
     public String cuaToi(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
@@ -240,6 +243,10 @@ public class LichDayBuController {
         model.addAttribute("danhSachGV", nhanVienRepo.findByChucVuMaChucVu("GVC"));
         model.addAttribute("thuList", List.of(2, 3, 4, 5, 6, 7));
         model.addAttribute("activePage", "lich-day-bu");
+        model.addAttribute("danhSachPhong", phongHocService.findAll()
+                .stream()
+                .filter(PhongHoc::isHoatDong)
+                .toList());
         return "lich-day-bu/sua-lich";
     }
 

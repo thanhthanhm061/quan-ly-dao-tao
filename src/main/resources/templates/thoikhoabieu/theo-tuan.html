@@ -235,7 +235,8 @@
 
     <!-- ── TABS ── -->
     <ul class="tkb-tabs nav">
-        <li class="nav-item"><a class="nav-link" th:href="@{/tkb}"><i class="fas fa-calendar-alt me-1"></i>Tổng quan</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="${giangVienIdChon != null} ? @{/tkb(giangVienId=${giangVienIdChon},hocKy=${hocKyChon})} : @{/tkb/cua-toi(hocKy=${hocKyChon})}">
+            <i class="fas fa-calendar-alt me-1"></i>Tổng quan</a></li>
         <li class="nav-item"><a class="nav-link active" th:href="@{/tkb/theo-tuan}"><i class="fas fa-calendar-week me-1"></i>Theo tuần</a></li>
         <li class="nav-item"><a class="nav-link" th:href="@{/tkb/theo-thang}"><i class="fas fa-calendar me-1"></i>Theo tháng</a></li>
         <li class="nav-item"><a class="nav-link" th:href="@{/tkb/thong-ke}"><i class="fas fa-chart-bar me-1"></i>Thống kê tải</a></li>
@@ -296,7 +297,15 @@
                 </span>
                     <span class="tag tag-primary" th:text="${#lists.size(thoiKhoaBieus)} + ' buổi'"></span>
                 </div>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a th:href="${giangVienIdChon != null} ? @{/tkb(giangVienId=${giangVienIdChon},hocKy=${hocKyChon})} : @{/tkb/cua-toi(hocKy=${hocKyChon})}"
+                       class="week-btn" style="background:rgba(255,255,255,.15)">
+                        <i class="fas fa-calendar-alt"></i> Tổng quan
+                    </a>
+                    <a th:href="@{/tkb/theo-thang(giangVienId=${giangVienIdChon},hocKy=${hocKyChon})}"
+                       class="week-btn" style="background:rgba(255,255,255,.1)">
+                        <i class="fas fa-calendar"></i> Tháng
+                    </a>
                     <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},hocKy=${hocKyChon},ngay=${ngayChon != null ? ngayChon.minusWeeks(1) : ''})}"
                        class="week-btn"><i class="fas fa-chevron-left"></i> Trước</a>
                     <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},hocKy=${hocKyChon},ngay=${ngayChon != null ? ngayChon.plusWeeks(1) : ''})}"
@@ -632,7 +641,7 @@
     const isQuanLy = meta?.dataset.isQuanLy === 'true';
     const curNvId  = meta?.dataset.currentNvId || '';
     const hocKy    = meta?.dataset.hocKy || '';
-    const gvIdChon = meta?.dataset.gvIdChon || '';
+    const GiaoVienId = meta?.dataset.GiaoVienIdChon || '';
 
     let currentId = null, currentLhpId = '', currentGvId = '', currentNgayIso = '';
     let currentNghiGvId = '', currentNghiGvTen = '';

@@ -285,7 +285,6 @@ public class NhanVienController {
         }
     }
 
-
     @GetMapping("/sua/{id}")
     public String suaForm(@PathVariable Long id, Model model) {
         model.addAttribute("nhanVien", nhanVienService.findById(id).orElseThrow());
@@ -294,22 +293,34 @@ public class NhanVienController {
         addFormData(model);
         return "nhan-vien/them-sua";
     }
-
     @PostMapping("/sua/{id}")
-    public String sua(@PathVariable Long id, @Valid @ModelAttribute NhanVien nhanVien,
-                      BindingResult result, Model model, RedirectAttributes ra) {
+    public String sua(@PathVariable Long id,
+                      @Valid @ModelAttribute NhanVien nhanVien,
+                      BindingResult result,
+                      Model model,
+                      RedirectAttributes ra) {
+
         if (result.hasErrors()) {
             model.addAttribute("tieuDe", "Chỉnh Sửa Nhân Viên");
+            model.addAttribute("coVanHocTaps", nhanVienService.findAllCoVanHocTap());
             addFormData(model);
             return "nhan-vien/them-sua";
         }
+
         try {
-            nhanVien.setId(id);
+            nhanVien.setId(id);  // đảm bảo đúng ID
             nhanVienService.save(nhanVien);
             ra.addFlashAttribute("success", "Cập nhật nhân viên thành công!");
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("tieuDe", "Chỉnh Sửa Nhân Viên");
+            model.addAttribute("coVanHocTaps", nhanVienService.findAllCoVanHocTap());
+            addFormData(model);
+            return "nhan-vien/them-sua";
         } catch (Exception e) {
-            ra.addFlashAttribute("error", e.getMessage());
+            ra.addFlashAttribute("error", "Có lỗi xảy ra khi cập nhật nhân viên");
         }
+
         return "redirect:/admin/nhan-vien";
     }
 

@@ -463,18 +463,12 @@
                                             Khoa
                                         </label>
 
-                                        <select th:field="*{khoa}"
-                                                class="form-select">
-
-                                            <option value="">
-                                                -- Chọn khoa --
-                                            </option>
-
+                                        <select th:field="*{khoa.id}" class="form-select">
+                                            <option value="">-- Chọn khoa --</option>
                                             <option th:each="k : ${dsKhoa}"
                                                     th:value="${k.id}"
                                                     th:text="${k.tenKhoa}">
                                             </option>
-
                                         </select>
 
                                     </div>
@@ -485,18 +479,12 @@
                                             Chức Vụ
                                         </label>
 
-                                        <select th:field="*{chucVu}"
-                                                class="form-select">
-
-                                            <option value="">
-                                                -- Chọn chức vụ --
-                                            </option>
-
+                                        <select th:field="*{chucVu.id}" class="form-select">
+                                            <option value="">-- Chọn chức vụ --</option>
                                             <option th:each="cv : ${dsChucVu}"
                                                     th:value="${cv.id}"
                                                     th:text="${cv.tenChucVu}">
                                             </option>
-
                                         </select>
 
                                     </div>

@@ -367,21 +367,18 @@
                 </button>
 
                 <!-- Duyệt / Từ chối (không phải người nộp, chờ duyệt) -->
-                <div th:if="${!laNguoiNop and don.trangThai.name() == 'CHO_DUYET'}"
+                <div th:if="${coQuyenDuyet and !laNguoiNop and don.trangThai.name() == 'CHO_DUYET'}"
                      style="display:flex; gap:10px;">
-
                     <form th:action="@{/don-nghi/{id}/duyet(id=${don.id})}" method="post" style="margin:0;">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <button type="submit" class="ctd-btn-duyet">
                             <i class="bi bi-check-lg"></i> Duyệt
                         </button>
                     </form>
-
                     <button type="button" class="ctd-btn-tuchoi"
                             data-bs-toggle="modal" data-bs-target="#modalTuChoi">
                         <i class="bi bi-x-circle"></i> Từ chối
                     </button>
-
                 </div>
             </div>
 

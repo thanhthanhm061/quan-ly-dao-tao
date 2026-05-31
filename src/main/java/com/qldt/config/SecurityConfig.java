@@ -98,7 +98,8 @@ public class SecurityConfig {
                                 "/lich-day-bu/xep",
                                 "/lich-day-bu/*/sua",
                                 "/lich-day-bu/*/huy",
-                                "/lich-day-bu/*/hoan-thanh"
+                                "/lich-day-bu/*/hoan-thanh",
+                                "/lich-day-bu/*/*"
                         ).hasAnyRole(
                                 "ADMIN",
                                 "TK",
@@ -131,23 +132,24 @@ public class SecurityConfig {
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .successHandler((req, res, auth) -> {
-                            String role = auth.getAuthorities()
-                                    .iterator()
-                                    .next()
-                                    .getAuthority();
+                            var authorities = auth.getAuthorities().stream()
+                                    .map(a -> a.getAuthority())
+                                    .toList();
 
-                            switch (role) {
-                                case "ROLE_ADMIN" ->
-                                        res.sendRedirect("/admin/dashboard");
-
-                                case "ROLE_NHAN_VIEN" ->
-                                        res.sendRedirect("/nhanvien/redirect");
-
-                                case "ROLE_SINH_VIEN" ->
-                                        res.sendRedirect("/sinhvien/dashboard");
-
-                                default ->
-                                        res.sendRedirect("/");
+                            if (authorities.contains("ROLE_ADMIN")) {
+                                res.sendRedirect("/admin/dashboard");
+                            } else if (authorities.contains("ROLE_TK")
+                                    || authorities.contains("ROLE_PTK")
+                                    || authorities.contains("ROLE_TBM")) {
+                                res.sendRedirect("/don-nghi/duyet");
+                            } else if (authorities.contains("ROLE_CNTT")) {
+                                res.sendRedirect("/lich-day-bu");
+                            } else if (authorities.contains("ROLE_NHAN_VIEN")) {
+                                res.sendRedirect("/nhanvien/redirect");
+                            } else if (authorities.contains("ROLE_SINH_VIEN")) {
+                                res.sendRedirect("/sinhvien/dashboard");
+                            } else {
+                                res.sendRedirect("/");
                             }
                         })
                         .failureUrl("/login?error=true")
@@ -167,6 +169,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .accessDeniedPage("/access-denied")
                 );
+
 
         return http.build();
     }

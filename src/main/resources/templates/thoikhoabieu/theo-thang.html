@@ -222,7 +222,7 @@
 
     <!-- ── TABS ── -->
     <ul class="tkb-tabs nav">
-        <li class="nav-item"><a class="nav-link" th:href="@{/tkb}">
+        <li class="nav-item"><a class="nav-link" th:href="${giangVienIdChon != null} ? @{/tkb(giangVienId=${giangVienIdChon},hocKy=${hocKyChon})} : @{/tkb/cua-toi(hocKy=${hocKyChon})}">
             <i class="fas fa-calendar-alt me-1"></i>Tổng quan</a></li>
         <li class="nav-item"><a class="nav-link" th:href="@{/tkb/theo-tuan}">
             <i class="fas fa-calendar-week me-1"></i>Theo tuần</a></li>
@@ -311,7 +311,15 @@
                 </span>
                     <span class="tag tag-primary" th:text="${#lists.size(thoiKhoaBieus)} + ' buổi'"></span>
                 </div>
-                <div class="month-nav d-flex gap-2">
+                <div class="month-nav d-flex gap-2 flex-wrap">
+                    <a th:href="${giangVienIdChon != null} ? @{/tkb(giangVienId=${giangVienIdChon},hocKy=${hocKyChon})} : @{/tkb/cua-toi(hocKy=${hocKyChon})}"
+                       class="month-btn" style="background:rgba(255,255,255,.15)">
+                        <i class="fas fa-calendar-alt"></i> Tổng quan
+                    </a>
+                    <a th:href="@{/tkb/theo-tuan(giangVienId=${giangVienIdChon},hocKy=${hocKyChon})}"
+                       class="month-btn" style="background:rgba(255,255,255,.1)">
+                        <i class="fas fa-calendar-week"></i> Tuần
+                    </a>
                     <a th:href="@{/tkb/theo-thang(giangVienId=${giangVienIdChon},hocKy=${hocKyChon},ngay=${ngayChon != null ? ngayChon.minusMonths(1) : ''})}"
                        class="month-btn"><i class="fas fa-chevron-left"></i> Trước</a>
                     <a th:href="@{/tkb/theo-thang(giangVienId=${giangVienIdChon},hocKy=${hocKyChon},ngay=${ngayChon != null ? ngayChon.plusMonths(1) : ''})}"
@@ -381,6 +389,10 @@
                 <button class="popup-tab" onclick="chuyenTab('lich-bu')">
                     <i class="fas fa-calendar-plus me-1"></i>Lịch bù
                 </button>
+                <button class="popup-tab" id="tabEditThang" onclick="chuyenTab('chinh-sua')"
+                        style="display:none" sec:authorize="hasRole('ADMIN')">
+                    <i class="fas fa-edit me-1"></i>Chỉnh sửa
+                </button>
             </div>
 
             <!-- PANE 1: Chi tiết -->
@@ -445,6 +457,73 @@
                         <i class="fas fa-calendar-alt me-1"></i>Lịch dạy bù — môn này
                     </div>
                     <div id="buContent"><div class="pp-loading">Đang tải...</div></div>
+                </div>
+            </div>
+            <!-- PANE Chỉnh sửa -->
+            <div class="popup-pane" id="pane-chinh-sua">
+                <div style="padding:16px 20px">
+                    <div id="editConflictThang" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;
+             border-radius:8px;padding:8px 12px;font-size:.8rem;margin-bottom:10px;display:none">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <span id="editConflictMsgThang"></span>
+                    </div>
+                    <div style="background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;
+             border-radius:8px;padding:8px 12px;font-size:.82rem;font-weight:500;margin-bottom:14px">
+                        <i class="fas fa-calendar-week me-1"></i>
+                        Đang sửa ngày: <strong id="editNgayLabel">—</strong>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label style="font-size:.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px">Thứ</label>
+                            <select id="editThuThang" class="form-select">
+                                <option value="2">Thứ 2</option><option value="3">Thứ 3</option>
+                                <option value="4">Thứ 4</option><option value="5">Thứ 5</option>
+                                <option value="6">Thứ 6</option><option value="7">Thứ 7</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label style="font-size:.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px">Tiết bắt đầu</label>
+                            <input type="number" id="editTietBdThang" min="1" max="12" class="form-control">
+                        </div>
+                        <div class="col-6" style="margin-top:8px">
+                            <label style="font-size:.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px">Số tiết</label>
+                            <input type="number" id="editSoTietThang" min="1" max="6" class="form-control">
+                        </div>
+                        <div class="col-6" style="margin-top:8px">
+                            <label style="font-size:.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px">Phòng học</label>
+                            <input type="text" id="editPhongThang" class="form-control" placeholder="VD: A101">
+                        </div>
+                        <div class="col-12" id="editDateRangeThang" style="display:none;margin-top:8px">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <label style="font-size:.78rem;font-weight:700;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px">Từ ngày</label>
+                                    <input type="date" id="editTuanBdThang" class="form-control">
+                                </div>
+                                <div class="col-6">
+                                    <label style="font-size:.78rem;font-weight:700;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px">Đến ngày</label>
+                                    <input type="date" id="editTuanKtThang" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="popup-actions" style="gap:6px;padding:14px 20px 16px;border-top:1px solid #e2e8f0;background:#fafbfc;display:flex;flex-wrap:wrap">
+                    <button class="popup-btn popup-btn-leave" style="max-width:90px;flex:0 0 auto"
+                            onclick="dongPopupBtn()">
+                        <i class="fas fa-times me-1"></i>Hủy
+                    </button>
+                    <button class="popup-btn" style="background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;flex:1"
+                            onclick="xoaTuanNayThang()">
+                        <i class="fas fa-trash me-1"></i>Xóa tuần này
+                    </button>
+                    <button class="popup-btn" style="background:#eff6ff;color:#2563eb;border:1.5px solid #bfdbfe;flex:1"
+                            onclick="luuChinhSuaThang('tuan-nay')">
+                        <i class="fas fa-calendar-day me-1"></i>Chỉ tuần này
+                    </button>
+                    <button class="popup-btn popup-btn-save" id="btnTatCaThang" style="flex:1"
+                            onclick="moTatCaModeThang()">
+                        <i class="fas fa-calendar-alt me-1"></i>Tất cả tuần
+                    </button>
                 </div>
             </div>
         </div>
@@ -585,7 +664,10 @@
             'data-tiet': ev.tietBatDau ? `T${ev.tietBatDau} → T${ev.tietBatDau + ev.soTiet - 1}` : '',
             'data-phong': ev.phongHoc, 'data-tc': ev.soTinChi,
             'data-gio': ev.gioHoc, 'data-lhp-id': ev.lhpId, 'data-gv-id': ev.gvId,
-            'data-loai': isBu ? 'BU' : 'CHINH'
+            'data-id':       ev.id,
+            'data-so-tiet':  ev.soTiet,
+            'data-thu-num':  ev.thuTrongTuan,
+            'data-loai':     isBu ? 'BU' : 'CHINH'
         }).map(([k,v]) => `${k}="${escHtml(v)}"`).join(' ');
 
         const buFlag = isBu ? '<div class="ev-bu-badge">DẠY BÙ</div>' : '';
@@ -618,7 +700,7 @@
         const d = el.dataset;
         currentLhpId   = d.lhpId   || '';
         currentGvId    = d.gvId    || '';
-        currentNgayIso = d.ngayIso || '';
+        currentNgayIso = d.ngayIso || d['ngay-iso'] || '';
 
         document.getElementById('popupMon').textContent  = d.mon   || '—';
         document.getElementById('popupLhp').textContent  = d.lhp   || '—';
@@ -640,7 +722,17 @@
 
         chuyenTab('chi-tiet');
         overlay.classList.add('show');
-
+        const tabEditThang = document.getElementById('tabEditThang');
+        if (tabEditThang) {
+            tabEditThang.style.display = (isAdmin && d.loai !== 'BU') ? '' : 'none';
+        }
+// Pre-fill form nếu là admin
+        if (isAdmin && d.loai !== 'BU') {
+            document.getElementById('editThuThang').value    = d.thuNum || d.thu?.replace('Thứ ','') || '2';
+            document.getElementById('editTietBdThang').value = d.tiet?.match(/T(\d+)/)?.[1] || '1';
+            document.getElementById('editSoTietThang').value = d.soTiet || '3';
+            document.getElementById('editPhongThang').value  = d.phong || '';
+        }
         if (currentLhpId) {
             loadTienDo(currentLhpId);
             loadLichBu(currentLhpId);
@@ -725,5 +817,100 @@
         document.getElementById('toastMsg').textContent = msg;
         t.className = 'toast-notify ' + type + ' show';
         setTimeout(() => t.classList.remove('show'), 3000);
+    }
+    /* ══ CHỈNH SỬA INLINE - THEO THÁNG ══ */
+    let currentId      = null;
+    let tatCaModeThang = false;
+
+    // Patch moPopup để bắt currentId và pre-fill form
+    const _moPopupBase = moPopup;
+    window.moPopup = function(el) {
+        _moPopupBase(el);
+        const d        = el.dataset;
+        currentId      = d.id      || null;
+        currentNgayIso = d.ngayIso || d['ngay-iso'] || '';
+
+        const tabEdit = document.getElementById('tabEditThang');
+        if (tabEdit) tabEdit.style.display = (isAdmin && d.loai !== 'BU') ? '' : 'none';
+
+        if (isAdmin && d.loai !== 'BU' && currentId) {
+            const thuMatch  = (d.thuNum || d.thu || '').toString().match(/(\d+)/);
+            const tietMatch = (d.tiet   || '').match(/T(\d+)/);
+            document.getElementById('editThuThang').value    = thuMatch  ? thuMatch[1]  : '2';
+            document.getElementById('editTietBdThang').value = tietMatch ? tietMatch[1] : '1';
+            document.getElementById('editSoTietThang').value = d.soTiet  || '3';
+            document.getElementById('editPhongThang').value  = d.phong   || '';
+            document.getElementById('editNgayLabel').textContent = d.ngay || '—';
+            tatCaModeThang = false;
+            document.getElementById('editDateRangeThang').style.display = 'none';
+            const btn = document.getElementById('btnTatCaThang');
+            btn.innerHTML = '<i class="fas fa-calendar-alt me-1"></i>Tất cả tuần';
+            btn.onclick = moTatCaModeThang;
+        }
+    };
+
+    function moTatCaModeThang() {
+        if (!tatCaModeThang) {
+            tatCaModeThang = true;
+            document.getElementById('editDateRangeThang').style.display = '';
+            const btn = document.getElementById('btnTatCaThang');
+            btn.innerHTML = '<i class="fas fa-save me-1"></i>Xác nhận lưu tất cả';
+            btn.onclick = () => luuChinhSuaThang('tat-ca');
+        }
+    }
+
+    async function luuChinhSuaThang(cheDoLuu) {
+        if (!currentId) { showToast('error','Không xác định được lịch!'); return; }
+        document.getElementById('editConflictThang').style.display = 'none';
+        const csrf  = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfH = document.querySelector('meta[name="_csrf_header"]')?.content;
+        const headers = { 'Content-Type':'application/json',
+            ...(csrfH && csrf ? {[csrfH]:csrf} : {}) };
+        const body = {
+            thuTrongTuan: +document.getElementById('editThuThang').value,
+            tietBatDau:   +document.getElementById('editTietBdThang').value,
+            soTiet:       +document.getElementById('editSoTietThang').value,
+            phongHoc:      document.getElementById('editPhongThang').value.trim()
+        };
+        try {
+            let res;
+            if (cheDoLuu === 'tuan-nay') {
+                if (!currentNgayIso) { showToast('error','Không xác định được tuần!'); return; }
+                res = await fetch(`/tkb/override-tuan/${currentId}?ngay=${currentNgayIso}`,
+                    { method:'PATCH', headers, body: JSON.stringify({...body, ngayTrongTuan: currentNgayIso}) });
+            } else {
+                res = await fetch(`/tkb/cap-nhat/${currentId}`,
+                    { method:'PATCH', headers, body: JSON.stringify({
+                            ...body,
+                            tuanBatDau:  document.getElementById('editTuanBdThang').value || null,
+                            tuanKetThuc: document.getElementById('editTuanKtThang').value || null
+                        }) });
+            }
+            const data = await res.json();
+            if (!res.ok) {
+                document.getElementById('editConflictMsgThang').textContent = data.message || 'Có lỗi!';
+                document.getElementById('editConflictThang').style.display = '';
+                return;
+            }
+            dongPopupBtn();
+            showToast('success', data.message || 'Cập nhật thành công!');
+            setTimeout(() => location.reload(), 1200);
+        } catch { showToast('error','Lỗi kết nối.'); }
+    }
+
+    async function xoaTuanNayThang() {
+        if (!currentId || !currentNgayIso) { showToast('error','Không xác định được lịch!'); return; }
+        if (!confirm('Xóa lịch tuần này?\n(Các tuần khác không bị ảnh hưởng)')) return;
+        const csrf  = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfH = document.querySelector('meta[name="_csrf_header"]')?.content;
+        try {
+            const res = await fetch(`/tkb/xoa-tuan/${currentId}?ngay=${currentNgayIso}`,
+                { method:'DELETE', headers: csrfH && csrf ? {[csrfH]:csrf} : {} });
+            const data = await res.json();
+            if (!res.ok) { showToast('error', data.message || 'Có lỗi!'); return; }
+            dongPopupBtn();
+            showToast('success', data.message || 'Đã xóa!');
+            setTimeout(() => location.reload(), 1200);
+        } catch { showToast('error','Lỗi kết nối.'); }
     }
 </script>

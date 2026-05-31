@@ -85,15 +85,41 @@ public class DonNghiController {
                     ? donNghiService.findByTrangThai(trangThai)
                     : donNghiService.findAll();
         } else {
-            NhanVien nv = getNhanVienHienTai(auth);
+            // ✅ Dùng Optional — không throw nếu không có hồ sơ NV
+            Optional<NhanVien> nvOpt = getNhanVienOptional(auth);
+
+            if (nvOpt.isEmpty()) {
+                model.addAttribute("error", "Không tìm thấy hồ sơ nhân viên.");
+                model.addAttribute("danhSach", List.of());
+                model.addAttribute("trangThaiList", TrangThaiDonNghi.values());
+                return "don-nghi/duyet";
+            }
+
+            NhanVien nv = nvOpt.get();
+            String maChucVu = nv.getChucVu() != null
+                    ? nv.getChucVu().getMaChucVu() : "";
+
+            // ✅ Kiểm tra chức vụ có quyền duyệt không
+            boolean coQuyenDuyet = List.of("TK", "PTK", "TBM", "CNTT")
+                    .contains(maChucVu);
+
+            if (!coQuyenDuyet) {
+                model.addAttribute("error", "Bạn không có quyền duyệt đơn.");
+                model.addAttribute("danhSach", List.of());
+                model.addAttribute("trangThaiList", TrangThaiDonNghi.values());
+                return "don-nghi/duyet";
+            }
+
             Long khoaId = nv.getKhoa() != null ? nv.getKhoa().getId() : null;
             if (khoaId == null) {
                 model.addAttribute("error", "Bạn chưa được gán vào khoa nào.");
                 model.addAttribute("danhSach", List.of());
+                model.addAttribute("trangThaiList", TrangThaiDonNghi.values());
                 return "don-nghi/duyet";
             }
-            danhSach = (trangThai != null && trangThai != TrangThaiDonNghi.CHO_DUYET)
-                    ? donNghiService.findByTrangThai(trangThai)
+
+            danhSach = (trangThai != null)
+                    ? donNghiService.findByTrangThaiAndKhoa(trangThai, khoaId)
                     : donNghiService.findChoDuyetTheoKhoa(khoaId);
         }
 
@@ -103,7 +129,6 @@ public class DonNghiController {
         model.addAttribute("activePage", "don-nghi-duyet");
         return "don-nghi/duyet";
     }
-
     /* =========================================================
        FORM TẠO ĐƠN
        Admin cũng được tạo đơn — dùng NhanVien đầu tiên hoặc null
@@ -178,11 +203,11 @@ public class DonNghiController {
         DonNghi don = donNghiService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn nghỉ"));
 
-        // Admin xem thẳng, không cần hồ sơ nhân viên
         if (isAdmin(auth)) {
             model.addAttribute("don", don);
             model.addAttribute("laNguoiNop", false);
             model.addAttribute("isAdmin", true);
+            model.addAttribute("coQuyenDuyet", true);
             model.addAttribute("activePage", "don-nghi");
             return "don-nghi/chi-tiet";
         }
@@ -190,19 +215,17 @@ public class DonNghiController {
         NhanVien nv = getNhanVienHienTai(auth);
         boolean laNguoiNop = don.getNguoiNop().getId().equals(nv.getId());
 
-        if (!laNguoiNop) {
-            String maChucVu = nv.getChucVu() != null ? nv.getChucVu().getMaChucVu() : "";
-            boolean cungKhoa = nv.getKhoa() != null
-                    && don.getNguoiNop().getKhoa() != null
-                    && nv.getKhoa().getId().equals(don.getNguoiNop().getKhoa().getId());
-            if (!List.of("TK", "PTK", "TBM").contains(maChucVu) || !cungKhoa) {
-                model.addAttribute("error", "Bạn không có quyền xem đơn này.");
-                return "redirect:/don-nghi";
-            }
+        boolean coQuyenDuyet = nv.getChucVu() != null &&
+                List.of("TK", "PTK", "TBM", "CNTT").contains(nv.getChucVu().getMaChucVu());
+
+        if (!laNguoiNop && !coQuyenDuyet) {
+            model.addAttribute("error", "Bạn không có quyền xem đơn này.");
+            return "redirect:/don-nghi";
         }
 
         model.addAttribute("don", don);
         model.addAttribute("laNguoiNop", laNguoiNop);
+        model.addAttribute("coQuyenDuyet", coQuyenDuyet);
         model.addAttribute("isAdmin", false);
         model.addAttribute("activePage", "don-nghi");
         return "don-nghi/chi-tiet";
@@ -237,17 +260,14 @@ public class DonNghiController {
                         Authentication auth,
                         RedirectAttributes ra) {
         try {
-            boolean coQuyenDuyet = auth.getAuthorities().stream()
-                    .anyMatch(a -> List.of(
-                            "ROLE_ADMIN", "ROLE_TK", "ROLE_PTK", "ROLE_TBM", "ROLE_CNTT"
-                    ).contains(a.getAuthority()));
+            // Kiểm tra quyền: Admin hoặc có chức vụ quản lý
+            boolean coQuyenDuyet = isAdmin(auth) || coQuyenDuyetDon(auth);
 
             if (!coQuyenDuyet) {
                 ra.addFlashAttribute("error", "Bạn không có quyền duyệt đơn nghỉ.");
-                return "redirect:/don-nghi";
+                return "redirect:/don-nghi/duyet";
             }
 
-            // Admin duyệt không cần hồ sơ nhân viên — truyền null
             Long nguoiDuyetId = isAdmin(auth)
                     ? null
                     : getNhanVienHienTai(auth).getId();
@@ -259,6 +279,13 @@ public class DonNghiController {
             ra.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/don-nghi/duyet";
+    }
+    private boolean coQuyenDuyetDon(Authentication auth) {
+        // Kiểm tra qua authority (sau khi fix CustomUserDetailsService)
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> List.of(
+                        "ROLE_TK", "ROLE_PTK", "ROLE_TBM", "ROLE_CNTT", "ROLE_ADMIN"
+                ).contains(a.getAuthority()));
     }
 
     /* =========================================================

@@ -72,4 +72,5 @@ public interface DonNghiService {
 
     /** Đếm đơn chờ duyệt (badge thông báo) */
     long demChoDuyet();
+    List<DonNghi> findByTrangThaiAndKhoa(TrangThaiDonNghi trangThai, Long khoaId);
 }

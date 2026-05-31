@@ -38,13 +38,6 @@ public class DonNghiServiceImpl implements DonNghiService {
      */
     private void kiemTraQuyenDuyet(NhanVien nguoiDuyet, NhanVien nguoiNop) {
 
-        // Admin luôn có quyền
-        if (nguoiDuyet.getNguoiDung() != null
-                && nguoiDuyet.getNguoiDung().getVaiTro() != null
-                && nguoiDuyet.getNguoiDung().getVaiTro().name().equals("ADMIN")) {
-            return;
-        }
-
         // Kiểm tra chức vụ
         String maChucVu = nguoiDuyet.getChucVu() != null
                 ? nguoiDuyet.getChucVu().getMaChucVu()
@@ -245,7 +238,10 @@ public class DonNghiServiceImpl implements DonNghiService {
     public List<DonNghi> findChoDuyetTheoKhoa(Long khoaId) {
         return donNghiRepo.findChoDuyetTheoKhoaWithNhanVien(khoaId); // ← sửa
     }
-
+    @Override
+    public List<DonNghi> findByTrangThaiAndKhoa(TrangThaiDonNghi trangThai, Long khoaId) {
+        return donNghiRepo.findByTrangThaiAndKhoaId(trangThai, khoaId);
+    }
 
     @Override
     @Transactional(readOnly = true)

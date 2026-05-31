@@ -56,19 +56,50 @@ public class NhanVienServiceImpl implements NhanVienService {
                 throw new IllegalArgumentException(
                         "Mã nhân viên '" + nhanVien.getMaNhanVien() + "' đã tồn tại");
             }
-
-            // Tạo tài khoản đăng nhập
+            // Tạo tài khoản
             String username = nhanVien.getMaNhanVien().toLowerCase();
             NguoiDung nd = nguoiDungService.taoTaiKhoan(
                     username,
                     nhanVien.getHoTen(),
                     nhanVien.getEmail(),
-                    VaiTro.NHAN_VIEN          // tất cả nhân viên (kể cả GV) dùng NHAN_VIEN
+                    VaiTro.NHAN_VIEN
             );
             nhanVien.setNguoiDung(nd);
+            return nhanVienRepo.save(nhanVien);
         }
 
-        return nhanVienRepo.save(nhanVien);
+        // ✅ UPDATE: load entity gốc từ DB rồi merge từng field
+        NhanVien existing = nhanVienRepo.findById(nhanVien.getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Không tìm thấy nhân viên ID: " + nhanVien.getId()));
+
+        // Các field được phép sửa từ form
+        existing.setHoTen(nhanVien.getHoTen());
+        existing.setEmail(nhanVien.getEmail());
+        existing.setSoDienThoai(nhanVien.getSoDienThoai());
+        existing.setGioiTinh(nhanVien.getGioiTinh());
+        existing.setNgaySinh(nhanVien.getNgaySinh());
+        existing.setDiaChi(nhanVien.getDiaChi());
+        existing.setHocVi(nhanVien.getHocVi());
+        existing.setHocHam(nhanVien.getHocHam());
+        existing.setLoaiHopDong(nhanVien.getLoaiHopDong());
+        existing.setNgayTuyenDung(nhanVien.getNgayTuyenDung());
+        existing.setKetThucLamViec(nhanVien.getKetThucLamViec());
+        existing.setChuyenMon(nhanVien.getChuyenMon());
+
+
+        // Khoa: chỉ update nếu form gửi lên id hợp lệ
+        if (nhanVien.getKhoa() != null && nhanVien.getKhoa().getId() != null) {
+            existing.setKhoa(nhanVien.getKhoa());
+        }
+
+        // ChucVu: chỉ update nếu form gửi lên id hợp lệ
+        if (nhanVien.getChucVu() != null && nhanVien.getChucVu().getId() != null) {
+            existing.setChucVu(nhanVien.getChucVu());
+        }
+
+
+        return nhanVienRepo.save(existing);
     }
 
     @Override

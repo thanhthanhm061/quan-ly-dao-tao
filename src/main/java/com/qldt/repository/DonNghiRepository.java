@@ -128,4 +128,6 @@ public interface DonNghiRepository extends JpaRepository<DonNghi, Long> {
     long countByTrangThaiAndNguoiNop_Khoa_Id(
             TrangThaiDonNghi trangThai, Long khoaId);
 
+
+
 }

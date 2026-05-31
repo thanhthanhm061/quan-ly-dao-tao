@@ -15,13 +15,44 @@
 
         /* Top bar */
         .top-bar { display:flex; align-items:center; justify-content:space-between;
-            flex-wrap:wrap; gap:12px; margin-bottom:20px; }
-        .user-chip { display:inline-flex; align-items:center; gap:8px; padding:8px 14px;
-            background:#fff; border:1px solid var(--border); border-radius:20px;
-            font-size:.85rem; font-weight:500; box-shadow:var(--shadow); }
-        .user-chip .avatar { width:28px; height:28px; border-radius:50%;
-            background:var(--navy); color:#fff; display:flex; align-items:center;
-            justify-content:center; font-size:.75rem; font-weight:700; }
+            flex-wrap:wrap; gap:12px; margin-bottom:24px; }
+
+        /* Hero greeting banner */
+        .hero-banner {
+            background:linear-gradient(135deg, #0f2542 0%, #1e3a5f 50%, #0f3460 100%);
+            border-radius:16px; padding:20px 28px; margin-bottom:24px;
+            display:flex; align-items:center; justify-content:space-between;
+            flex-wrap:wrap; gap:16px; position:relative; overflow:hidden;
+            box-shadow:0 8px 32px rgba(15,37,66,.25);
+        }
+        .hero-banner::before {
+            content:''; position:absolute; top:-40px; right:-40px;
+            width:200px; height:200px; border-radius:50%;
+            background:rgba(37,99,235,.15); pointer-events:none;
+        }
+        .hero-banner::after {
+            content:''; position:absolute; bottom:-60px; right:80px;
+            width:140px; height:140px; border-radius:50%;
+            background:rgba(5,150,105,.1); pointer-events:none;
+        }
+        .hero-left { display:flex; align-items:center; gap:16px; position:relative; z-index:1; }
+        .hero-avatar {
+            width:52px; height:52px; border-radius:14px;
+            background:linear-gradient(135deg,#2563eb,#1d4ed8);
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.3rem; color:#fff; font-weight:800;
+            box-shadow:0 4px 16px rgba(37,99,235,.4);
+            flex-shrink:0;
+        }
+        .hero-name { font-size:1.1rem; font-weight:700; color:#fff; line-height:1.2; }
+        .hero-role { font-size:.78rem; color:rgba(255,255,255,.6); margin-top:3px; }
+        .hero-right { display:flex; align-items:center; gap:10px; position:relative; z-index:1; flex-wrap:wrap; }
+        .hero-stat {
+            background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.15);
+            border-radius:10px; padding:10px 16px; text-align:center; backdrop-filter:blur(8px);
+        }
+        .hero-stat-num { font-size:1.4rem; font-weight:800; color:#fff; line-height:1; }
+        .hero-stat-label { font-size:.68rem; color:rgba(255,255,255,.6); margin-top:2px; }
 
         .hky-form { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
         .hky-form label { font-size:.82rem; font-weight:600; color:var(--text-muted);
@@ -29,9 +60,6 @@
         .hky-form select { border:1.5px solid var(--border); border-radius:8px;
             font-size:.9rem; padding:8px 12px; min-width:180px; transition:.18s; }
         .hky-form select:focus { border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; outline:none; }
-        .btn-view { background:var(--navy); color:#fff; border:none; border-radius:8px;
-            padding:8px 16px; font-size:.88rem; font-weight:600; cursor:pointer; transition:.18s; }
-        .btn-view:hover { background:#1e3a5f; }
 
         /* Card */
         .card { border:1px solid var(--border); border-radius:var(--radius);
@@ -39,7 +67,16 @@
         .card-header { background:var(--navy); color:#fff;
             border-radius:var(--radius) var(--radius) 0 0 !important;
             padding:14px 20px; font-weight:600; border:none;
-            display:flex; align-items:center; justify-content:space-between; }
+            display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+
+        /* Nav pills trong card header */
+        .nav-pills-header { display:flex; gap:6px; }
+        .nav-pill-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 14px;
+            border:1.5px solid rgba(255,255,255,.25); border-radius:20px; color:rgba(255,255,255,.8);
+            font-size:.78rem; font-weight:600; text-decoration:none; transition:.2s;
+            background:rgba(255,255,255,.08); }
+        .nav-pill-btn:hover { background:rgba(255,255,255,.2); color:#fff; border-color:rgba(255,255,255,.5); }
+        .nav-pill-btn i { font-size:.72rem; }
 
         /* Legend */
         .legend-row { padding:10px 16px 8px; display:flex; gap:6px; flex-wrap:wrap;
@@ -61,14 +98,9 @@
         .tkb-cell:hover { transform:scale(1.02); z-index:10; box-shadow:0 4px 16px rgba(0,0,0,.12); }
         .tkb-cell .mon { font-size:.73rem; font-weight:700; line-height:1.25; }
         .tkb-cell .meta { font-size:.66rem; opacity:.75; margin-top:2px; }
-        .tkb-grid th .date-sub {
-            font-size: .72rem;
-            font-weight: 400;
-            opacity: .7;
-            display: block;
-            margin-top: 2px;
-        }
-        .tkb-grid th.today-col { background: #1d4ed8 !important; }
+        .tkb-grid th .date-sub { font-size:.72rem; font-weight:400; opacity:.7; display:block; margin-top:2px; }
+        .tkb-grid th.today-col { background:#1d4ed8 !important; }
+
         /* Detail table */
         .detail-table { width:100%; border-collapse:collapse; }
         .detail-table thead th { background:var(--surface); font-size:.78rem; font-weight:700;
@@ -84,11 +116,6 @@
         .tag-primary { background:#dbeafe; color:#1e40af; }
         .tag-muted { background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; }
 
-        .btn-week { display:inline-flex; align-items:center; gap:5px; padding:5px 12px;
-            border:1.5px solid rgba(255,255,255,.3); border-radius:7px; color:#fff;
-            font-size:.8rem; font-weight:500; text-decoration:none; transition:.18s; }
-        .btn-week:hover { background:rgba(255,255,255,.15); color:#fff; }
-
         /* Empty */
         .empty-state { text-align:center; padding:56px 20px; color:var(--text-muted); }
         .empty-state i { font-size:3rem; opacity:.25; display:block; margin-bottom:14px; }
@@ -96,8 +123,8 @@
     </style>
 
     <!-- ── TOP BAR ── -->
+    <!-- ── TOP BAR ── -->
     <div class="top-bar">
-        <!-- Selector học kỳ -->
         <form method="get" class="hky-form">
             <label>Học kỳ</label>
             <select name="hocKy" onchange="this.form.submit()">
@@ -107,13 +134,36 @@
                         th:selected="${hk == hocKyChon}"></option>
             </select>
         </form>
+    </div>
 
-        <!-- User chip -->
-        <div th:if="${tenNguoiDung != null}" class="user-chip">
-            <div class="avatar">
-                <i class="fas fa-user" style="font-size:.7rem"></i>
+    <!-- ── HERO BANNER ── -->
+    <div th:if="${tenNguoiDung != null}" class="hero-banner">
+        <div class="hero-left">
+            <div class="hero-avatar">
+                <i class="fas fa-user-tie"></i>
             </div>
-            <span th:text="${tenNguoiDung}"></span>
+            <div>
+                <div class="hero-name" th:text="${tenNguoiDung}">Tên người dùng</div>
+                <div class="hero-role">
+                    <i class="fas fa-circle" style="font-size:.45rem;margin-right:5px;color:#34d399"></i>
+                    Đang xem lịch học kỳ
+                    <span th:if="${hocKyChon != null}"
+                          th:text="' — ' + ${hocKyChon}"
+                          style="color:rgba(255,255,255,.8);font-weight:600"></span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-right" th:if="${thoiKhoaBieus != null and !#lists.isEmpty(thoiKhoaBieus)}">
+            <div class="hero-stat">
+                <div class="hero-stat-num" th:text="${#lists.size(thoiKhoaBieus)}">0</div>
+                <div class="hero-stat-label">Buổi học</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-num"
+                     th:text="${thoiKhoaBieus != null ? #lists.size(thoiKhoaBieus) > 0 ? thoiKhoaBieus[0].lopHocPhan?.monHoc?.soTinChi ?: '—' : '—' : '—'}">
+                </div>
+                <div class="hero-stat-label">Tín chỉ/môn</div>
+            </div>
         </div>
     </div>
 
@@ -133,27 +183,24 @@
             <!-- LƯỚI TKB -->
             <div class="card">
                 <div class="card-header">
-                    <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
                         <i class="fas fa-calendar-week"></i>
                         <span>Lịch học — <span th:text="${hocKyChon}"></span></span>
                         <span class="tag tag-primary ms-1"
                               th:text="${#lists.size(thoiKhoaBieus)} + ' buổi'"></span>
                     </div>
-                    <a th:if="${hocKyChon != null}"
-                       th:href="@{/tkb/theo-tuan(hocKy=${hocKyChon})}"
-                       class="btn-week">
-                        <i class="fas fa-calendar-alt"></i>Xem theo tuần
-                    </a>
-                    <a th:if="${tenNguoiDung != null}"
-                       th:href="@{/tkb/theo-tuan(hocKy=${hocKyChon})}"
-                       class="btn-week">
-                        <i class="fas fa-calendar-alt"></i>Xem theo tuần
-                    </a>
-                    <a th:if="${hocKyChon != null}"
-                       th:href="@{/tkb/theo-thang(hocKy=${hocKyChon})}"
-                       class="btn-week">
-                        <i class="fas fa-calendar-alt"></i>Xem theo tháng
-                    </a>
+                    <div class="nav-pills-header">
+                        <a th:if="${hocKyChon != null}"
+                           th:href="@{/tkb/theo-tuan(hocKy=${hocKyChon})}"
+                           class="nav-pill-btn">
+                            <i class="fas fa-calendar-week"></i> Theo tuần
+                        </a>
+                        <a th:if="${hocKyChon != null}"
+                           th:href="@{/tkb/theo-thang(hocKy=${hocKyChon})}"
+                           class="nav-pill-btn">
+                            <i class="fas fa-calendar"></i> Theo tháng
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Legend -->
@@ -287,9 +334,17 @@
             <p>Lịch học sẽ hiển thị theo dạng lưới và danh sách chi tiết.</p>
         </div>
     </div>
-
-</th:block></body></html>
-<script>
+    <script th:inline="javascript">
+        (function() {
+            const gvId       = /*[[${giangVienIdChon}]]*/ null;
+            const hocKy      = /*[[${hocKyChon}]]*/ null;
+            const daCoKetQua = /*[[${thoiKhoaBieus != null}]]*/ false;
+            if (gvId && hocKy && !daCoKetQua) {
+                document.querySelector('.hky-form')?.submit();
+            }
+        })();
+    </script>
+    <script>
     (function () {
         const today = new Date();
         // Tìm thứ 2 của tuần hiện tại

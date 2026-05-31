@@ -30,12 +30,21 @@ public interface ThoiKhoaBieuRepository
     JOIN FETCH l.monHoc
     WHERE gv.id = :nhanVienId
       AND l.hocKy = :hocKy
+      AND (
+          t.isOverride = true
+          OR NOT EXISTS (
+              SELECT 1 FROM ThoiKhoaBieu ov
+              WHERE ov.isOverride = true
+                AND ov.overrideParentId = t.id
+          )
+      )
     ORDER BY t.thuTrongTuan, t.tietBatDau
 """)
     List<ThoiKhoaBieu> findByGiangVienAndHocKy(
             @Param("nhanVienId") Long nhanVienId,
-            @Param("hocKy") String hocKy
-    );
+            @Param("hocKy") String hocKy);
+
+
 
     // =========================
     // LỊCH THEO PHÒNG
@@ -59,19 +68,26 @@ public interface ThoiKhoaBieuRepository
     // =========================
 
     @Query("""
-        SELECT DISTINCT t
-        FROM ThoiKhoaBieu t
-        JOIN FETCH t.lopHocPhan l
-        JOIN FETCH l.monHoc
-        JOIN l.dangKys dk
-        WHERE dk.sinhVien.id = :svId
-          AND l.hocKy = :hocKy
-        ORDER BY t.thuTrongTuan, t.tietBatDau
-    """)
+    SELECT DISTINCT t
+    FROM ThoiKhoaBieu t
+    JOIN FETCH t.lopHocPhan l
+    JOIN FETCH l.monHoc
+    JOIN l.dangKys dk
+    WHERE dk.sinhVien.id = :svId
+      AND l.hocKy = :hocKy
+      AND (
+          t.isOverride = true
+          OR NOT EXISTS (
+              SELECT 1 FROM ThoiKhoaBieu ov
+              WHERE ov.isOverride = true
+                AND ov.overrideParentId = t.id
+          )
+      )
+    ORDER BY t.thuTrongTuan, t.tietBatDau
+""")
     List<ThoiKhoaBieu> findBySinhVienAndHocKy(
             @Param("svId") Long svId,
-            @Param("hocKy") String hocKy
-    );
+            @Param("hocKy") String hocKy);
 
     // =========================
     // LỊCH GIẢNG VIÊN THEO TUẦN
@@ -110,19 +126,28 @@ public interface ThoiKhoaBieuRepository
     // =========================
     // LỊCH SINH VIÊN THEO TUẦN
     // =========================
-
     @Query("""
-        SELECT DISTINCT t
-        FROM ThoiKhoaBieu t
-        JOIN FETCH t.lopHocPhan l
-        JOIN FETCH l.monHoc
-        JOIN l.dangKys dk
-        WHERE dk.sinhVien.id = :svId
-          AND l.hocKy = :hocKy
-          AND t.tuanBatDau <= :ngayKetThuc
-          AND t.tuanKetThuc >= :ngayBatDau
-        ORDER BY t.thuTrongTuan, t.tietBatDau
-    """)
+    SELECT DISTINCT t
+    FROM ThoiKhoaBieu t
+    JOIN FETCH t.lopHocPhan l
+    JOIN FETCH l.monHoc
+    JOIN l.dangKys dk
+    WHERE dk.sinhVien.id = :svId
+      AND l.hocKy = :hocKy
+      AND t.tuanBatDau <= :ngayKetThuc
+      AND t.tuanKetThuc >= :ngayBatDau
+      AND (
+          t.isOverride = true
+          OR NOT EXISTS (
+              SELECT 1 FROM ThoiKhoaBieu ov
+              WHERE ov.isOverride = true
+                AND ov.overrideParentId = t.id
+                AND ov.tuanBatDau <= :ngayKetThuc
+                AND ov.tuanKetThuc >= :ngayBatDau
+          )
+      )
+    ORDER BY t.thuTrongTuan, t.tietBatDau
+""")
     List<ThoiKhoaBieu> findBySinhVienAndTuan(
             @Param("svId") Long svId,
             @Param("hocKy") String hocKy,
@@ -140,14 +165,23 @@ public interface ThoiKhoaBieuRepository
       AND l.hocKy = :hocKy
       AND t.tuanBatDau <= :ngayKetThucThang
       AND t.tuanKetThuc >= :ngayBatDauThang
+      AND (
+          t.isOverride = true
+          OR NOT EXISTS (
+              SELECT 1 FROM ThoiKhoaBieu ov
+              WHERE ov.isOverride = true
+                AND ov.overrideParentId = t.id
+                AND ov.tuanBatDau <= :ngayKetThucThang
+                AND ov.tuanKetThuc >= :ngayBatDauThang
+          )
+      )
     ORDER BY t.thuTrongTuan, t.tietBatDau
 """)
     List<ThoiKhoaBieu> findByGiangVienAndThang(
             @Param("nhanVienId") Long nhanVienId,
             @Param("hocKy") String hocKy,
             @Param("ngayBatDauThang") LocalDate ngayBatDauThang,
-            @Param("ngayKetThucThang") LocalDate ngayKetThucThang
-    );
+            @Param("ngayKetThucThang") LocalDate ngayKetThucThang);
 
     // ── Lịch SV theo tháng ──────────────────────────────────────────────────────
     @Query("""
@@ -160,6 +194,16 @@ public interface ThoiKhoaBieuRepository
       AND l.hocKy = :hocKy
       AND t.tuanBatDau <= :ngayKetThucThang
       AND t.tuanKetThuc >= :ngayBatDauThang
+      AND (
+          t.isOverride = true
+          OR NOT EXISTS (
+              SELECT 1 FROM ThoiKhoaBieu ov
+              WHERE ov.isOverride = true
+                AND ov.overrideParentId = t.id
+                AND ov.tuanBatDau <= :ngayKetThucThang
+                AND ov.tuanKetThuc >= :ngayBatDauThang
+          )
+      )
     ORDER BY t.thuTrongTuan, t.tietBatDau
 """)
     List<ThoiKhoaBieu> findBySinhVienAndThang(
@@ -168,7 +212,6 @@ public interface ThoiKhoaBieuRepository
             @Param("ngayBatDauThang") LocalDate ngayBatDauThang,
             @Param("ngayKetThucThang") LocalDate ngayKetThucThang
     );
-
     // ── Thống kê tín chỉ đã dạy theo GV ────────────────────────────────────────
     @Query("""
     SELECT COALESCE(SUM(DISTINCT l.monHoc.soTinChi), 0)

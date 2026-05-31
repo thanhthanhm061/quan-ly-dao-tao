@@ -125,6 +125,24 @@
         .toast-btn-delete { border:none; background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff;
             border-radius:10px; padding:7px 14px; font-size:.82rem; font-weight:600; }
         .toast-btn-delete:hover { opacity:.92; }
+        /* ── Popup chi tiết Tổng quan ── */
+        .xem-overlay { position:fixed; inset:0; background:rgba(15,37,66,.45);
+            z-index:5000; display:flex; align-items:center; justify-content:center;
+            opacity:0; pointer-events:none; transition:opacity .2s; }
+        .xem-overlay.show { opacity:1; pointer-events:auto; }
+        .xem-popup { background:#fff; border-radius:16px; width:440px; max-width:96vw;
+            box-shadow:0 24px 80px rgba(0,0,0,.25); overflow:hidden;
+            transform:translateY(16px) scale(.97); transition:transform .22s; }
+        .xem-overlay.show .xem-popup { transform:translateY(0) scale(1); }
+        .xem-popup-header { padding:16px 20px 14px; display:flex; align-items:flex-start;
+            justify-content:space-between; border-bottom:1px solid var(--border); }
+        .xem-popup-row { display:flex; align-items:center; gap:10px; padding:7px 0;
+            border-bottom:1px solid #f0f4f8; font-size:.88rem; }
+        .xem-popup-row:last-child { border-bottom:none; }
+        .xem-popup-row i { width:18px; color:var(--text-muted); flex-shrink:0; }
+        .xem-popup-row .label { color:var(--text-muted); min-width:90px; font-size:.8rem; }
+        .xem-popup-row .value { font-weight:600; color:var(--text); }
+        .tkb-cell { cursor:pointer !important; }
     </style>
 
     <!-- ── TABS (4 tabs) ── -->
@@ -181,8 +199,8 @@
             </div>
             <div class="col-md-3 text-end" sec:authorize="hasRole('ADMIN')">
                 <a th:href="@{/tkb/them(
-        giangVienId=${giangVienId},
-        hocKy=${hocKy}
+        giangVienId=${giangVienIdChon},
+        hocKy=${hocKyChon}
     )}"
                    class="btn btn-success">
                     <i class="fas fa-plus me-1"></i>Thêm lịch học
@@ -308,21 +326,40 @@
                                         <div th:if="${tkb.thuTrongTuan eq thu and tkb.tietBatDau eq tiet}"
                                              class="tkb-cell"
                                              th:style="'height:' + ${tkb.soTiet*52-4} + 'px;' +
-                                                       'background:' + ${i.index%6==0?'#dbeafe':i.index%6==1?'#d1fae5':
-                                                         i.index%6==2?'#fef3c7':i.index%6==3?'#ede9fe':
-                                                         i.index%6==4?'#fee2e2':'#e0f2fe'} +
-                                                       ';border-left:3px solid ' +
-                                                       ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':
-                                                         i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':
-                                                         i.index%6==4?'#dc2626':'#0284c7'}">
+                       'background:' + ${i.index%6==0?'#dbeafe':i.index%6==1?'#d1fae5':
+                       i.index%6==2?'#fef3c7':i.index%6==3?'#ede9fe':
+                       i.index%6==4?'#fee2e2':'#e0f2fe'} +
+                       ';border-left:3px solid ' +
+                       ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':
+                       i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':
+                       i.index%6==4?'#dc2626':'#0284c7'}"
+                                             th:attr="
+                 data-id=${tkb.id},
+                 data-mon=${tkb.lopHocPhan?.monHoc?.tenMon},
+                 data-lhp=${tkb.lopHocPhan?.maLhp},
+                 data-gv=${tkb.lopHocPhan?.giangVien?.hoTen},
+                 data-thu=${tkb.tenThu},
+                 data-tiet=${'T' + tkb.tietBatDau + ' → T' + (tkb.tietBatDau+tkb.soTiet-1)},
+                 data-phong=${tkb.phongHoc ?: '?'},
+                 data-tc=${tkb.lopHocPhan?.monHoc?.soTinChi},
+                 data-gio=${tietMap != null and tietMap[tkb.tietBatDau] != null ?
+                     #temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm') + ' – ' +
+                     (tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
+                      #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?') : ''},
+                 data-lhp-id=${tkb.lopHocPhan?.id},
+                 data-gv-id=${tkb.lopHocPhan?.giangVien?.id}
+             "
+                                             onclick="moPopupXem(this)">
+
+                                            <!-- Nội dung ô TKB nếu có -->
                                             <span class="mon"
                                                   th:style="'color:' + ${i.index%6==0?'#1e40af':i.index%6==1?'#065f46':
-                                                             i.index%6==2?'#92400e':i.index%6==3?'#5b21b6':
-                                                             i.index%6==4?'#991b1b':'#0c4a6e'}"
+                                                    i.index%6==2?'#92400e':i.index%6==3?'#5b21b6':
+                                                    i.index%6==4?'#991b1b':'#0c4a6e'}"
                                                   th:text="${tkb.lopHocPhan?.monHoc?.tenMon ?: '---'}"></span>
                                             <span class="meta text-muted"
-                                                  th:if="${tkb.lopHocPhan?.giangVien != null}"
-                                                  th:text="${tkb.lopHocPhan.giangVien.hoTen}"></span>
+                                                  th:text="'P.' + ${tkb.phongHoc ?: '?'} + ' · T' +
+                                                  ${tkb.tietBatDau} + '–' + ${tkb.tietBatDau+tkb.soTiet-1}"></span>
                                             <span class="meta text-muted"
                                                   th:if="${tietMap != null and tietMap[tkb.tietBatDau] != null}"
                                                   th:text="${#temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm')}
@@ -330,12 +367,8 @@
                                                            ${tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
                                                              #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?'}">
                                             </span>
-                                            <span class="meta text-muted"
-                                                  th:text="'P.' + ${tkb.phongHoc ?: '?'} + ' · T' +
-                                                           ${tkb.tietBatDau} + '–' + ${tkb.tietBatDau+tkb.soTiet-1}"></span>
-                                            <span class="tc text-muted"
-                                                  th:if="${tkb.lopHocPhan?.monHoc?.soTinChi != null}"
-                                                  th:text="${tkb.lopHocPhan.monHoc.soTinChi} + ' TC'"></span>
+                                            <span class="meta" style="font-size:.6rem;opacity:.4;margin-top:2px">↗ Nhấn để xem</span>
+
                                         </div>
                                     </th:block>
                                 </td>
@@ -490,6 +523,94 @@
             </div>
         </div>
     </div>
+    <!-- ══ POPUP CHI TIẾT TỔNG QUAN ══ -->
+    <div class="xem-overlay" id="xemOverlay" onclick="if(event.target===this)this.classList.remove('show')">
+        <div class="xem-popup">
+            <div class="xem-popup-header">
+                <div>
+                    <div id="xPopupMon" style="font-size:1rem;font-weight:700;color:var(--navy)">—</div>
+                    <div id="xPopupLhp" style="font-size:.8rem;color:var(--text-muted);margin-top:2px">—</div>
+                </div>
+                <button onclick="document.getElementById('xemOverlay').classList.remove('show')"
+                        style="width:28px;height:28px;border:none;background:#f1f5f9;
+                           border-radius:8px;cursor:pointer;color:var(--text-muted)">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div style="padding:16px 20px">
+                <div class="xem-popup-row">
+                    <i class="fas fa-user-tie"></i>
+                    <span class="label">Giảng viên</span>
+                    <span class="value" id="xPopupGv">—</span>
+                </div>
+                <div class="xem-popup-row">
+                    <i class="fas fa-clock"></i>
+                    <span class="label">Tiết / Giờ</span>
+                    <span class="value" id="xPopupTiet">—</span>
+                </div>
+                <div class="xem-popup-row">
+                    <i class="fas fa-door-open"></i>
+                    <span class="label">Phòng học</span>
+                    <span class="value" id="xPopupPhong">—</span>
+                </div>
+                <div class="xem-popup-row">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span class="label">Tín chỉ</span>
+                    <span class="value" id="xPopupTc">—</span>
+                </div>
+            </div>
+            <!-- Nút hành động (Admin) -->
+            <div id="xPopupActions"
+                 style="padding:12px 20px 16px;border-top:1px solid var(--border);
+                    background:#fafbfc;display:none;gap:8px;flex-wrap:wrap">
+                <a id="xBtnSua" href="#"
+                   style="flex:1;padding:9px 12px;border-radius:10px;background:#eff6ff;
+                      color:#2563eb;border:1.5px solid #bfdbfe;font-size:.82rem;
+                      font-weight:600;text-align:center;text-decoration:none">
+                    <i class="fas fa-edit me-1"></i>Sửa lịch
+                </a>
+                <a id="xBtnTuan" href="#"
+                   style="flex:1;padding:9px 12px;border-radius:10px;background:#ecfdf5;
+                      color:#059669;border:1.5px solid #a7f3d0;font-size:.82rem;
+                      font-weight:600;text-align:center;text-decoration:none">
+                    <i class="fas fa-calendar-week me-1"></i>Xem theo tuần
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const _isAdmin   = /*[[${#authorization.expression('hasRole(''ADMIN'')')}]]*/ false;
+        const _gvIdChon  = /*[[${giangVienIdChon}]]*/ '';
+        const _hocKyChon = /*[[${hocKyChon}]]*/ '';
+        const _xemOvl    = document.getElementById('xemOverlay');
+
+        function moPopupXem(el) {
+            const d = el.dataset;
+            document.getElementById('xPopupMon').textContent  = d.mon   || '—';
+            document.getElementById('xPopupLhp').textContent  = d.lhp   || '—';
+            document.getElementById('xPopupGv').textContent   = d.gv    || '—';
+            document.getElementById('xPopupTiet').textContent = (d.tiet || '—') + (d.gio ? '  (' + d.gio + ')' : '');
+            document.getElementById('xPopupPhong').textContent= 'Phòng ' + (d.phong || '?');
+            document.getElementById('xPopupTc').textContent   = d.tc ? d.tc + ' tín chỉ' : '—';
+
+            const actions = document.getElementById('xPopupActions');
+            if (_isAdmin && d.id) {
+                actions.style.display = 'flex';
+                document.getElementById('xBtnSua').href =
+                    `/tkb/sua/${d.id}?giangVienId=${_gvIdChon}&hocKy=${_hocKyChon}`;
+                document.getElementById('xBtnTuan').href =
+                    `/tkb/theo-tuan?giangVienId=${_gvIdChon}&hocKy=${_hocKyChon}`;
+            } else {
+                actions.style.display = 'none';
+            }
+            _xemOvl.classList.add('show');
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') _xemOvl.classList.remove('show');
+        });
+    </script>
     <script>
         /* ── Ngày trong tuần ── */
         (function () {
