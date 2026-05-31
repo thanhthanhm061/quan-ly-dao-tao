@@ -94,7 +94,7 @@ public class LichDayBuController {
             Model model, Authentication auth) {
 
         model.addAttribute("danhSachLhp", lhpRepo.findAll());
-        model.addAttribute("danhSachGV", nhanVienRepo.findByChucVuMaChucVu("GVC"));
+        model.addAttribute("danhSachGV", nhanVienRepo.findAllGiangVien());
         model.addAttribute("thuList", List.of(2, 3, 4, 5, 6, 7));
         model.addAttribute("activePage", "lich-day-bu");
         model.addAttribute("danhSachPhong", phongHocService.findAll()
@@ -240,7 +240,7 @@ public class LichDayBuController {
         LichDayBu lichBu = lichDayBuService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch dạy bù"));
         model.addAttribute("lichBu", lichBu);
-        model.addAttribute("danhSachGV", nhanVienRepo.findByChucVuMaChucVu("GVC"));
+        model.addAttribute("danhSachGV", nhanVienRepo.findAllGiangVien());
         model.addAttribute("thuList", List.of(2, 3, 4, 5, 6, 7));
         model.addAttribute("activePage", "lich-day-bu");
         model.addAttribute("danhSachPhong", phongHocService.findAll()
