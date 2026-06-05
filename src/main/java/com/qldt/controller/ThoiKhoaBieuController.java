@@ -382,12 +382,6 @@ class LopHocPhanController {
 
     // ── Tìm SV chưa đăng ký (modal tìm kiếm) ──────────────────────────────────
 
-    /**
-     * FIX hiệu năng: đẩy filter "chưa đăng ký" và tìm kiếm xuống DB thay vì
-     * load toàn bộ SV rồi filter trong memory.
-     * Nếu chưa có method findNotInLhp trong service, giữ logic cũ nhưng
-     * thêm giới hạn kết quả trả về tránh payload quá lớn.
-     */
     @GetMapping("/{id}/sinh-vien-chua-dk")
     @ResponseBody
     public List<Map<String, Object>> svChuaDangKy(@PathVariable Long id,
@@ -665,7 +659,7 @@ public class ThoiKhoaBieuController {
 
         private final ThoiKhoaBieuService tkbService;
         private final LopHocPhanService lhpService;
-        private final NhanVienService nhanVienService;   // thay GiangVienService
+        private final NhanVienService nhanVienService;
         private final SinhVienService svService;
         private final NguoiDungRepository nguoiDungRepo;
         private final PhongHocService phongHocService;
@@ -977,8 +971,7 @@ public class ThoiKhoaBieuController {
                     model.addAttribute("thoiKhoaBieus",
                             tkbService.findBySinhVienTuan(sv.getId(), hocKy, ngay));
                     model.addAttribute("sinhVien", sv);
-                    // ── THÊM MỚI: thông báo nghỉ của các GV trong tuần ──
-                    // Lấy tất cả GV đang dạy SV này trong tuần
+
                     List<ThoiKhoaBieu> dsSv = tkbService.findBySinhVienTuan(sv.getId(), hocKy, ngay);
                     List<Long> gvIds = dsSv.stream()
                             .map(t -> t.getLopHocPhan().getGiangVien())
@@ -992,9 +985,14 @@ public class ThoiKhoaBieuController {
                                     .findDaDuyetByGvAndKhoang(gvId, thu2, thu7).stream())
                             .toList();
 
-                    model.addAttribute("jsonNghiTuan", buildJsonNghi(donNghiTuan));
-                    model.addAttribute("jsonBuTuan", "[]");
+                    List<LichDayBu> lichBuTuan = gvIds.stream()
+                            .flatMap(gvId -> lichDayBuService
+                                    .findByGiangVienAndKhoangNgay(gvId, thu2, thu7).stream())
+                            .toList();
 
+                    model.addAttribute("jsonNghiTuan", buildJsonNghi(donNghiTuan));
+                    model.addAttribute("jsonBuTuan",
+                            buildJsonBu(lichBuTuan, timeSlotService.buildTietMap()));
                 }
             }
 
@@ -1168,10 +1166,29 @@ public class ThoiKhoaBieuController {
                     model.addAttribute("thoiKhoaBieus", ds);
                     model.addAttribute("calendarJson", buildCalendarJson(ds, tietMap));
                     model.addAttribute("sinhVien", sv);
-                    model.addAttribute("calendarJsonBu", "[]");
-                    model.addAttribute("calendarJsonNghi", "[]");
 
+                    // Lấy danh sách GV đang dạy SV trong tháng
+                    List<Long> gvIds = ds.stream()
+                            .map(t -> t.getLopHocPhan().getGiangVien())
+                            .filter(gv -> gv != null)
+                            .map(gv -> gv.getId())
+                            .distinct()
+                            .toList();
 
+                    List<LichDayBu> lichBuThang = gvIds.stream()
+                            .flatMap(gvId -> lichDayBuService
+                                    .findByGiangVienAndKhoangNgay(gvId, dauThang, cuoiThang).stream())
+                            .toList();
+
+                    List<DonNghi> donNghiThang = gvIds.stream()
+                            .flatMap(gvId -> donNghiRepo
+                                    .findDaDuyetByGvAndKhoang(gvId, dauThang, cuoiThang).stream())
+                            .toList();
+
+                    model.addAttribute("calendarJsonBu",
+                            buildJsonBu(lichBuThang, tietMap));
+                    model.addAttribute("calendarJsonNghi",
+                            buildJsonNghi(donNghiThang));
                 }
             }
 
