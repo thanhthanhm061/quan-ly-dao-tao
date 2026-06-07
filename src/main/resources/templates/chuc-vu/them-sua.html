@@ -230,18 +230,14 @@
                                     Khoa
                                 </label>
 
-                                <select th:field="*{khoa.id}"
-                                        class="form-select">
-
-                                    <option value="">
-                                        -- Không thuộc khoa --
-                                    </option>
-
+                                <select name="khoaId" class="form-select"
+                                        th:value="${chucVu.khoa != null ? chucVu.khoa.id : ''}">
+                                    <option value="">-- Không thuộc khoa --</option>
                                     <option th:each="k : ${dsKhoa}"
                                             th:value="${k.id}"
-                                            th:text="${k.tenKhoa}">
+                                            th:text="${k.tenKhoa}"
+                                            th:selected="${chucVu.khoa != null and chucVu.khoa.id == k.id}">
                                     </option>
-
                                 </select>
 
                             </div>

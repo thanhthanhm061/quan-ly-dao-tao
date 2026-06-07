@@ -1,6 +1,7 @@
 package com.qldt.controller;
 
 import com.qldt.model.ChucVu;
+import com.qldt.model.Khoa;
 import com.qldt.service.ChucVuService;
 import com.qldt.service.KhoaService;
 import jakarta.validation.Valid;
@@ -46,7 +47,9 @@ public class ChucVuController {
     }
 
     @PostMapping("/them")
-    public String them(@Valid @ModelAttribute ChucVu chucVu, BindingResult result,
+    public String them(@Valid @ModelAttribute ChucVu chucVu,
+                       BindingResult result,
+                       @RequestParam(required = false) Long khoaId, // ← thêm
                        Model model, RedirectAttributes ra) {
         if (result.hasErrors()) {
             model.addAttribute("tieuDe", "Thêm Chức Vụ Mới");
@@ -54,6 +57,14 @@ public class ChucVuController {
             return "chuc-vu/them-sua";
         }
         try {
+            // Gán khoaId vào chucVu để service xử lý
+            if (khoaId != null) {
+                Khoa k = new Khoa();
+                k.setId(khoaId);
+                chucVu.setKhoa(k); // Service sẽ resolve từ DB
+            } else {
+                chucVu.setKhoa(null);
+            }
             chucVuService.save(chucVu);
             ra.addFlashAttribute("thanhCong", "Thêm chức vụ '" + chucVu.getTenChucVu() + "' thành công!");
         } catch (Exception e) {
@@ -71,8 +82,11 @@ public class ChucVuController {
     }
 
     @PostMapping("/sua/{id}")
-    public String sua(@PathVariable Long id, @Valid @ModelAttribute ChucVu chucVu,
-                      BindingResult result, Model model, RedirectAttributes ra) {
+    public String sua(@PathVariable Long id,
+                      @Valid @ModelAttribute ChucVu chucVu,
+                      BindingResult result,
+                      @RequestParam(required = false) Long khoaId, // ← thêm
+                      Model model, RedirectAttributes ra) {
         if (result.hasErrors()) {
             model.addAttribute("tieuDe", "Chỉnh Sửa Chức Vụ");
             addFormData(model);
@@ -80,6 +94,13 @@ public class ChucVuController {
         }
         try {
             chucVu.setId(id);
+            if (khoaId != null) {
+                Khoa k = new Khoa();
+                k.setId(khoaId);
+                chucVu.setKhoa(k);
+            } else {
+                chucVu.setKhoa(null);
+            }
             chucVuService.save(chucVu);
             ra.addFlashAttribute("thanhCong", "Cập nhật chức vụ thành công!");
         } catch (Exception e) {

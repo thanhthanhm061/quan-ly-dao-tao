@@ -1,7 +1,9 @@
 package com.qldt.service.impl;
 
 import com.qldt.model.ChucVu;
+import com.qldt.model.Khoa;
 import com.qldt.repository.ChucVuRepository;
+import com.qldt.repository.KhoaRepository;
 import com.qldt.service.ChucVuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import java.util.*;
 public class ChucVuServiceImpl implements ChucVuService {
 
     private final ChucVuRepository repo;
+    private final KhoaRepository khoaRepo;
 
     @Override @Transactional(readOnly = true)
     public List<ChucVu> findAll() { return repo.findAllByOrderByTenChucVuAsc(); }
@@ -34,6 +37,16 @@ public class ChucVuServiceImpl implements ChucVuService {
     public ChucVu save(ChucVu cv) {
         if (cv.getId() == null && repo.existsByMaChucVu(cv.getMaChucVu()))
             throw new IllegalArgumentException("Mã chức vụ '" + cv.getMaChucVu() + "' đã tồn tại");
+
+        // ← Resolve Khoa từ DB
+        if (cv.getKhoa() != null && cv.getKhoa().getId() != null) {
+            Khoa khoa = khoaRepo.findById(cv.getKhoa().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khoa"));
+            cv.setKhoa(khoa);
+        } else {
+            cv.setKhoa(null); // Chức vụ cấp trường
+        }
+
         return repo.save(cv);
     }
 
