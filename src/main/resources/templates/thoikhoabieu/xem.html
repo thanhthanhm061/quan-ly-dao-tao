@@ -713,15 +713,9 @@
                 });
             });
 
-            /* Học kỳ thay đổi → submit (giữ nguyên hành vi cũ) */
             hocKySel.addEventListener('change', function () {
-                if (hiddenInp.value) {
-                    filterForm.submit();
-                }
-                /* Nếu chưa chọn GV thì không submit,
-                   người dùng tự nhấn nút "Xem TKB" */
+                filterForm.submit();
             });
-
             /* Init: hiển thị GV đang được chọn (từ server) */
             (function initSelectedGV() {
                 if (!GV_ID_CHON) return;
