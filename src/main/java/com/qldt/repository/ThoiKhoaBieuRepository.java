@@ -214,7 +214,7 @@ public interface ThoiKhoaBieuRepository
     );
     // ── Thống kê tín chỉ đã dạy theo GV ────────────────────────────────────────
     @Query("""
-    SELECT COALESCE(SUM(DISTINCT l.monHoc.soTinChi), 0)
+    SELECT COALESCE(SUM(l.monHoc.soTinChi), 0)
     FROM ThoiKhoaBieu t
     JOIN t.lopHocPhan l
     WHERE l.giangVien.id = :nhanVienId
@@ -224,7 +224,6 @@ public interface ThoiKhoaBieuRepository
             @Param("nhanVienId") Long nhanVienId,
             @Param("hocKy") String hocKy
     );
-
     // ── Tổng tín chỉ được phân công theo GV ─────────────────────────────────────
     @Query("""
     SELECT COALESCE(SUM(l.monHoc.soTinChi), 0)

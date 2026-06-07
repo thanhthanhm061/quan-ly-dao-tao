@@ -322,6 +322,7 @@
                         <th>Cấp Bậc</th>
                         <th>Khoa</th>
                         <th>Trạng Thái</th>
+                        <th class="text-center">Giảng Dạy</th>
                         <th class="text-center">Thao Tác</th>
                     </tr>
                     </thead>
@@ -374,7 +375,12 @@
                             </span>
 
                         </td>
-
+                        <td class="text-center">
+                            <span th:if="${cv.laNhanSuGiangDay}"
+                            class="badge bg-success">✓ Giảng dạy</span>
+                            <span th:unless="${cv.laNhanSuGiangDay}"
+                                  class="badge bg-secondary">—</span>
+                        </td>
                         <td class="text-center">
 
                             <div class="action-group">
@@ -420,7 +426,7 @@
                     <!-- EMPTY -->
                     <tr th:if="${#lists.isEmpty(dsChucVu)}">
 
-                        <td colspan="7">
+                        <td colspan="8">
 
                             <div class="empty-box">
 

@@ -261,13 +261,19 @@
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Số tiết</label>
+                            <label class="form-label">
+                                Số tiết
+                                <span class="hint" id="soTietHint" style="color:#f59e0b;display:none;">
+                                        (gợi ý từ TC)
+                                </span>
+                            </label>
                             <select class="form-select" th:field="*{soTiet}" id="soTietSelect">
                                 <option value="1">1 tiết</option>
                                 <option value="2">2 tiết</option>
                                 <option value="3" selected>3 tiết</option>
                                 <option value="4">4 tiết</option>
                                 <option value="5">5 tiết</option>
+                                <option value="6">6 tiết</option>
                             </select>
                         </div>
                     </div>
@@ -534,9 +540,25 @@
             const tuanHocInput = document.getElementById('tuanHocInput');
             const tuanGrid     = document.getElementById('tuanGrid');
             const tuanSummary  = document.getElementById('tuanSummary');
+
+            // Khi user tự đổi số tiết → cập nhật panel gợi ý
+            soTietSelect.addEventListener('change', function() {
+                const soTiet = parseInt(this.value);
+                const tinChiEl = document.getElementById('statTinChi');
+
+                // Chỉ cập nhật nếu panel đang hiển thị
+                if (!tinChiEl.textContent.includes('—')) {
+                    const tinChi = parseInt(lhpSelect.selectedOptions[0]?.dataset?.tinchi || '0');
+                    const tongTiet = tinChi * 15;
+                    const soTuanHoc = Math.ceil(tongTiet / soTiet);
+
+                    document.getElementById('statTietBuoi').textContent = soTiet + ' tiết';
+                    document.getElementById('statSoTuan').textContent   = soTuanHoc + ' tuần';
+                }
+            });
             /* ══════════════════════════════════════
-   TOOLBAR TUẦN HỌC
-══════════════════════════════════════ */
+                TOOLBAR TUẦN HỌC
+            ══════════════════════════════════════ */
             document.getElementById('tuanToolbar')
                 .addEventListener('click', function (e) {
 
@@ -669,18 +691,15 @@
             let suggestCount  = 0;
 
             /* ══════════════════════════════════════
-               1. PANEL TÍN CHỈ
+                1. PANEL TÍN CHỈ
             ══════════════════════════════════════ */
-            lhpSelect.addEventListener('change', onLhpChange);
+            lhpSelect.addEventListener('change', () => onLhpChange(false));
 
-            function onLhpChange() {
+            function onLhpChange(isInit = false) {
 
                 const opt    = lhpSelect.selectedOptions[0];
                 const panel  = document.getElementById('tinChiPanel');
-
-                const tinChi = parseInt(
-                    opt?.dataset?.tinchi || '0'
-                );
+                const tinChi = parseInt(opt?.dataset?.tinchi || '0');
 
                 if (!lhpSelect.value || tinChi === 0) {
                     panel.classList.remove('visible');
@@ -688,43 +707,29 @@
                 }
 
                 const tongTiet  = tinChi * 15;
-                const soTuan15  = 15;
-                const tietBuoi  =
-                    Math.min(
-                        Math.max(
-                            Math.ceil(tongTiet / soTuan15),
-                            2
-                        ),
-                        5
-                    );
+                const tietBuoi  = Math.min(Math.max(Math.ceil(tongTiet / 15), 2), 5);
+                const soTuanHoc = Math.ceil(tongTiet / tietBuoi);
 
-                const soTuanHoc =
-                    Math.ceil(tongTiet / tietBuoi);
-
-                document.getElementById('statTinChi').textContent =
-                    tinChi + ' TC';
-
-                document.getElementById('statTongTiet').textContent =
-                    tongTiet + ' tiết';
-
-                document.getElementById('statSoTuan').textContent =
-                    soTuanHoc + ' tuần';
-
-                document.getElementById('statTietBuoi').textContent =
-                    tietBuoi + ' tiết';
-
-                document.getElementById('statFormula').textContent =
-                    tinChi + ' TC × 15 = ' +
-                    tongTiet +
-                    ' tiết/kỳ';
-
-                soTietSelect.value = tietBuoi;
+                document.getElementById('statTinChi').textContent   = tinChi + ' TC';
+                document.getElementById('statTongTiet').textContent = tongTiet + ' tiết';
+                document.getElementById('statSoTuan').textContent   = soTuanHoc + ' tuần';
+                document.getElementById('statTietBuoi').textContent = tietBuoi + ' tiết';
+                document.getElementById('statFormula').textContent  =
+                    tinChi + ' TC × 15 = ' + tongTiet + ' tiết/kỳ';
 
                 suggestCount = soTuanHoc;
-
                 panel.classList.add('visible');
-            }
 
+                // Chỉ gợi ý số tiết khi user CHỦ ĐỘNG chọn LHP, không ghi đè khi load trang sửa
+                if (!isInit) {
+                    setTimeout(() => {
+                        soTietSelect.value = String(tietBuoi);
+                        document.getElementById('soTietHint').style.display = 'inline';
+                        soTietSelect.style.border = '2px solid #f59e0b';
+                        setTimeout(() => { soTietSelect.style.border = ''; }, 2000);
+                    }, 0);
+                }
+            }
             /* ══════════════════════════════════════
                2. TUẦN HỌC
             ══════════════════════════════════════ */
@@ -855,7 +860,7 @@
                INIT
             ══════════════════════════════════════ */
 
-            if (lhpSelect.value) onLhpChange();
+            if (lhpSelect.value) onLhpChange(true);
 
             if (
                 tuanBatDau.value &&

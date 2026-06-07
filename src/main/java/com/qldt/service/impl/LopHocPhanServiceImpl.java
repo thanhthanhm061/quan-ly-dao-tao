@@ -114,10 +114,22 @@ public class LopHocPhanServiceImpl implements LopHocPhanService {
     @Override
     public LopHocPhan save(LopHocPhan lhp) {
 
-        if (lhp.getId() == null && lhpRepo.existsByMaLhp(lhp.getMaLhp())) {
-            throw new IllegalArgumentException(
-                    "Mã lớp học phần '" + lhp.getMaLhp() + "' đã tồn tại"
-            );
+        if (lhp.getId() == null) {
+            // THÊM MỚI: check trùng mã
+            if (lhpRepo.existsByMaLhp(lhp.getMaLhp())) {
+                throw new IllegalArgumentException(
+                        "Mã lớp học phần '" + lhp.getMaLhp() + "' đã tồn tại"
+                );
+            }
+        } else {
+            // SỬA: check trùng mã với lớp KHÁC (không phải chính nó)
+            lhpRepo.findByMaLhp(lhp.getMaLhp()).ifPresent(existing -> {
+                if (!existing.getId().equals(lhp.getId())) {
+                    throw new IllegalArgumentException(
+                            "Mã lớp học phần '" + lhp.getMaLhp() + "' đã được dùng bởi lớp khác"
+                    );
+                }
+            });
         }
 
         capNhatTrangThai(lhp);

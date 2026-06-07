@@ -12,9 +12,7 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, Long> {
 
     // ── Tìm theo tài khoản ──────────────────────────────────────────────
     Optional<NhanVien> findByNguoiDungId(Long nguoiDungId);
-
     Optional<NhanVien> findByMaNhanVien(String maNhanVien);
-
     Optional<NhanVien> findByEmail(String email);
 
     // ── Tìm theo khoa ───────────────────────────────────────────────────
@@ -23,75 +21,70 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, Long> {
     // ── Tìm kiếm fulltext ───────────────────────────────────────────────
     @Query("""
             SELECT nv FROM NhanVien nv
-            WHERE LOWER(nv.hoTen)       LIKE LOWER(CONCAT('%', :q, '%'))
-               OR LOWER(nv.maNhanVien)  LIKE LOWER(CONCAT('%', :q, '%'))
-               OR LOWER(nv.email)       LIKE LOWER(CONCAT('%', :q, '%'))
+            WHERE LOWER(nv.hoTen)      LIKE LOWER(CONCAT('%', :q, '%'))
+               OR LOWER(nv.maNhanVien) LIKE LOWER(CONCAT('%', :q, '%'))
+               OR LOWER(nv.email)      LIKE LOWER(CONCAT('%', :q, '%'))
             """)
     List<NhanVien> timKiem(@Param("q") String q);
 
-    // ── Chỉ lấy nhân viên là giảng viên (chức vụ GV*, TBM, TK, PTK) ───
+    // ── Giảng viên: dùng flag laNhanSuGiangDay thay vì hardcode mã ──────
     @Query("""
             SELECT nv FROM NhanVien nv
             JOIN nv.chucVu cv
-            WHERE cv.maChucVu LIKE 'GV%'
-               OR cv.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT', 'CVHT')
+            WHERE cv.laNhanSuGiangDay = true
+              AND nv.trangThai = true
             """)
     List<NhanVien> findAllGiangVien();
-    @Query("""
-        SELECT nv FROM NhanVien nv
-        JOIN nv.chucVu cv
-        WHERE cv.maChucVu = 'CVHT'
-        """)
-    List<NhanVien> findAllCoVanHocTap();
 
     @Query("""
             SELECT nv FROM NhanVien nv
             JOIN nv.chucVu cv
             WHERE nv.khoa.id = :khoaId
-              AND (cv.maChucVu LIKE 'GV%'
-               OR cv.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT', 'CVHT'))
+              AND cv.laNhanSuGiangDay = true
+              AND nv.trangThai = true
             """)
     List<NhanVien> findGiangVienByKhoa(@Param("khoaId") Long khoaId);
 
-    // ── Tìm giảng viên theo tài khoản ───────────────────────────────────
     @Query("""
             SELECT nv FROM NhanVien nv
             WHERE nv.nguoiDung.id = :nguoiDungId
-              AND (nv.chucVu.maChucVu LIKE 'GV%'
-               OR nv.chucVu.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT', 'CVHT'))
+              AND nv.chucVu.laNhanSuGiangDay = true
             """)
     Optional<NhanVien> findGiangVienByNguoiDungId(@Param("nguoiDungId") Long nguoiDungId);
 
-    // ── Tìm kiếm giảng viên fulltext ────────────────────────────────────
     @Query("""
             SELECT nv FROM NhanVien nv
             JOIN nv.chucVu cv
-            WHERE (cv.maChucVu LIKE 'GV%' OR cv.maChucVu IN ('TBM','TK','PTK', 'CNTT', 'CVHT'))
+            WHERE cv.laNhanSuGiangDay = true
               AND (LOWER(nv.hoTen)      LIKE LOWER(CONCAT('%', :q, '%'))
                OR  LOWER(nv.maNhanVien) LIKE LOWER(CONCAT('%', :q, '%')))
             """)
     List<NhanVien> searchGiangVien(@Param("q") String q);
 
-    // ── Đếm ─────────────────────────────────────────────────────────────
     @Query("""
             SELECT COUNT(nv) FROM NhanVien nv
             JOIN nv.chucVu cv
-            WHERE cv.maChucVu LIKE 'GV%'
-               OR cv.maChucVu IN ('TBM', 'TK', 'PTK', 'CNTT', 'CVHT')
+            WHERE cv.laNhanSuGiangDay = true
+              AND nv.trangThai = true
             """)
     long countGiangVien();
 
-    // tìm hồ sơ nhân viên findByNguoiDungUsername
+    // ── Cố vấn học tập ──────────────────────────────────────────────────
+    @Query("""
+            SELECT nv FROM NhanVien nv
+            JOIN nv.chucVu cv
+            WHERE cv.maChucVu = 'CVHT'
+            """)
+    List<NhanVien> findAllCoVanHocTap();
+
+    // ── Tìm hồ sơ theo username ─────────────────────────────────────────
     @Query("""
             SELECT nv FROM NhanVien nv
             JOIN nv.nguoiDung nd
             WHERE nd.username = :username
             """)
+    Optional<NhanVien> findByNguoiDungUsername(@Param("username") String username);
 
-
-    Optional<NhanVien> findByNguoiDungUsername(@Param("username") String username
-    );
-    // Danh sách giảng viên (nhân viên có chức vụ GVC)   findByChucVuMaChucVu
+    // ── Tìm theo mã chức vụ (giữ lại để tương thích) ───────────────────
     List<NhanVien> findByChucVuMaChucVu(String maChucVu);
-
 }

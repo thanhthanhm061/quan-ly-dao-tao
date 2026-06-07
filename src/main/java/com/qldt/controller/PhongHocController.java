@@ -82,9 +82,19 @@ public class PhongHocController {
                       @ModelAttribute PhongHoc phongHoc,
                       RedirectAttributes ra) {
         try {
-            phongHoc.setId(id);
-            phongHocService.save(phongHoc);
-            ra.addFlashAttribute("success", "Đã cập nhật phòng " + phongHoc.getMaPhong());
+            // Load entity gốc để giữ hoatDong
+            PhongHoc existing = phongHocService.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng"));
+
+            existing.setMaPhong(phongHoc.getMaPhong());
+            existing.setTenPhong(phongHoc.getTenPhong());
+            existing.setSucChua(phongHoc.getSucChua());
+            existing.setLoaiPhong(phongHoc.getLoaiPhong());
+            existing.setGhiChu(phongHoc.getGhiChu());
+            // KHÔNG set hoatDong ở đây — dùng endpoint /kich-hoat và /xoa riêng
+
+            phongHocService.save(existing);
+            ra.addFlashAttribute("success", "Đã cập nhật phòng " + existing.getMaPhong());
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }

@@ -42,12 +42,13 @@ public class PhongHocServiceImpl implements PhongHocService {
 
     @Override
     public PhongHoc save(PhongHoc phongHoc) {
-        // Kiểm tra trùng mã phòng khi thêm mới
-        if (phongHoc.getId() == null
-                && phongHocRepo.existsByMaPhong(phongHoc.getMaPhong())) {
-            throw new IllegalArgumentException(
-                    "Mã phòng '" + phongHoc.getMaPhong() + "' đã tồn tại");
-        }
+        // Kiểm tra trùng mã — cả thêm mới lẫn sửa
+        phongHocRepo.findByMaPhong(phongHoc.getMaPhong()).ifPresent(existing -> {
+            if (!existing.getId().equals(phongHoc.getId())) {
+                throw new IllegalArgumentException(
+                        "Mã phòng '" + phongHoc.getMaPhong() + "' đã tồn tại");
+            }
+        });
         return phongHocRepo.save(phongHoc);
     }
 

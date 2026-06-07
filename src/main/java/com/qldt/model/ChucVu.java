@@ -34,6 +34,9 @@ public class ChucVu {
     @Column(name = "trang_thai")
     @Builder.Default
     private Boolean trangThai = true;
+    @Column(name = "la_nhan_su_giang_day")
+    @Builder.Default
+    private Boolean laNhanSuGiangDay = false;
 
     @OneToMany(mappedBy = "chucVu")
     @ToString.Exclude @EqualsAndHashCode.Exclude

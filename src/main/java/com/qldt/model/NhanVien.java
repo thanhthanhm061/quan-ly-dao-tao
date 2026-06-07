@@ -111,19 +111,10 @@ public class NhanVien {
 
     // ── Helper methods ──────────────────────────────────────────────────
 
-    /**
-     * Kiểm tra nhân viên này có phải giảng viên không
-     * (dựa theo mã chức vụ bắt đầu bằng "GV")
-     */
     @Transient
     public boolean isGiangVien() {
         return chucVu != null
-                && (chucVu.getMaChucVu().startsWith("gv")
-                || chucVu.getMaChucVu().startsWith("GV")
-                || "TBM".equals(chucVu.getMaChucVu())
-                || "TK".equals(chucVu.getMaChucVu())
-                || "PTK".equals(chucVu.getMaChucVu())
-                || "CNTT".equals(chucVu.getMaChucVu())); // ← thêm
+                && Boolean.TRUE.equals(chucVu.getLaNhanSuGiangDay());
     }
 
 

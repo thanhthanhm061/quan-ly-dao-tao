@@ -18,32 +18,15 @@
 
                 <div class="row g-3">
 
-                    <!-- ── Mã LHP ─────────────────────────────────────────────────────
-                         FIX: Khi SỬA dùng disabled (không submit) + hidden input (giữ giá trị).
-                         disabled input không bị tamper vì giá trị đến từ hidden input phía server.
-                         Khi THÊM dùng input bình thường cho phép nhập.
-                    -->
+
+                    <!-- ── Mã LHP ─────────────────────────────────────────────────────── -->
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">
                             Mã lớp học phần <span class="text-danger">*</span>
                         </label>
-
-                        <!-- Chế độ SỬA: hiển thị disabled + hidden gửi giá trị thật -->
-                        <th:block th:if="${lopHocPhan.id != null}">
-                            <input type="text" class="form-control bg-light"
-                                   th:value="*{maLhp}" disabled/>
-                            <input type="hidden" th:field="*{maLhp}"/>
-                            <div class="form-text text-muted">
-                                <i class="fas fa-lock fa-xs me-1"></i>Mã lớp không được thay đổi sau khi tạo
-                            </div>
-                        </th:block>
-
-                        <!-- Chế độ THÊM: nhập tự do -->
-                        <th:block th:unless="${lopHocPhan.id != null}">
-                            <input type="text" class="form-control" th:field="*{maLhp}"
-                                   placeholder="VD: LTJAVA-HK1-24-01"/>
-                            <div class="text-danger small mt-1" th:errors="*{maLhp}"></div>
-                        </th:block>
+                        <input type="text" class="form-control" th:field="*{maLhp}"
+                               placeholder="VD: LTJAVA-HK1-24-01"/>
+                        <div class="text-danger small mt-1" th:errors="*{maLhp}"></div>
                     </div>
 
                     <!-- ── Học kỳ ──────────────────────────────────────────────────── -->
@@ -51,8 +34,14 @@
                         <label class="form-label fw-semibold">
                             Học kỳ <span class="text-danger">*</span>
                         </label>
-                        <input type="text" class="form-control" th:field="*{hocKy}"
-                               placeholder="VD: HK1-2024"/>
+                        <select class="form-select" th:field="*{hocKy}">
+                            <option value="">-- Chọn học kỳ --</option>
+                            <option th:each="hk : ${danhSachHocKy}"
+                                    th:value="${hk}"
+                                    th:text="${hk}"
+                                    th:selected="${hk == lopHocPhan.hocKy}">
+                            </option>
+                        </select>
                         <div class="text-danger small mt-1" th:errors="*{hocKy}"></div>
                     </div>
 

@@ -23,7 +23,25 @@
             color:var(--text-muted); padding:8px 10px; text-align:center; transition:.2s; white-space:nowrap; }
         .tkb-tabs .nav-link:hover { background:var(--surface); color:var(--navy); }
         .tkb-tabs .nav-link.active { background:var(--navy); color:#fff; }
-
+        /* ── GV Custom Select ── */
+        .gv-select-wrap { position:relative; }
+        .gv-selected { display:flex; align-items:center; justify-content:space-between;
+            border:1.5px solid var(--border); border-radius:8px; padding:9px 12px;
+            background:#fff; cursor:pointer; font-size:.9rem; transition:.2s; }
+        .gv-selected:hover { border-color:var(--blue); }
+        .gv-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0;
+            background:#fff; border:1.5px solid var(--border); border-radius:10px;
+            box-shadow:0 8px 24px rgba(0,0,0,.12); z-index:999;
+            max-height:280px; overflow-y:auto; display:none; }
+        .gv-dropdown.open { display:block; }
+        .gv-option { display:flex; align-items:center; gap:8px; padding:9px 12px;
+            cursor:pointer; font-size:.85rem; transition:.15s; }
+        .gv-option:hover { background:#f8fafc; }
+        .gv-badge { font-size:.68rem; font-weight:700; padding:2px 7px;
+            border-radius:20px; white-space:nowrap; flex-shrink:0; }
+        .badge-du    { background:#dcfce7; color:#166534; }
+        .badge-thieu { background:#fef3c7; color:#92400e; }
+        .badge-chua  { background:#f1f5f9; color:#64748b; }
         .card { border:1px solid var(--border); border-radius:var(--radius);
             box-shadow:var(--shadow); background:#fff; }
         .card-header { background:var(--navy); color:#fff;
@@ -46,7 +64,6 @@
         .btn-outline-secondary { border-radius:8px; font-size:.82rem; font-weight:500; }
         .btn-outline-danger { border-radius:6px; }
 
-        /* ── Widget tín chỉ ── */
         .credit-bar-wrap { background:#fff; border:1.5px solid var(--border);
             border-radius:var(--radius); padding:16px 20px; margin-bottom:20px;
             box-shadow:var(--shadow); }
@@ -77,7 +94,7 @@
             color:var(--text-muted); text-align:center; vertical-align:middle; padding:4px; }
         .tkb-cell { position:absolute; z-index:2; left:2px; right:2px; top:2px;
             border-radius:6px; overflow:hidden; display:flex; flex-direction:column;
-            justify-content:center; padding:5px 7px; cursor:default;
+            justify-content:center; padding:5px 7px; cursor:pointer;
             transition:transform .15s,box-shadow .15s; }
         .tkb-cell:hover { transform:scale(1.02); z-index:10; box-shadow:0 4px 16px rgba(0,0,0,.12); }
         .tkb-cell .mon { font-size:.73rem; font-weight:700; line-height:1.25; }
@@ -104,7 +121,6 @@
 
         .cell-sub { font-size:.78rem; color:var(--text-muted); margin-top:2px; display:block; }
 
-        /* Toast delete (giữ nguyên từ bản cũ) */
         .toast-delete { position:fixed; top:24px; left:50%; width:340px; background:#fff;
             border-radius:16px; box-shadow:0 14px 40px rgba(0,0,0,.18); border:1px solid #fee2e2;
             overflow:hidden; z-index:99999; opacity:0; pointer-events:none;
@@ -125,7 +141,7 @@
         .toast-btn-delete { border:none; background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff;
             border-radius:10px; padding:7px 14px; font-size:.82rem; font-weight:600; }
         .toast-btn-delete:hover { opacity:.92; }
-        /* ── Popup chi tiết Tổng quan ── */
+
         .xem-overlay { position:fixed; inset:0; background:rgba(15,37,66,.45);
             z-index:5000; display:flex; align-items:center; justify-content:center;
             opacity:0; pointer-events:none; transition:opacity .2s; }
@@ -142,10 +158,12 @@
         .xem-popup-row i { width:18px; color:var(--text-muted); flex-shrink:0; }
         .xem-popup-row .label { color:var(--text-muted); min-width:90px; font-size:.8rem; }
         .xem-popup-row .value { font-weight:600; color:var(--text); }
-        .tkb-cell { cursor:pointer !important; }
+
+        /* Highlight khi dropdown mở */
+        .gv-selected.active { border-color:var(--blue); box-shadow:0 0 0 3px #dbeafe; }
     </style>
 
-    <!-- ── TABS (4 tabs) ── -->
+    <!-- ── TABS ── -->
     <ul class="tkb-tabs nav">
         <li class="nav-item">
             <a class="nav-link active" th:href="@{/tkb}">
@@ -171,20 +189,60 @@
 
     <!-- ── FILTER ── -->
     <div class="filter-card">
-        <form method="get" class="row g-3 align-items-end">
+        <form method="get" id="filterForm" class="row g-3 align-items-end">
+
+            <!-- GIẢNG VIÊN — dùng data-* thuần, KHÔNG dùng onclick inline -->
             <div class="col-md-4">
                 <label class="form-label">Giảng viên</label>
-                <select name="giangVienId" class="form-select">
-                    <option value="">— Chọn giảng viên —</option>
-                    <option th:each="gv : ${giangViens}"
-                            th:value="${gv.id}" th:text="${gv.hoTenVaHocVi}"
-                            th:selected="${gv.id == giangVienIdChon}">
-                    </option>
-                </select>
+                <div class="gv-select-wrap" id="gvSelectWrap">
+                    <div class="gv-selected" id="gvSelected">
+                        <span id="gvSelectedText">— Chọn giảng viên —</span>
+                        <i class="fas fa-chevron-down" id="gvChevron"
+                           style="transition:transform .2s;flex-shrink:0"></i>
+                    </div>
+                    <div class="gv-dropdown" id="gvDropdown">
+                        <!-- Option rỗng -->
+                        <div class="gv-option"
+                             data-value=""
+                             data-ten="— Chọn giảng viên —"
+                             data-tt="">
+                            — Chọn giảng viên —
+                        </div>
+                        <!-- Danh sách GV: dùng data-* để tránh lỗi ký tự đặc biệt -->
+                        <th:block th:each="gv : ${giangViens}">
+                            <div class="gv-option"
+                                 th:attr="
+                                     data-value=${gv.id},
+                                     data-ten=${gv.maNhanVien + ' - ' + gv.hoTenVaHocVi},
+                                     data-tt=${trangThaiGV != null and trangThaiGV[gv.id] == 'du'} ? 'du' :
+                                              (${trangThaiGV != null and trangThaiGV[gv.id] == 'thieu'} ? 'thieu' : 'chua')"
+                                 th:classappend="${trangThaiGV != null and trangThaiGV[gv.id] == 'du'} ? ' gv-du' :
+                                    (${trangThaiGV != null and trangThaiGV[gv.id] == 'thieu'} ? ' gv-thieu' : ' gv-chua')">
+                                <span th:if="${trangThaiGV != null}"
+                                      class="gv-badge"
+                                      th:classappend="${trangThaiGV[gv.id] == 'du'} ? ' badge-du' :
+                                           (${trangThaiGV[gv.id] == 'thieu'} ? ' badge-thieu' : ' badge-chua')"
+                                      th:text="${trangThaiGV[gv.id] == 'du'} ? 'Đủ lịch' :
+                                     (${trangThaiGV[gv.id] == 'thieu'} ? 'Chưa đủ' : 'Chưa có')">
+                                </span>
+                                <div class="gv-info">
+                                    <div>
+                                        <b th:text="${gv.maNhanVien}"></b>
+                                        -
+                                        <span th:text="${gv.hoTenVaHocVi}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+                <input type="hidden" name="giangVienId" id="giangVienIdInput"
+                       th:value="${giangVienIdChon}"/>
             </div>
+
             <div class="col-md-3">
                 <label class="form-label">Học kỳ</label>
-                <select name="hocKy" class="form-select">
+                <select name="hocKy" id="hocKySelect" class="form-select">
                     <option value="">— Chọn học kỳ —</option>
                     <option th:each="hk : ${danhSachHocKy}"
                             th:value="${hk}" th:text="${hk}"
@@ -192,16 +250,15 @@
                     </option>
                 </select>
             </div>
+
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">
                     <i class="fas fa-search me-1"></i>Xem TKB
                 </button>
             </div>
+
             <div class="col-md-3 text-end" sec:authorize="hasRole('ADMIN')">
-                <a th:href="@{/tkb/them(
-        giangVienId=${giangVienIdChon},
-        hocKy=${hocKyChon}
-    )}"
+                <a th:href="@{/tkb/them(giangVienId=${giangVienIdChon},hocKy=${hocKyChon})}"
                    class="btn btn-success">
                     <i class="fas fa-plus me-1"></i>Thêm lịch học
                 </a>
@@ -209,7 +266,7 @@
         </form>
     </div>
 
-    <!-- ── WIDGET TÍN CHỈ (hiện khi đã chọn GV và HK) ── -->
+    <!-- ── WIDGET TÍN CHỈ ── -->
     <div th:if="${thongKeTinChi != null}" class="credit-bar-wrap">
         <div class="credit-title">
             <i class="fas fa-graduation-cap me-2"></i>
@@ -256,8 +313,6 @@
         </div>
 
         <div th:unless="${#lists.isEmpty(thoiKhoaBieus)}">
-
-            <!-- ── LƯỚI TKB ── -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
@@ -326,32 +381,33 @@
                                         <div th:if="${tkb.thuTrongTuan eq thu and tkb.tietBatDau eq tiet}"
                                              class="tkb-cell"
                                              th:style="'height:' + ${tkb.soTiet*52-4} + 'px;' +
-                       'background:' + ${i.index%6==0?'#dbeafe':i.index%6==1?'#d1fae5':
-                       i.index%6==2?'#fef3c7':i.index%6==3?'#ede9fe':
-                       i.index%6==4?'#fee2e2':'#e0f2fe'} +
-                       ';border-left:3px solid ' +
-                       ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':
-                       i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':
-                       i.index%6==4?'#dc2626':'#0284c7'}"
+                                                'background:' + ${i.index%6==0?'#dbeafe':i.index%6==1?'#d1fae5':
+                                                i.index%6==2?'#fef3c7':i.index%6==3?'#ede9fe':
+                                                i.index%6==4?'#fee2e2':'#e0f2fe'} +
+                                                ';border-left:3px solid ' +
+                                                ${i.index%6==0?'#2563eb':i.index%6==1?'#059669':
+                                                i.index%6==2?'#d97706':i.index%6==3?'#7c3aed':
+                                                i.index%6==4?'#dc2626':'#0284c7'}"
                                              th:attr="
-                 data-id=${tkb.id},
-                 data-mon=${tkb.lopHocPhan?.monHoc?.tenMon},
-                 data-lhp=${tkb.lopHocPhan?.maLhp},
-                 data-gv=${tkb.lopHocPhan?.giangVien?.hoTen},
-                 data-thu=${tkb.tenThu},
-                 data-tiet=${'T' + tkb.tietBatDau + ' → T' + (tkb.tietBatDau+tkb.soTiet-1)},
-                 data-phong=${tkb.phongHoc ?: '?'},
-                 data-tc=${tkb.lopHocPhan?.monHoc?.soTinChi},
-                 data-gio=${tietMap != null and tietMap[tkb.tietBatDau] != null ?
-                     #temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm') + ' – ' +
-                     (tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
-                      #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?') : ''},
-                 data-lhp-id=${tkb.lopHocPhan?.id},
-                 data-gv-id=${tkb.lopHocPhan?.giangVien?.id}
-             "
-                                             onclick="moPopupXem(this)">
+                                                data-id=${tkb.id},
+                                                data-mon=${tkb.lopHocPhan?.monHoc?.tenMon},
+                                                data-lhp=${tkb.lopHocPhan?.maLhp},
+                                                data-gv=${tkb.lopHocPhan?.giangVien?.hoTen},
+                                                data-thu=${tkb.tenThu},
+                                                data-tiet=${'T' + tkb.tietBatDau + ' → T' + (tkb.tietBatDau+tkb.soTiet-1)},
+                                                data-phong=${tkb.phongHoc ?: '?'},
+                                                data-tc=${tkb.lopHocPhan?.monHoc?.soTinChi},
+                                                data-gio=${tietMap != null and tietMap[tkb.tietBatDau] != null ?
+                                                    #temporals.format(tietMap[tkb.tietBatDau].gioBatDau,'HH:mm') + ' – ' +
+                                                    (tietMap[tkb.tietBatDau + tkb.soTiet - 1] != null ?
+                                                     #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?') : ''},
+                                                data-lhp-id=${tkb.lopHocPhan?.id},
+                                                data-gv-id=${tkb.lopHocPhan?.giangVien?.id},
+                                                data-tuan-bat-dau=${tkb.tuanBatDau},
+                                                data-tuan-ket-thuc=${tkb.tuanKetThuc},
+                                                data-so-tiet=${tkb.soTiet}"
+                                             th:color-idx="${i.index%6}">
 
-                                            <!-- Nội dung ô TKB nếu có -->
                                             <span class="mon"
                                                   th:style="'color:' + ${i.index%6==0?'#1e40af':i.index%6==1?'#065f46':
                                                     i.index%6==2?'#92400e':i.index%6==3?'#5b21b6':
@@ -368,7 +424,6 @@
                                                              #temporals.format(tietMap[tkb.tietBatDau + tkb.soTiet - 1].gioKetThuc,'HH:mm') : '?'}">
                                             </span>
                                             <span class="meta" style="font-size:.6rem;opacity:.4;margin-top:2px">↗ Nhấn để xem</span>
-
                                         </div>
                                     </th:block>
                                 </td>
@@ -436,38 +491,21 @@
                             <td style="font-size:.83rem;color:var(--text-muted)"
                                 th:text="${tkb.tuanKetThuc != null ? #temporals.format(tkb.tuanKetThuc,'dd/MM/yyyy') : '—'}"></td>
                             <td sec:authorize="hasRole('ADMIN')">
-                                <a th:href="@{/tkb/sua/{id}(
-            id=${tkb.id},
-            giangVienId=${giangVienIdChon},
-            hocKy=${hocKyChon})}"
-                                   class="btn btn-sm btn-outline-warning me-1"
-                                   title="Sửa">
+                                <a th:href="@{/tkb/sua/{id}(id=${tkb.id},giangVienId=${giangVienIdChon},hocKy=${hocKyChon})}"
+                                   class="btn btn-sm btn-outline-warning me-1" title="Sửa">
                                     <i class="fas fa-edit"></i>
                                 </a>
-
                                 <form th:action="@{/tkb/xoa/{id}(id=${tkb.id})}"
-                                      method="post"
-                                      class="d-inline form-delete-tkb">
-
-                                    <input type="hidden"
-                                           th:name="${_csrf.parameterName}"
-                                           th:value="${_csrf.token}"/>
-
-                                    <!-- giữ context màn hình -->
-                                    <input type="hidden"
-                                           name="giangVienId"
-                                           th:value="${giangVienIdChon}"/>
-
-                                    <input type="hidden"
-                                           name="hocKy"
-                                           th:value="${hocKyChon}"/>
-
+                                      method="post" class="d-inline form-delete-tkb">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <input type="hidden" name="giangVienId" th:value="${giangVienIdChon}"/>
+                                    <input type="hidden" name="hocKy" th:value="${hocKyChon}"/>
                                     <button type="button"
                                             class="btn btn-sm btn-outline-danger btn-delete-tkb"
                                             th:attr="data-mon=${tkb.lopHocPhan?.monHoc?.tenMon},
-                     data-thu=${tkb.tenThu},
-                     data-phong=${tkb.phongHoc},
-                     data-tiet=${'T' + tkb.tietBatDau + ' → T' + (tkb.tietBatDau+tkb.soTiet-1)}"
+                                                     data-thu=${tkb.tenThu},
+                                                     data-phong=${tkb.phongHoc},
+                                                     data-tiet=${'T' + tkb.tietBatDau + ' → T' + (tkb.tietBatDau+tkb.soTiet-1)}"
                                             title="Xóa">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
@@ -523,15 +561,16 @@
             </div>
         </div>
     </div>
-    <!-- ══ POPUP CHI TIẾT TỔNG QUAN ══ -->
-    <div class="xem-overlay" id="xemOverlay" onclick="if(event.target===this)this.classList.remove('show')">
+
+    <!-- ── POPUP CHI TIẾT ── -->
+    <div class="xem-overlay" id="xemOverlay">
         <div class="xem-popup">
             <div class="xem-popup-header">
                 <div>
                     <div id="xPopupMon" style="font-size:1rem;font-weight:700;color:var(--navy)">—</div>
                     <div id="xPopupLhp" style="font-size:.8rem;color:var(--text-muted);margin-top:2px">—</div>
                 </div>
-                <button onclick="document.getElementById('xemOverlay').classList.remove('show')"
+                <button id="btnCloseXem"
                         style="width:28px;height:28px;border:none;background:#f1f5f9;
                            border-radius:8px;cursor:pointer;color:var(--text-muted)">
                     <i class="fas fa-times"></i>
@@ -558,8 +597,22 @@
                     <span class="label">Tín chỉ</span>
                     <span class="value" id="xPopupTc">—</span>
                 </div>
+                <div class="xem-popup-row">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="label">Từ ngày</span>
+                    <span class="value" id="xPopupTuNgay">—</span>
+                </div>
+                <div class="xem-popup-row">
+                    <i class="fas fa-calendar-check"></i>
+                    <span class="label">Đến ngày</span>
+                    <span class="value" id="xPopupDenNgay">—</span>
+                </div>
+                <div class="xem-popup-row">
+                    <i class="fas fa-hourglass-half"></i>
+                    <span class="label">Còn lại</span>
+                    <span class="value" id="xPopupConLai">—</span>
+                </div>
             </div>
-            <!-- Nút hành động (Admin) -->
             <div id="xPopupActions"
                  style="padding:12px 20px 16px;border-top:1px solid var(--border);
                     background:#fafbfc;display:none;gap:8px;flex-wrap:wrap">
@@ -579,83 +632,243 @@
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════════
+         SCRIPT — toàn bộ viết bằng addEventListener
+         KHÔNG dùng onclick inline để tránh lỗi
+         ký tự đặc biệt trong tên giảng viên
+    ══════════════════════════════════════════ -->
     <script th:inline="javascript">
-        const _isAdmin   = /*[[${#authorization.expression('hasRole(''ADMIN'')')}]]*/ false;
-        const _gvIdChon  = /*[[${giangVienIdChon}]]*/ '';
-        const _hocKyChon = /*[[${hocKyChon}]]*/ '';
-        const _xemOvl    = document.getElementById('xemOverlay');
-
-        function moPopupXem(el) {
-            const d = el.dataset;
-            document.getElementById('xPopupMon').textContent  = d.mon   || '—';
-            document.getElementById('xPopupLhp').textContent  = d.lhp   || '—';
-            document.getElementById('xPopupGv').textContent   = d.gv    || '—';
-            document.getElementById('xPopupTiet').textContent = (d.tiet || '—') + (d.gio ? '  (' + d.gio + ')' : '');
-            document.getElementById('xPopupPhong').textContent= 'Phòng ' + (d.phong || '?');
-            document.getElementById('xPopupTc').textContent   = d.tc ? d.tc + ' tín chỉ' : '—';
-
-            const actions = document.getElementById('xPopupActions');
-            if (_isAdmin && d.id) {
-                actions.style.display = 'flex';
-                document.getElementById('xBtnSua').href =
-                    `/tkb/sua/${d.id}?giangVienId=${_gvIdChon}&hocKy=${_hocKyChon}`;
-                document.getElementById('xBtnTuan').href =
-                    `/tkb/theo-tuan?giangVienId=${_gvIdChon}&hocKy=${_hocKyChon}`;
-            } else {
-                actions.style.display = 'none';
-            }
-            _xemOvl.classList.add('show');
-        }
-
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') _xemOvl.classList.remove('show');
-        });
-    </script>
-    <script>
-        /* ── Ngày trong tuần ── */
         (function () {
-            const today = new Date();
-            const dow = today.getDay();
-            const diffToMon = (dow === 0) ? -6 : 1 - dow;
-            const monday = new Date(today);
-            monday.setDate(today.getDate() + diffToMon);
-            for (let i = 0; i < 6; i++) {
-                const d = new Date(monday);
-                d.setDate(monday.getDate() + i);
-                const dd = String(d.getDate()).padStart(2, '0');
-                const mm = String(d.getMonth() + 1).padStart(2, '0');
-                const th = document.getElementById('th-' + (i + 2));
-                if (!th) continue;
-                th.querySelector('.date-sub').textContent = dd + '/' + mm;
-                if (d.toDateString() === today.toDateString()) th.classList.add('today-col');
-            }
-        })();
+            /* ── Biến Thymeleaf → JS ── */
+            const IS_ADMIN   = /*[[${#authorization.expression('hasRole(''ADMIN'')')}]]*/ false;
+            const GV_ID_CHON = /*[[${giangVienIdChon}]]*/ '';
+            const HK_CHON    = /*[[${hocKyChon}]]*/ '';
 
-        /* ── Toast xóa ── */
-        (function () {
-            const toast = document.getElementById('deleteToast');
-            if (!toast) return;
+            /* ═══════════════════════════════════════
+               1. CUSTOM SELECT GIẢNG VIÊN
+               Dùng data-* + addEventListener — không
+               có chuỗi onclick nào được nối tay nữa
+            ═══════════════════════════════════════ */
+            const wrap      = document.getElementById('gvSelectWrap');
+            const selected  = document.getElementById('gvSelected');
+            const selText   = document.getElementById('gvSelectedText');
+            const dropdown  = document.getElementById('gvDropdown');
+            const chevron   = document.getElementById('gvChevron');
+            const hiddenInp = document.getElementById('giangVienIdInput');
+            const filterForm = document.getElementById('filterForm');
+            const hocKySel  = document.getElementById('hocKySelect');
+
+            /* Mở / đóng dropdown */
+            selected.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const isOpen = dropdown.classList.toggle('open');
+                chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+                selected.classList.toggle('active', isOpen);
+            });
+
+            /* Đóng khi click ngoài */
+            document.addEventListener('click', function (e) {
+                if (!wrap.contains(e.target)) {
+                    dropdown.classList.remove('open');
+                    chevron.style.transform = '';
+                    selected.classList.remove('active');
+                }
+            });
+
+            /* Chọn 1 option GV */
+            dropdown.querySelectorAll('.gv-option').forEach(function (opt) {
+                opt.addEventListener('click', function () {
+                    const id  = this.dataset.value || '';
+                    const ten = this.dataset.ten   || '— Chọn giảng viên —';
+                    const tt  = this.dataset.tt    || '';
+
+                    /* Cập nhật hidden input */
+                    hiddenInp.value = id;
+
+                    /* Cập nhật text hiển thị + badge */
+                    let badgeHtml = '';
+                    if (tt === 'du') {
+                        badgeHtml = '<span style="font-size:.68rem;font-weight:700;padding:2px 7px;' +
+                            'border-radius:20px;background:#dcfce7;color:#166534;margin-right:6px">Đủ lịch</span>';
+                    } else if (tt === 'thieu') {
+                        badgeHtml = '<span style="font-size:.68rem;font-weight:700;padding:2px 7px;' +
+                            'border-radius:20px;background:#fef3c7;color:#92400e;margin-right:6px">Chưa đủ</span>';
+                    }
+                    selText.innerHTML = badgeHtml + ten;
+
+                    /* Đóng dropdown */
+                    dropdown.classList.remove('open');
+                    chevron.style.transform = '';
+                    selected.classList.remove('active');
+
+                    /* Kiểm tra học kỳ trước khi submit */
+                    if (!hocKySel.value) {
+                        /* Nếu chưa chọn học kỳ thì KHÔNG submit,
+                           chỉ cập nhật giá trị — người dùng tự nhấn "Xem TKB" */
+                        return;
+                    }
+
+                    /* Đủ cả GV + HK → submit luôn */
+                    filterForm.submit();
+                });
+            });
+
+            /* Học kỳ thay đổi → submit (giữ nguyên hành vi cũ) */
+            hocKySel.addEventListener('change', function () {
+                if (hiddenInp.value) {
+                    filterForm.submit();
+                }
+                /* Nếu chưa chọn GV thì không submit,
+                   người dùng tự nhấn nút "Xem TKB" */
+            });
+
+            /* Init: hiển thị GV đang được chọn (từ server) */
+            (function initSelectedGV() {
+                if (!GV_ID_CHON) return;
+                const opt = dropdown.querySelector('.gv-option[data-value="' + GV_ID_CHON + '"]');
+                if (!opt) return;
+                const ten = opt.dataset.ten || '';
+                const tt  = opt.dataset.tt  || '';
+                let badgeHtml = '';
+                if (tt === 'du') {
+                    badgeHtml = '<span style="font-size:.68rem;font-weight:700;padding:2px 7px;' +
+                        'border-radius:20px;background:#dcfce7;color:#166534;margin-right:6px">Đủ lịch</span>';
+                } else if (tt === 'thieu') {
+                    badgeHtml = '<span style="font-size:.68rem;font-weight:700;padding:2px 7px;' +
+                        'border-radius:20px;background:#fef3c7;color:#92400e;margin-right:6px">Chưa đủ</span>';
+                }
+                selText.innerHTML = badgeHtml + ten;
+            })();
+
+            /* ═══════════════════════════════════════
+               2. POPUP CHI TIẾT Ô TKB
+            ═══════════════════════════════════════ */
+            const xemOvl = document.getElementById('xemOverlay');
+
+            function formatNgay(iso) {
+                if (!iso) return '—';
+                const parts = iso.split('-');
+                if (parts.length !== 3) return iso;
+                return parts[2] + '/' + parts[1] + '/' + parts[0];
+            }
+
+            function moPopupXem(el) {
+                const d = el.dataset;
+                document.getElementById('xPopupMon').textContent   = d.mon   || '—';
+                document.getElementById('xPopupLhp').textContent   = d.lhp   || '—';
+                document.getElementById('xPopupGv').textContent    = d.gv    || '—';
+                document.getElementById('xPopupTiet').textContent  = (d.tiet || '—') + (d.gio ? '  (' + d.gio + ')' : '');
+                document.getElementById('xPopupPhong').textContent = 'Phòng ' + (d.phong || '?');
+                document.getElementById('xPopupTc').textContent    = d.tc ? d.tc + ' tín chỉ' : '—';
+                document.getElementById('xPopupTuNgay').textContent  = formatNgay(d.tuanBatDau);
+                document.getElementById('xPopupDenNgay').textContent = formatNgay(d.tuanKetThuc);
+
+                /* Tính còn lại */
+                const conLaiEl = document.getElementById('xPopupConLai');
+                if (d.tuanBatDau && d.tuanKetThuc && d.soTiet) {
+                    const today    = new Date();
+                    const ketThuc  = new Date(d.tuanKetThuc);
+                    const soTiet   = parseInt(d.soTiet, 10);
+                    if (today > ketThuc) {
+                        conLaiEl.textContent = 'Đã kết thúc';
+                        conLaiEl.style.color = '#6b7280';
+                    } else {
+                        const batDauTinh = today > new Date(d.tuanBatDau) ? today : new Date(d.tuanBatDau);
+                        const tuanConLai = Math.ceil((ketThuc - batDauTinh) / (7 * 24 * 3600 * 1000));
+                        const tietConLai = tuanConLai * soTiet;
+                        conLaiEl.textContent = tuanConLai + ' tuần · ' + tietConLai + ' tiết';
+                        conLaiEl.style.color = tuanConLai <= 2 ? '#dc2626' : '#059669';
+                    }
+                } else {
+                    conLaiEl.textContent = '—';
+                    conLaiEl.style.color = '';
+                }
+
+                /* Nút Admin */
+                const actions = document.getElementById('xPopupActions');
+                if (IS_ADMIN && d.id) {
+                    actions.style.display = 'flex';
+                    document.getElementById('xBtnSua').href =
+                        '/tkb/sua/' + d.id + '?giangVienId=' + GV_ID_CHON + '&hocKy=' + encodeURIComponent(HK_CHON);
+                    document.getElementById('xBtnTuan').href =
+                        '/tkb/theo-tuan?giangVienId=' + GV_ID_CHON + '&hocKy=' + encodeURIComponent(HK_CHON);
+                } else {
+                    actions.style.display = 'none';
+                }
+
+                xemOvl.classList.add('show');
+            }
+
+            /* Gắn sự kiện click cho tất cả ô TKB */
+            document.querySelectorAll('.tkb-cell').forEach(function (cell) {
+                cell.addEventListener('click', function () { moPopupXem(this); });
+            });
+
+            /* Đóng popup */
+            document.getElementById('btnCloseXem').addEventListener('click', function () {
+                xemOvl.classList.remove('show');
+            });
+            xemOvl.addEventListener('click', function (e) {
+                if (e.target === xemOvl) xemOvl.classList.remove('show');
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') xemOvl.classList.remove('show');
+            });
+
+            /* ═══════════════════════════════════════
+               3. TOAST XÓA
+            ═══════════════════════════════════════ */
+            const toast      = document.getElementById('deleteToast');
             const btnClose   = document.getElementById('btnCloseToast');
             const btnConfirm = document.getElementById('btnConfirmDelete');
             let currentForm  = null;
 
-            document.querySelectorAll('.btn-delete-tkb').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    currentForm = this.closest('form');
-                    document.getElementById('toastMon').textContent   = this.dataset.mon   || '-';
-                    document.getElementById('toastThu').textContent   = this.dataset.thu   || '-';
-                    document.getElementById('toastTiet').textContent  = this.dataset.tiet  || '-';
-                    document.getElementById('toastPhong').textContent = this.dataset.phong || '-';
-                    toast.classList.add('show');
+            if (toast) {
+                document.querySelectorAll('.btn-delete-tkb').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        currentForm = this.closest('form');
+                        document.getElementById('toastMon').textContent   = this.dataset.mon   || '-';
+                        document.getElementById('toastThu').textContent   = this.dataset.thu   || '-';
+                        document.getElementById('toastTiet').textContent  = this.dataset.tiet  || '-';
+                        document.getElementById('toastPhong').textContent = this.dataset.phong || '-';
+                        toast.classList.add('show');
+                    });
                 });
-            });
-            btnClose.addEventListener('click', () => toast.classList.remove('show'));
-            btnConfirm.addEventListener('click', () => { toast.classList.remove('show'); if (currentForm) currentForm.submit(); });
-            document.addEventListener('click', e => {
-                if (toast.classList.contains('show') && !toast.contains(e.target) && !e.target.closest('.btn-delete-tkb'))
+                btnClose.addEventListener('click', function () { toast.classList.remove('show'); });
+                btnConfirm.addEventListener('click', function () {
                     toast.classList.remove('show');
-            });
-        })();
+                    if (currentForm) currentForm.submit();
+                });
+                document.addEventListener('click', function (e) {
+                    if (toast.classList.contains('show') &&
+                        !toast.contains(e.target) &&
+                        !e.target.closest('.btn-delete-tkb')) {
+                        toast.classList.remove('show');
+                    }
+                });
+            }
+
+            /* ═══════════════════════════════════════
+               4. HIỂN THỊ NGÀY TRONG TUẦN TRÊN HEADER
+            ═══════════════════════════════════════ */
+            (function renderDates() {
+                const today = new Date();
+                const dow = today.getDay();
+                const diffToMon = (dow === 0) ? -6 : 1 - dow;
+                const monday = new Date(today);
+                monday.setDate(today.getDate() + diffToMon);
+                for (let i = 0; i < 6; i++) {
+                    const d = new Date(monday);
+                    d.setDate(monday.getDate() + i);
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const th = document.getElementById('th-' + (i + 2));
+                    if (!th) continue;
+                    th.querySelector('.date-sub').textContent = dd + '/' + mm;
+                    if (d.toDateString() === today.toDateString()) th.classList.add('today-col');
+                }
+            })();
+
+        })(); /* end IIFE */
     </script>
 </th:block></body></html>
-

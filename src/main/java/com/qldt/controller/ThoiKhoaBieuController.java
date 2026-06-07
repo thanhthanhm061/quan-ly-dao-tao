@@ -254,6 +254,7 @@ class LopHocPhanController {
         model.addAttribute("monHocs", monService.findAll());
         model.addAttribute("giangViens", gvService.findAll());
         model.addAttribute("trangThais", TrangThaiLHP.values());
+        model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
         return "lophocphan/form";
     }
 
@@ -288,6 +289,7 @@ class LopHocPhanController {
         model.addAttribute("monHocs", monService.findAll());
         model.addAttribute("giangViens", gvService.findAll());
         model.addAttribute("trangThais", TrangThaiLHP.values());
+        model.addAttribute("danhSachHocKy", lhpService.findAllHocKy());
         return "lophocphan/form";
     }
 
@@ -315,7 +317,7 @@ class LopHocPhanController {
         try {
             // Load entity gốc từ DB — giữ nguyên dangKys, siSoHienTai
             LopHocPhan existing = lhpService.findById(id).orElseThrow();
-
+            existing.setMaLhp(formLhp.getMaLhp());
             // Chỉ cập nhật các field cho phép sửa (KHÔNG cập nhật maLhp)
             existing.setHocKy(formLhp.getHocKy());
             existing.setSiSoMax(formLhp.getSiSoMax());
@@ -680,7 +682,21 @@ public class ThoiKhoaBieuController {
             model.addAttribute("hocKyChon", hocKy);
             model.addAttribute("tietMap", timeSlotService.buildTietMap());
 
-
+            // Trạng thái lịch từng giảng viên theo học kỳ đang chọn
+            if (hocKy != null) {
+                Map<Long, String> trangThaiGV = new java.util.HashMap<>();
+                for (NhanVien gv : nhanVienService.findAllGiangVien()) {
+                    Map<String, Integer> tk = tkbService.thongKeTinChi(gv.getId(), hocKy);
+                    if (tk != null) {
+                        int phanCong = tk.getOrDefault("phanCong", 0);
+                        int daDay    = tk.getOrDefault("daDay", 0);
+                        if (phanCong == 0)        trangThaiGV.put(gv.getId(), "chua");
+                        else if (daDay >= phanCong) trangThaiGV.put(gv.getId(), "du");
+                        else                        trangThaiGV.put(gv.getId(), "thieu");
+                    }
+                }
+                model.addAttribute("trangThaiGV", trangThaiGV);
+            }
             if (giangVienId != null && hocKy != null) {
                 model.addAttribute("thoiKhoaBieus",
                         tkbService.findByGiangVien(giangVienId, hocKy));
