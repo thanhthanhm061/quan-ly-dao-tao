@@ -34,14 +34,15 @@
                         <label class="form-label fw-semibold">
                             Học kỳ <span class="text-danger">*</span>
                         </label>
-                        <select class="form-select" th:field="*{hocKy}">
-                            <option value="">-- Chọn học kỳ --</option>
+                        <input type="text" class="form-control"
+                               th:field="*{hocKy}"
+                               list="hocKyOptions"
+                               placeholder="Chọn hoặc nhập học kỳ"/>
+                        <datalist id="hocKyOptions">
                             <option th:each="hk : ${danhSachHocKy}"
                                     th:value="${hk}"
-                                    th:text="${hk}"
-                                    th:selected="${hk == lopHocPhan.hocKy}">
-                            </option>
-                        </select>
+                                    th:text="${hk}"/>
+                        </datalist>
                         <div class="text-danger small mt-1" th:errors="*{hocKy}"></div>
                     </div>
 
